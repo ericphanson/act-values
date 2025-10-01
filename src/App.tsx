@@ -139,6 +139,7 @@ interface ValueContainerProps {
   isTier?: boolean;
   className?: string;
   children: React.ReactNode;
+  highlightRingClass?: string;
 }
 
 const ValueContainer: React.FC<ValueContainerProps> = ({
@@ -146,6 +147,7 @@ const ValueContainer: React.FC<ValueContainerProps> = ({
   isTier = false,
   className = '',
   children,
+  highlightRingClass,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: containerId,
@@ -156,11 +158,8 @@ const ValueContainer: React.FC<ValueContainerProps> = ({
     },
   });
 
-  const highlightClass = isOver
-    ? isTier
-      ? 'ring-2 ring-emerald-300'
-      : 'ring-2 ring-blue-300'
-    : '';
+  const baseHighlightClass = isTier ? 'ring-2 ring-emerald-300' : 'ring-2 ring-blue-300';
+  const highlightClass = isOver ? (highlightRingClass ?? baseHighlightClass) : '';
 
   const baseClass = 'relative w-full transition-shadow';
   const sizeClass = isTier ? 'min-h-[4.5rem] flex flex-wrap gap-2 items-start p-2' : '';
@@ -217,6 +216,13 @@ const ValuesTierList = () => {
     { id: 'somewhat-important' as TierId, label: 'Somewhat Important to Me', color: 'bg-blue-50 border-blue-200', icon: '⭐' },
     { id: 'not-important' as TierId, label: 'Not Important to Me', color: 'bg-gray-50 border-gray-200', icon: '○' }
   ];
+
+  const tierHighlightClass: Record<TierId, string> = {
+    'very-important': 'ring-2 ring-emerald-200',
+    'somewhat-important': 'ring-2 ring-blue-200',
+    'not-important': 'ring-2 ring-gray-200',
+    'uncategorized': 'ring-2 ring-blue-300',
+  };
 
   const tierKeys: Record<string, TierId> = {
     '1': 'very-important',
@@ -757,7 +763,12 @@ const ValuesTierList = () => {
                         Press {index + 1}
                       </span>
                     </h2>
-                    <ValueContainer containerId={tier.id} isTier className="flex flex-wrap gap-2">
+                    <ValueContainer
+                      containerId={tier.id}
+                      isTier
+                      className="flex flex-wrap gap-2"
+                      highlightRingClass={tierHighlightClass[tier.id]}
+                    >
                       {tierValues.length === 0 && (
                         <div className="text-sm text-gray-500 italic select-none">
                           Drop values here
