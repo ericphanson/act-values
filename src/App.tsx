@@ -33,6 +33,7 @@ const ValuesTierList = () => {
   // Convert runtime state to persisted format
   const serializeState = useCallback((): PersistedState => {
     const dataset = preloadedDatasets[selectedDataset];
+    const tierIds: TierId[] = ['very-important', 'somewhat-important', 'not-important', 'uncategorized'];
     const tiers: Record<TierId, number[]> = {
       'very-important': [],
       'somewhat-important': [],
@@ -40,13 +41,22 @@ const ValuesTierList = () => {
       'uncategorized': []
     };
 
+    console.log('[Serialize] Processing values count:', values.length);
+    const locationCounts: Record<string, number> = {};
+
     values.forEach((value) => {
+      locationCounts[value.location] = (locationCounts[value.location] || 0) + 1;
       const index = parseInt(value.id.replace('value-', ''));
-      const tier = value.location as TierId;
-      if (tier in tiers) {
+      // Only save values that are in tiers (not in categories)
+      if (tierIds.includes(value.location as TierId)) {
+        const tier = value.location as TierId;
         tiers[tier].push(index);
       }
+      // Values in categories (not in a tier) aren't saved - they default to category on load
     });
+
+    console.log('[Serialize] Location distribution:', locationCounts);
+    console.log('[Serialize] Tiers being saved:', tiers);
 
     return {
       datasetName: selectedDataset,
@@ -58,13 +68,15 @@ const ValuesTierList = () => {
     };
   }, [values, categories, collapsedCategories, selectedDataset]);
 
-  // Debounced save function
-  const debouncedSave = useRef(
+  // Debounced save function - recreate when serializeState changes
+  const debouncedSave = useCallback(
     debounce(() => {
       const state = serializeState();
+      console.log('[App] Saving state:', state);
       saveState(state);
-    }, 150)
-  ).current;
+    }, 150),
+    [serializeState]
+  );
 
   // Request persistence on first interaction
   const ensurePersistence = useCallback(() => {
@@ -103,6 +115,7 @@ const ValuesTierList = () => {
 
   // Hydrate state from persisted data
   const hydrateState = useCallback((persisted: PersistedState) => {
+    console.log('[App] Hydrating from persisted state:', persisted);
     const dataset = preloadedDatasets[persisted.datasetName];
 
     // Validate dataset version exists
@@ -119,8 +132,11 @@ const ValuesTierList = () => {
       name: item.name,
       description: item.description,
       category: item.category,
-      location: 'uncategorized' // default, will be overridden below
+      location: item.category // default to category, will be overridden if in a tier
     }));
+
+    console.log('[App] Created values:', importedValues.length);
+    console.log('[App] Persisted tiers data:', persisted.tiers);
 
     // Apply saved tier assignments
     importedValues.forEach((value, idx) => {
@@ -132,13 +148,24 @@ const ValuesTierList = () => {
       }
     });
 
+    const sampleLocations = importedValues.slice(0, 5).map(v => `${v.id}: location="${v.location}", category="${v.category}"`);
+    console.log('[App] Sample locations after tier assignment:', sampleLocations);
+
+    // Count values by location
+    const locationCounts: Record<string, number> = {};
+    importedValues.forEach(v => {
+      locationCounts[v.location] = (locationCounts[v.location] || 0) + 1;
+    });
+    console.log('[App] Values by location:', locationCounts);
+
     const uniqueCategories = [...new Set(importedValues.map(v => v.category))];
 
     setValues(importedValues);
     setCategories(persisted.categoryOrder.length > 0 ? persisted.categoryOrder : uniqueCategories);
     setSelectedDataset(persisted.datasetName);
     setCollapsedCategories(persisted.collapsedCategories);
-  }, []);
+    console.log('[App] State hydrated successfully');
+  }, [loadDataset]);
 
   // Load state on mount
   useEffect(() => {
