@@ -61,6 +61,13 @@
     padding: 0 !important;
   }
 
+  /* Remove all background colors - black and white only */
+  * {
+    background: white !important;
+    background-color: white !important;
+    color: black !important;
+  }
+
   /* Adjust margins for print */
   @page {
     margin: 0.75in;
@@ -120,8 +127,14 @@
     margin-bottom: 1rem !important;
     min-height: 0 !important;
     height: auto !important;
+    max-height: none !important;
     page-break-inside: auto !important;
     break-inside: auto !important;
+  }
+
+  .print-tier > * {
+    background: white !important;
+    border: none !important;
   }
 
   .print-tier-heading {
@@ -132,6 +145,7 @@
     padding: 0 !important;
     padding-bottom: 0.25rem !important;
     border-bottom: 2px solid #333 !important;
+    background: white !important;
   }
 
   /* Print-specific value list styling */
@@ -184,12 +198,20 @@
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
+    max-height: 0 !important;
+    min-height: 0 !important;
     width: 0 !important;
+    max-width: 0 !important;
+    min-width: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     opacity: 0 !important;
     position: absolute !important;
+    top: 0 !important;
     left: -9999px !important;
+    bottom: auto !important;
+    right: auto !important;
+    overflow: hidden !important;
   }
 
   /* Make main content full width on print */
@@ -220,6 +242,18 @@
   /* Remove all flex display in print */
   .flex {
     display: block !important;
+  }
+
+  /* Ensure 4-column grid becomes single column on print */
+  .lg\:grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Remove fixed heights that cause whitespace */
+  .h-screen,
+  .h-full {
+    height: auto !important;
+    max-height: none !important;
   }
 
   /* Ensure containers take minimal space */

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, ChevronRight, Share2, Trash2, Printer } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -43,11 +44,13 @@ interface SortableValueProps {
 }
 
 const getValueClass = (value: Value, animatingValues: Set<string>, isInTier: boolean) => {
+  // Compact chip spec: text-sm (14px), 12px horizontal padding, 8px vertical padding
+  // Keep min-h-[36px] for touch targets while visual is compact
   return isInTier
-    ? `relative px-4 py-2 bg-white border-2 border-gray-300 rounded-lg cursor-move hover:shadow-md hover:border-gray-400 transition-all select-none ${
+    ? `relative px-3 py-2 bg-white border-2 border-gray-300 rounded-lg cursor-move hover:shadow-md hover:border-gray-400 transition-all select-none text-sm min-h-[36px] flex items-center ${
         animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300' : ''
       }`
-    : `relative px-3 py-2 bg-gray-50 border border-gray-300 rounded cursor-move hover:bg-white hover:shadow-md transition-all text-sm select-none ${
+    : `relative px-3 py-2 bg-gray-50 border border-gray-300 rounded cursor-move hover:bg-white hover:shadow-md transition-all text-sm select-none min-h-[36px] flex items-center ${
         animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300' : ''
       }`;
 };
@@ -66,6 +69,8 @@ const SortableValue: React.FC<SortableValueProps> = ({
 }) => {
   const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const longPressTriggeredRef = React.useRef(false);
+  const valueRef = React.useRef<HTMLDivElement>(null);
+  const [tooltipPosition, setTooltipPosition] = React.useState<{ top: number; left: number } | null>(null);
 
   const {
     attributes,
@@ -121,6 +126,36 @@ const SortableValue: React.FC<SortableValueProps> = ({
     longPressTriggeredRef.current = false;
   };
 
+  const updateTooltipPosition = React.useCallback(() => {
+    if (valueRef.current && hoveredValue?.id === value.id) {
+      const rect = valueRef.current.getBoundingClientRect();
+      if (isInTier) {
+        setTooltipPosition({
+          top: rect.top - 8, // 8px margin above
+          left: rect.left,
+        });
+      } else {
+        setTooltipPosition({
+          top: rect.top,
+          left: rect.right + 8, // 8px margin to the right
+        });
+      }
+    } else {
+      setTooltipPosition(null);
+    }
+  }, [hoveredValue?.id, value.id, isInTier]);
+
+  React.useEffect(() => {
+    updateTooltipPosition();
+    window.addEventListener('scroll', updateTooltipPosition, true);
+    window.addEventListener('resize', updateTooltipPosition);
+
+    return () => {
+      window.removeEventListener('scroll', updateTooltipPosition, true);
+      window.removeEventListener('resize', updateTooltipPosition);
+    };
+  }, [updateTooltipPosition]);
+
   const handleClick = (e: React.MouseEvent) => {
     if (isTouchDevice && selectedTierForTouch && onTouchSelect && !longPressTriggeredRef.current) {
       e.stopPropagation();
@@ -137,33 +172,43 @@ const SortableValue: React.FC<SortableValueProps> = ({
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onMouseEnter={() => setHoveredValue(value)}
-      onMouseLeave={() => setHoveredValue(null)}
-      onClick={handleClick}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchCancel}
-      className={`${baseClass} ${isTouchDevice && selectedTierForTouch ? 'cursor-pointer' : ''} print-value-item`}
-      data-value-id={value.id}
-    >
-      <span className={`${isInTier ? 'font-medium text-gray-800 block' : 'text-gray-800 font-medium'} print-value-name`}>
-        {value.value}
-      </span>
-      {value.description && (
-        <span className="hidden print:inline print-value-description">
-          {value.description}
+    <>
+      <div
+        ref={(node) => {
+          setNodeRef(node);
+          valueRef.current = node;
+        }}
+        style={style}
+        {...attributes}
+        {...listeners}
+        onMouseEnter={() => setHoveredValue(value)}
+        onMouseLeave={() => setHoveredValue(null)}
+        onClick={handleClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
+        className={`${baseClass} ${isTouchDevice && selectedTierForTouch ? 'cursor-pointer' : ''} print-value-item`}
+        data-value-id={value.id}
+      >
+        <span className={`${isInTier ? 'font-medium text-gray-800 block' : 'text-gray-800 font-medium'} print-value-name`}>
+          {value.value}
         </span>
-      )}
-      {hoveredValue?.id === value.id && value.description && !activeId && (
+        {value.description && (
+          <span className="hidden print:inline print-value-description">
+            {value.description}
+          </span>
+        )}
+      </div>
+
+      {/* Render tooltip via portal to avoid clipping */}
+      {hoveredValue?.id === value.id && value.description && !activeId && tooltipPosition && createPortal(
         <div
-          className={`absolute z-10 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96 ${
-            isInTier ? 'bottom-full left-0 mb-2' : 'left-full ml-2 top-0'
-          }`}
+          className="fixed z-[100] p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96 pointer-events-none"
+          style={{
+            top: isInTier ? `${tooltipPosition.top}px` : `${tooltipPosition.top}px`,
+            left: `${tooltipPosition.left}px`,
+            transform: isInTier ? 'translateY(-100%)' : 'translateY(0)',
+          }}
         >
           {!isTouchDevice && (
             <div className="mb-1 text-emerald-300 text-xs font-semibold">
@@ -190,13 +235,14 @@ const SortableValue: React.FC<SortableValueProps> = ({
           <div
             className={`absolute w-0 h-0 ${
               isInTier
-                ? 'top-full left-4 border-l-8 border-r-8 border-t-8 border-transparent border-t-gray-900'
+                ? 'bottom-full left-4 border-l-8 border-r-8 border-b-8 border-transparent border-b-gray-900'
                 : 'right-full top-4 border-t-8 border-b-8 border-r-8 border-transparent border-r-gray-900'
             }`}
           />
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 };
 
@@ -457,9 +503,9 @@ const ValuesTierList = () => {
   }, [reorderValuesForDrag]);
 
   const tiers = [
-    { id: 'very-important' as TierId, label: 'Very Important to Me', color: 'bg-emerald-50 border-emerald-200', icon: '💎' },
-    { id: 'somewhat-important' as TierId, label: 'Somewhat Important to Me', color: 'bg-blue-50 border-blue-200', icon: '⭐' },
-    { id: 'not-important' as TierId, label: 'Not Important to Me', color: 'bg-gray-50 border-gray-200', icon: '○' }
+    { id: 'very-important' as TierId, label: 'Very Important to Me', color: 'bg-emerald-50 border-emerald-200', icon: '💎', quota: 15 },
+    { id: 'somewhat-important' as TierId, label: 'Somewhat Important to Me', color: 'bg-blue-50 border-blue-200', icon: '⭐', quota: 25 },
+    { id: 'not-important' as TierId, label: 'Not Important to Me', color: 'bg-gray-50 border-gray-200', icon: '○', quota: null }
   ];
 
   const tierHighlightClass: Record<TierId, string> = {
@@ -1034,13 +1080,27 @@ const ValuesTierList = () => {
     }
 
     const activeId = String(active.id);
-    const overId = String(over.id);
+    let overId = String(over.id);
+
+    // Redirect header drops to the main tier container
+    if (overId.endsWith('-header')) {
+      overId = overId.replace('-header', '');
+    }
+
     if (activeId === overId) {
       return;
     }
 
     const activeData = active.data?.current as Record<string, any> | undefined;
-    const overData = over.data?.current as Record<string, any> | undefined;
+    let overData = over.data?.current as Record<string, any> | undefined;
+
+    // Update container ID if dropping on header
+    if (overData?.containerId?.endsWith('-header')) {
+      overData = {
+        ...overData,
+        containerId: overData.containerId.replace('-header', '')
+      };
+    }
 
     scheduleReorder(activeId, overId, activeData, overData);
   };
@@ -1055,7 +1115,12 @@ const ValuesTierList = () => {
     }
 
     const activeId = String(active.id);
-    const overId = String(over.id);
+    let overId = String(over.id);
+
+    // Redirect header drops to the main tier container
+    if (overId.endsWith('-header')) {
+      overId = overId.replace('-header', '');
+    }
 
     if (activeId === overId) {
       setHoveredValue(null);
@@ -1063,7 +1128,15 @@ const ValuesTierList = () => {
     }
 
     const activeData = active.data?.current as Record<string, any> | undefined;
-    const overData = over.data?.current as Record<string, any> | undefined;
+    let overData = over.data?.current as Record<string, any> | undefined;
+
+    // Update container ID if dropping on header
+    if (overData?.containerId?.endsWith('-header')) {
+      overData = {
+        ...overData,
+        containerId: overData.containerId.replace('-header', '')
+      };
+    }
 
     setValues(prevValues => {
       const nextValues = reorderValuesForDrag(prevValues, activeId, overId, activeData, overData);
@@ -1162,15 +1235,15 @@ const ValuesTierList = () => {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-3 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6 print-header">
-          <div className="flex flex-col gap-4">
+      <div className="h-screen bg-gradient-to-br from-blue-50 to-green-50 p-3 md:p-6 overflow-hidden">
+      <div className="max-w-7xl mx-auto h-full flex flex-col">
+        <div className="bg-white rounded-lg shadow-lg p-4 mb-3 print-header flex-shrink-0">
+          <div className="flex flex-col gap-3">
             {/* Consolidated title with dropdown */}
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
                 {/* Print-only: simple title */}
-                <h1 className="hidden print:block text-2xl md:text-3xl font-bold text-gray-800 print-main-heading">
+                <h1 className="hidden print:block text-xl font-semibold text-gray-800 print-main-heading">
                   {listName || 'Values Tier List'}
                 </h1>
 
@@ -1185,7 +1258,7 @@ const ValuesTierList = () => {
                         setListName(newName);
                         debouncedRenameList(listId, newName);
                       }}
-                      className="text-2xl md:text-3xl font-bold text-gray-800 bg-transparent border-2 border-transparent hover:border-gray-300 focus:border-emerald-500 focus:outline-none rounded px-2 py-1 flex-1"
+                      className="text-xl font-semibold text-gray-800 bg-transparent border-2 border-transparent hover:border-gray-300 focus:border-emerald-500 focus:outline-none rounded px-2 py-1 flex-1"
                       placeholder="Enter list name..."
                     />
                     <button
@@ -1273,10 +1346,6 @@ const ValuesTierList = () => {
                     </div>
                   )}
                 </div>
-
-                <p className="text-sm md:text-base text-gray-600 mt-1 print-hide px-3">
-                  {isTouchDevice ? 'Tap a tier, then tap values to add them' : 'Drag values to rank them!'}
-                </p>
               </div>
 
               {/* Action buttons */}
@@ -1302,19 +1371,25 @@ const ValuesTierList = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4 print-full-width">
-            {tiers.map((tier, index) => {
-              const tierValues = getValuesByLocation(tier.id);
-              return (
-                <SortableContext
-                  key={tier.id}
-                  id={tier.id}
-                  items={tierValues.map(value => value.id)}
-                  strategy={verticalListSortingStrategy}
-                >
+        {/* Main content area with tiers and categories */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 print:static overflow-visible flex-1 min-h-0">
+          {/* Three tier columns */}
+          {tiers.map((tier, index) => {
+            const tierValues = getValuesByLocation(tier.id);
+            const isOverQuota = tier.quota && tierValues.length > tier.quota;
+            const quotaPercentage = tier.quota ? Math.min((tierValues.length / tier.quota) * 100, 100) : 0;
+
+            return (
+              <SortableContext
+                key={tier.id}
+                id={tier.id}
+                items={tierValues.map(value => value.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="flex flex-col border-2 rounded-lg overflow-hidden print-tier bg-white h-full">
+                  {/* Sticky header - droppable area */}
                   <div
-                    className={`${tier.color} border-2 rounded-lg p-4 min-h-32 print-tier ${
+                    className={`${tier.color} border-b-2 ${tier.color.replace('bg-', 'border-').replace('-50', '-200')} rounded-t-lg sticky top-0 z-10 ${
                       isTouchDevice && selectedTierForTouch === tier.id
                         ? 'ring-4 ring-blue-500 border-blue-500'
                         : ''
@@ -1325,34 +1400,74 @@ const ValuesTierList = () => {
                       }
                     }}
                   >
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2 print-tier-heading">
-                      <span className="print-hide">{tier.icon}</span>
-                      {tier.label}
-                      <span className="text-sm font-normal text-gray-600 print-hide">
-                        ({tierValues.length})
-                      </span>
-                      {isTouchDevice ? (
-                        <span className={`ml-auto text-xs font-mono px-2 py-1 rounded border print-hide ${
-                          selectedTierForTouch === tier.id
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white border-gray-300 text-gray-600'
-                        }`}>
-                          {selectedTierForTouch === tier.id ? '✓ Selected' : 'Tap to Select'}
-                        </span>
-                      ) : (
-                        <span className="ml-auto text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 text-gray-600 print-hide">
-                          Press {index + 1}
-                        </span>
-                      )}
-                    </h2>
+                    <ValueContainer
+                      containerId={`${tier.id}-header`}
+                      isTier
+                      className="p-3"
+                      highlightRingClass={tierHighlightClass[tier.id]}
+                    >
+                      <div className="w-full">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-lg print-hide">{tier.icon}</span>
+                          <h2 className="text-base font-semibold text-gray-800 print-tier-heading flex-1">
+                            {tier.label}
+                          </h2>
+                          {isTouchDevice ? (
+                            <span className={`text-xs font-mono px-2 py-1 rounded border print-hide ${
+                              selectedTierForTouch === tier.id
+                                ? 'bg-blue-600 text-white border-blue-600'
+                                : 'bg-white border-gray-300 text-gray-600'
+                            }`}>
+                              {selectedTierForTouch === tier.id ? '✓' : 'Tap'}
+                            </span>
+                          ) : (
+                            <span className="text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 text-gray-600 print-hide">
+                              {index + 1}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Quota indicator */}
+                        {tier.quota && (
+                          <div className="space-y-1 print-hide">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className={`font-medium ${isOverQuota ? 'text-red-600' : 'text-gray-600'}`}>
+                                {tierValues.length} / {tier.quota}
+                              </span>
+                              {isOverQuota && (
+                                <span className="text-red-600 font-medium">Over limit!</span>
+                              )}
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className={`h-full transition-all ${
+                                  isOverQuota ? 'bg-red-500' : 'bg-emerald-500'
+                                }`}
+                                style={{ width: `${quotaPercentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {!tier.quota && (
+                          <div className="text-xs text-gray-600 print-hide">
+                            {tierValues.length} {tierValues.length === 1 ? 'value' : 'values'}
+                          </div>
+                        )}
+                      </div>
+                    </ValueContainer>
+                  </div>
+
+                  {/* Scrollable content area */}
+                  <div className="flex-1 overflow-y-auto rounded-b-lg">
                     <ValueContainer
                       containerId={tier.id}
                       isTier
-                      className="flex flex-wrap gap-2 print-value-list"
+                      className="p-2 grid grid-cols-1 md:grid-cols-2 gap-2 print-value-list"
                       highlightRingClass={tierHighlightClass[tier.id]}
                     >
                       {tierValues.length === 0 && (
-                        <div className="text-sm text-gray-500 italic select-none print-hide">
+                        <div className="text-sm text-gray-500 italic select-none print-hide text-center py-8">
                           Drop values here
                         </div>
                       )}
@@ -1373,27 +1488,31 @@ const ValuesTierList = () => {
                       ))}
                     </ValueContainer>
                   </div>
-                </SortableContext>
-              );
-            })}
-          </div>
+                </div>
+              </SortableContext>
+            );
+          })}
 
-          <div className="space-y-3 print-hide-sidebar">
-            <div className="bg-white rounded-lg shadow-lg p-4">
-              <h2 className="text-lg font-semibold text-gray-800 mb-1 flex items-center justify-between">
+          {/* Categories sidebar - fourth column on desktop */}
+          <div className="relative flex-1 min-h-0">
+            <div className="bg-white rounded-lg shadow-lg print-hide-sidebar h-full flex flex-col">
+            <div className="px-3 py-2 border-b">
+              <h2 className="text-base font-semibold text-gray-800 flex items-center justify-between">
                 <span>Value Categories</span>
                 {!isTouchDevice && (
-                  <span className="text-xs font-mono bg-emerald-50 px-2 py-1 rounded border border-emerald-300 text-emerald-700 print-hide">
-                    Press 4
+                  <span className="text-xs bg-white px-2 py-1 rounded border border-gray-300 text-gray-600 print-hide">
+                    4
                   </span>
                 )}
               </h2>
-              <p className="text-sm text-gray-600 mb-4 print-hide">
+              <p className="text-sm text-gray-600 print-hide mt-1">
                 {isTouchDevice
                   ? 'Tap values to add them to the selected tier'
                   : 'Drag values to the tiers to rank them'}
               </p>
+            </div>
 
+            <div className="flex-1 overflow-y-auto p-2">
               <div className="space-y-2">
                 {[...categories]
                   .sort((a, b) => {
@@ -1408,13 +1527,13 @@ const ValuesTierList = () => {
                     const isCollapsed = collapsedCategories[category];
 
                     return (
-                      <div key={category} className="border rounded-lg print-avoid-break">
+                      <div key={category} className="border rounded print-avoid-break">
                         <button
                           onClick={() => toggleCategory(category)}
-                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer print-hide"
+                          className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-gray-50 cursor-pointer print-hide"
                         >
-                          <span className="font-medium text-gray-700 flex items-center gap-2">
-                            {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
+                          <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
                             {category}
                             <span className="text-sm font-normal text-gray-500">
                               ({categoryValues.length})
@@ -1432,7 +1551,7 @@ const ValuesTierList = () => {
                             items={categoryValues.map(value => value.id)}
                             strategy={verticalListSortingStrategy}
                           >
-                            <ValueContainer containerId={category} className="p-3 pt-0 flex flex-wrap gap-2 print:block">
+                            <ValueContainer containerId={category} className="p-2 pt-0 flex flex-wrap gap-2 print:block">
                               {categoryValues.length === 0 && (
                                 <div className="text-sm text-gray-400 italic select-none">
                                   No values yet
@@ -1461,8 +1580,10 @@ const ValuesTierList = () => {
               </div>
             </div>
           </div>
+        </div>
+        </div>
 
-          {/* QR code - only visible when printing, at end of content */}
+        {/* QR code - only visible when printing, at end of content */}
           <div className="hidden print:block print-qr-code">
             <QRCodeSVG
               value={(() => {
@@ -1477,15 +1598,15 @@ const ValuesTierList = () => {
             <p className="text-xs text-gray-600 mt-1 text-center">Scan to edit</p>
           </div>
         </div>
+
+        {/* Toast notification */}
+        {toastMessage && (
+          <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg animate-fade-in-up z-50 print-hide">
+            {toastMessage}
+          </div>
+        )}
       </div>
 
-      {/* Toast notification */}
-      {toastMessage && (
-        <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg animate-fade-in-up z-50 print-hide">
-          {toastMessage}
-        </div>
-      )}
-      </div>
       <DragOverlay>
         {activeValue ? (
           <div
