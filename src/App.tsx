@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown, ChevronRight, Share2 } from 'lucide-react';
 import { preloadedDatasets } from './data/datasets';
-import { Value, TierId, PersistedState } from './types';
+import { Value, TierId, PersistedState, getCanonicalCategoryOrder } from './types';
 import { saveState, loadState, requestPersist } from './storage';
 import { debounce } from './utils/debounce';
 import { decodeUrlToState, encodeStateToUrl, getShareableUrl } from './urlState';
@@ -141,10 +141,14 @@ const ValuesTierList = () => {
     console.log('[App] Persisted tiers data:', persisted.tiers);
 
     // Apply saved tier assignments
+    // Note: 'uncategorized' is a special tier - values in it should have location = category
     importedValues.forEach((value, idx) => {
       for (const [tier, indices] of Object.entries(persisted.tiers)) {
         if (indices.includes(idx)) {
-          value.location = tier;
+          // If in uncategorized tier, location stays as category (already set above)
+          if (tier !== 'uncategorized') {
+            value.location = tier;
+          }
           break;
         }
       }
@@ -180,7 +184,8 @@ const ValuesTierList = () => {
     // Try URL first
     if (hash && hash.length > 1) {
       const dataset = preloadedDatasets['act-comprehensive']; // TODO: get from URL params
-      const urlState = decodeUrlToState(hash, dataset.data.length);
+      const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
+      const urlState = decodeUrlToState(hash, dataset.data.length, canonicalCategoryOrder);
 
       if (urlState) {
         console.log('[App] Loading state from URL');
@@ -209,7 +214,8 @@ const ValuesTierList = () => {
       // Update URL hash
       const state = serializeState();
       const dataset = preloadedDatasets[selectedDataset];
-      const newHash = encodeStateToUrl(state, dataset.data.length);
+      const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
+      const newHash = encodeStateToUrl(state, dataset.data.length, canonicalCategoryOrder);
       if (window.location.hash !== newHash) {
         window.history.replaceState(null, '', newHash);
       }
@@ -220,7 +226,8 @@ const ValuesTierList = () => {
     try {
       const state = serializeState();
       const dataset = preloadedDatasets[selectedDataset];
-      const shareUrl = getShareableUrl(state, dataset.data.length);
+      const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
+      const shareUrl = getShareableUrl(state, dataset.data.length, canonicalCategoryOrder);
 
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(shareUrl);

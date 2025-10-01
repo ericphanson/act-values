@@ -17,6 +17,21 @@ export interface Dataset {
   }>;
 }
 
+/**
+ * Get canonical category order from dataset (order of first appearance)
+ */
+export function getCanonicalCategoryOrder(dataset: Dataset): string[] {
+  const seen = new Set<string>();
+  const order: string[] = [];
+  for (const item of dataset.data) {
+    if (!seen.has(item.category)) {
+      seen.add(item.category);
+      order.push(item.category);
+    }
+  }
+  return order;
+}
+
 export type TierId = 'very-important' | 'somewhat-important' | 'not-important' | 'uncategorized';
 
 export interface PersistedState {
