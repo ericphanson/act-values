@@ -15,6 +15,7 @@ const ValuesTierList = () => {
   const [animatingValues, setAnimatingValues] = useState(new Set<string>());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedDataset, setSelectedDataset] = useState('act-comprehensive');
+  const [showPersistInfo, setShowPersistInfo] = useState(true);
   const persistRequested = useRef(false);
 
   const tiers = [
@@ -69,6 +70,7 @@ const ValuesTierList = () => {
   const ensurePersistence = useCallback(() => {
     if (!persistRequested.current) {
       persistRequested.current = true;
+      setShowPersistInfo(false);
       requestPersist();
     }
   }, []);
@@ -301,6 +303,26 @@ const ValuesTierList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
       <div className="max-w-7xl mx-auto">
+        {showPersistInfo && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <div className="text-blue-600 text-lg">ℹ️</div>
+              <div className="flex-1">
+                <p className="text-sm text-blue-900">
+                  <strong>Auto-save enabled:</strong> Your rankings will be saved automatically as you work.
+                  When you first drag a value, your browser may ask permission to store data persistently -
+                  this prevents your progress from being lost if storage is cleared.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowPersistInfo(false)}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
