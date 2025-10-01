@@ -165,25 +165,27 @@ const SortableValue: React.FC<SortableValueProps> = ({
             isInTier ? 'bottom-full left-0 mb-2' : 'left-full ml-2 top-0'
           }`}
         >
-          <div className="mb-1 text-emerald-300 text-xs font-semibold">
-            {(() => {
-              const otherTiers = ['very-important', 'somewhat-important', 'not-important']
-                .map((tierId, idx) => (tierId !== value.location ? `${idx + 1}` : null))
-                .filter(Boolean);
+          {!isTouchDevice && (
+            <div className="mb-1 text-emerald-300 text-xs font-semibold">
+              {(() => {
+                const otherTiers = ['very-important', 'somewhat-important', 'not-important']
+                  .map((tierId, idx) => (tierId !== value.location ? `${idx + 1}` : null))
+                  .filter(Boolean);
 
-              if (value.location === value.category) {
-                // In category
-                return `Press ${otherTiers.join(', ').replace(/,([^,]*)$/, ', or$1')} to move to a tier`;
-              } else {
-                // In tier
-                const tierText = otherTiers.length > 0
-                  ? `Press ${otherTiers.join(' or ')} to move to a different tier`
-                  : '';
-                const categoryText = ' (or 4 to return it)';
-                return tierText + categoryText;
-              }
-            })()}
-          </div>
+                if (value.location === value.category) {
+                  // In category
+                  return `Press ${otherTiers.join(', ').replace(/,([^,]*)$/, ', or$1')} to move to a tier`;
+                } else {
+                  // In tier
+                  const tierText = otherTiers.length > 0
+                    ? `Press ${otherTiers.join(' or ')} to move to a different tier`
+                    : '';
+                  const categoryText = ' (or 4 to return it)';
+                  return tierText + categoryText;
+                }
+              })()}
+            </div>
+          )}
           {value.description}
           <div
             className={`absolute w-0 h-0 ${
@@ -1337,11 +1339,17 @@ const ValuesTierList = () => {
             <div className="bg-white rounded-lg shadow-lg p-4">
               <h2 className="text-lg font-semibold text-gray-800 mb-1 flex items-center justify-between">
                 <span>Value Categories</span>
-                <span className="text-xs font-mono bg-emerald-50 px-2 py-1 rounded border border-emerald-300 text-emerald-700 print-hide">
-                  Press 4
-                </span>
+                {!isTouchDevice && (
+                  <span className="text-xs font-mono bg-emerald-50 px-2 py-1 rounded border border-emerald-300 text-emerald-700 print-hide">
+                    Press 4
+                  </span>
+                )}
               </h2>
-              <p className="text-sm text-gray-600 mb-4 print-hide">Drag values to the tiers to rank them</p>
+              <p className="text-sm text-gray-600 mb-4 print-hide">
+                {isTouchDevice
+                  ? 'Tap values to add them to the selected tier'
+                  : 'Drag values to the tiers to rank them'}
+              </p>
 
               <div className="space-y-2">
                 {[...categories]
