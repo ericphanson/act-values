@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { ChevronDown, ChevronRight, Share2, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Share2, Trash2, Printer } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   DndContext,
@@ -1262,6 +1262,13 @@ const ValuesTierList = () => {
                     className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors flex-1 md:flex-initial"
                   >
                     New List
+                  </button>
+                  <button
+                    onClick={() => window.print()}
+                    className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors flex-1 md:flex-initial"
+                  >
+                    <Printer size={18} />
+                    <span className="md:inline">Print</span>
                   </button>
                 </div>
               </div>
