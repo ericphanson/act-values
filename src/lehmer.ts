@@ -17,6 +17,7 @@ export interface TierState {
   very: number[];
   somewhat: number[];
   not: number[];
+  uncategorized: number[];
 }
 
 export interface EncodeOptions {
@@ -25,9 +26,10 @@ export interface EncodeOptions {
 }
 
 export interface DecodedPermutation {
-  perm: number[]; // concatenated [very ⧺ somewhat ⧺ not]
+  perm: number[]; // concatenated [very ⧺ somewhat ⧺ not ⧺ uncategorized]
   k1: number;     // |very|
   k2: number;     // |somewhat|
+  k3: number;     // |not|
 }
 
 /** Version byte for forward-compat headers */
@@ -38,7 +40,7 @@ export const VERSION = 1;
 /**
  * Encode a TierState into a compact Base64URL fragment using Lehmer coding.
  *
- * @param state  TierState (very/somewhat/not). Missing indices will be appended to 'not' in ascending order.
+ * @param state  TierState (very/somewhat/not/uncategorized). Missing indices will be appended to 'uncategorized' in ascending order.
  * @param N      Total number of items (indices are 0..N-1)
  * @param opts   { withHash?: boolean } default true
  * @returns      Base64URL string (with or without leading '#')
@@ -48,8 +50,8 @@ export function encodeTierStateToFragment(
   N: number,
   opts: EncodeOptions = { withHash: true }
 ): string {
-  const { perm, k1, k2 } = canonicalizeToPermutation(state, N);
-  const bytes = encodePermutationToBytes(perm, k1, k2);
+  const { perm, k1, k2, k3 } = canonicalizeToPermutation(state, N);
+  const bytes = encodePermutationToBytes(perm, k1, k2, k3);
   const frag = toBase64Url(bytes);
   return opts.withHash !== false ? `#${frag}` : frag;
 }
@@ -65,11 +67,12 @@ export function decodeFragmentToTierState(
   fragmentOrHash: string,
   N: number
 ): TierState {
-  const { perm, k1, k2 } = decodeFragmentToPermutation(fragmentOrHash, N);
+  const { perm, k1, k2, k3 } = decodeFragmentToPermutation(fragmentOrHash, N);
   return {
     very: perm.slice(0, k1),
     somewhat: perm.slice(k1, k1 + k2),
-    not: perm.slice(k1 + k2),
+    not: perm.slice(k1 + k2, k1 + k2 + k3),
+    uncategorized: perm.slice(k1 + k2 + k3),
   };
 }
 
@@ -79,19 +82,21 @@ export function decodeFragmentToTierState(
  * @param perm permutation of 0..N-1 (N = perm.length)
  * @param k1   size of "very"
  * @param k2   size of "somewhat"
+ * @param k3   size of "not"
  */
-export function encodePermutationToBytes(perm: number[], k1: number, k2: number): Uint8Array {
+export function encodePermutationToBytes(perm: number[], k1: number, k2: number, k3: number): Uint8Array {
   validatePermutation(perm);
   const n = perm.length;
-  if (k1 < 0 || k2 < 0 || k1 + k2 > n) {
-    throw new Error(`Invalid cut points k1=${k1}, k2=${k2} for N=${n}`);
+  if (k1 < 0 || k2 < 0 || k3 < 0 || k1 + k2 + k3 > n) {
+    throw new Error(`Invalid cut points k1=${k1}, k2=${k2}, k3=${k3} for N=${n}`);
   }
   const digits = lehmerDigitsFromPermutation(perm);
   const rank = lehmerRankFromDigits(digits); // BigInt
-  const header = new Uint8Array(1 + 2 + 2);
+  const header = new Uint8Array(1 + 2 + 2 + 2);
   header[0] = VERSION;
   header.set(u16be(k1), 1);
   header.set(u16be(k2), 3);
+  header.set(u16be(k3), 5);
   const payload = bigIntToBytesBE(rank);
   const out = new Uint8Array(header.length + payload.length);
   out.set(header, 0);
@@ -111,27 +116,28 @@ export function decodeFragmentToPermutation(fragmentOrHash: string, N: number): 
   }
   const frag = fragmentOrHash.startsWith('#') ? fragmentOrHash.slice(1) : fragmentOrHash;
   const bytes = fromBase64Url(frag);
-  if (bytes.length < 5) throw new Error('Fragment too short');
+  if (bytes.length < 7) throw new Error('Fragment too short');
 
   const ver = bytes[0];
   if (ver !== VERSION) throw new Error(`Unsupported version ${ver}`);
 
   const k1 = (bytes[1] << 8) | bytes[2];
   const k2 = (bytes[3] << 8) | bytes[4];
-  if (k1 < 0 || k2 < 0 || k1 + k2 > N) {
-    throw new Error(`Invalid cut points in fragment: k1=${k1}, k2=${k2}, N=${N}`);
+  const k3 = (bytes[5] << 8) | bytes[6];
+  if (k1 < 0 || k2 < 0 || k3 < 0 || k1 + k2 + k3 > N) {
+    throw new Error(`Invalid cut points in fragment: k1=${k1}, k2=${k2}, k3=${k3}, N=${N}`);
   }
 
-  const rankBytes = bytes.slice(5);
+  const rankBytes = bytes.slice(7);
   const rank = bytesToBigIntBE(rankBytes);
   const digits = lehmerDigitsFromRank(rank, N); // length N
   const perm = permutationFromLehmerDigits(digits);
-  return { perm, k1, k2 };
+  return { perm, k1, k2, k3 };
 }
 
 /* ============================== Internals ================================ */
 
-/** Build canonical permutation from TierState: Very ⧺ Somewhat ⧺ Not ⧺ (any missing -> appended to Not) */
+/** Build canonical permutation from TierState: Very ⧺ Somewhat ⧺ Not ⧺ Uncategorized */
 function canonicalizeToPermutation(state: TierState, N: number): DecodedPermutation {
   if (!Number.isInteger(N) || N <= 0 || N > 65535) {
     throw new Error(`N must be an integer in [1, 65535], got ${N}`);
@@ -140,16 +146,17 @@ function canonicalizeToPermutation(state: TierState, N: number): DecodedPermutat
   const outVery = uniqueChecked(state.very, seen, N, 'very');
   const outSome = uniqueChecked(state.somewhat, seen, N, 'somewhat');
   const outNot = uniqueChecked(state.not, seen, N, 'not');
+  const outUncat = uniqueChecked(state.uncategorized, seen, N, 'uncategorized');
 
-  // Append missing indices (if any) to the "not" tier (ascending). This keeps encoding canonical.
-  if (outVery.length + outSome.length + outNot.length < N) {
+  // Append any missing indices to uncategorized (ascending order for canonical encoding)
+  if (outVery.length + outSome.length + outNot.length + outUncat.length < N) {
     for (let i = 0; i < N; i++) {
-      if (!seen[i]) outNot.push(i);
+      if (!seen[i]) outUncat.push(i);
     }
   }
 
-  const perm = outVery.concat(outSome, outNot);
-  return { perm, k1: outVery.length, k2: outSome.length };
+  const perm = outVery.concat(outSome, outNot, outUncat);
+  return { perm, k1: outVery.length, k2: outSome.length, k3: outNot.length };
 }
 
 /** Ensure list is unique, in-range, and mark seen[]; returns a shallow copy */

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Download, ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Share2 } from 'lucide-react';
 import { preloadedDatasets } from './data/datasets';
 import { Value, TierId, PersistedState } from './types';
 import { saveState, loadState, requestPersist } from './storage';
 import { debounce } from './utils/debounce';
+import { decodeUrlToState, encodeStateToUrl, getShareableUrl } from './urlState';
 
 const ValuesTierList = () => {
   const [values, setValues] = useState<Value[]>([]);
@@ -172,8 +173,23 @@ const ValuesTierList = () => {
     console.log('[App] State hydrated successfully');
   }, [loadDataset]);
 
-  // Load state on mount
+  // Load state on mount - check URL first, then storage
   useEffect(() => {
+    const hash = window.location.hash;
+
+    // Try URL first
+    if (hash && hash.length > 1) {
+      const dataset = preloadedDatasets['act-comprehensive']; // TODO: get from URL params
+      const urlState = decodeUrlToState(hash, dataset.data.length);
+
+      if (urlState) {
+        console.log('[App] Loading state from URL');
+        hydrateState(urlState as PersistedState);
+        return;
+      }
+    }
+
+    // Fall back to stored state
     loadState().then((persisted) => {
       if (persisted) {
         hydrateState(persisted);
@@ -185,29 +201,36 @@ const ValuesTierList = () => {
     });
   }, [hydrateState, loadDataset]);
 
-  // Save state when it changes
+  // Save state when it changes (both to storage and URL)
   useEffect(() => {
     if (values.length > 0) {
       debouncedSave();
-    }
-  }, [values, categories, collapsedCategories, debouncedSave]);
 
-  const handleExport = () => {
+      // Update URL hash
+      const state = serializeState();
+      const dataset = preloadedDatasets[selectedDataset];
+      const newHash = encodeStateToUrl(state, dataset.data.length);
+      if (window.location.hash !== newHash) {
+        window.history.replaceState(null, '', newHash);
+      }
+    }
+  }, [values, categories, collapsedCategories, debouncedSave, selectedDataset, serializeState]);
+
+  const handleShare = async () => {
     try {
       const state = serializeState();
-      const dataStr = JSON.stringify(state, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `act-values-export-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      alert('Progress exported successfully!');
+      const dataset = preloadedDatasets[selectedDataset];
+      const shareUrl = getShareableUrl(state, dataset.data.length);
+
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Shareable link copied to clipboard!');
+      } else {
+        // Fallback for older browsers
+        prompt('Copy this URL to share:', shareUrl);
+      }
     } catch (error) {
-      alert('Failed to export: ' + (error as Error).message);
+      alert('Failed to copy link: ' + (error as Error).message);
     }
   };
 
@@ -384,11 +407,11 @@ const ValuesTierList = () => {
                 ))}
               </select>
               <button
-                onClick={handleExport}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium"
+                onClick={handleShare}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
               >
-                <Download size={20} />
-                Export Progress
+                <Share2 size={20} />
+                Share Link
               </button>
               <button
                 onClick={() => loadDataset(selectedDataset)}
