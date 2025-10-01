@@ -911,7 +911,17 @@ const ValuesTierList = () => {
           targetLocation = tierKeys[e.key];
         }
 
-        // Always trigger animation and move to front, even if already in the tier
+        const tierOrder: string[] = ['very-important', 'somewhat-important', 'not-important'];
+        const currentlyInCategory = !tierOrder.includes(hoveredValue.location);
+        const targetIsCategory = !tierOrder.includes(targetLocation);
+
+        // Don't do anything if item is in a category and target is the same category
+        // (categories have immutable order)
+        if (currentlyInCategory && targetIsCategory && hoveredValue.location === targetLocation) {
+          return;
+        }
+
+        // Trigger animation and move (to end if in tier, or when moving between tier/category)
         const valueId = hoveredValue.id;
 
         setValues(prev => {
@@ -922,7 +932,6 @@ const ValuesTierList = () => {
           const updatedValue = { ...hoveredValue, location: targetLocation };
 
           // Find where to insert (back/end of target location)
-          const tierOrder: string[] = ['very-important', 'somewhat-important', 'not-important'];
           const targetTierIndex = tierOrder.indexOf(targetLocation);
 
           if (targetTierIndex !== -1) {
