@@ -256,9 +256,11 @@ const ValuesTierList = () => {
   const [savedLists, setSavedLists] = useState<SavedList[]>([]);
   const [selectedTierForTouch, setSelectedTierForTouch] = useState<TierId | null>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [showListDropdown, setShowListDropdown] = useState(false);
   const lastKnownModified = useRef<number>(0);
   const currentFragmentRef = useRef<string | null>(null);
   const initializedRef = useRef<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
 
   // Simple throttling: track if update is already scheduled
@@ -524,6 +526,20 @@ const ValuesTierList = () => {
     };
     checkTouch();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowListDropdown(false);
+      }
+    };
+
+    if (showListDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showListDropdown]);
 
   const debouncedSaveList = useMemo(
     () =>
@@ -1150,119 +1166,137 @@ const ValuesTierList = () => {
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6 print-header">
           <div className="flex flex-col gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 print-main-heading">{listName || 'Values Tier List'}</h1>
-              <p className="text-sm md:text-base text-gray-600 mt-1 print-hide">
-                {isTouchDevice ? 'Tap a tier, then tap values to add them' : 'Drag values to rank them!'}
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 print-hide">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">List Name</label>
-                <input
-                  type="text"
-                  value={listName}
-                  onChange={(e) => {
-                    const newName = e.target.value;
-                    setListName(newName);
-                    debouncedRenameList(listId, newName);
-                  }}
-                  className="px-3 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full"
-                  placeholder="Enter name..."
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">My Lists</label>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={listId}
-                    onChange={(e) => {
-                      const selectedId = e.target.value;
-                      if (selectedId === '__new__') {
-                        createNewList(selectedDataset);
-                      } else {
-                        const list = loadList(selectedId);
-                        if (list) {
-                          const dataset = preloadedDatasets[list.datasetName];
-                          if (dataset) {
-                            const canonicalOrder = getCanonicalCategoryOrder(dataset);
-                            const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
-                            if (persisted) {
-                              hydrateState(persisted as PersistedState);
-                              setCurrentListId(selectedId);
-                              lastKnownModified.current = list.lastModified;
-                            }
-                          }
-                        }
-                      }
-                    }}
-                    className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  >
-                    {savedLists.map((list) => (
-                      <option key={list.id} value={list.id}>
-                        {list.name}
-                      </option>
-                    ))}
-                    <option value="__new__">+ New List</option>
-                  </select>
-                  {savedLists.length > 1 && (
-                    <button
-                      onClick={() => {
-                        if (confirm(`Delete "${listName}"? This cannot be undone.`)) {
-                          deleteList(listId);
-                          refreshSavedLists();
+            {/* Consolidated title with dropdown */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                {/* Print-only: simple title */}
+                <h1 className="hidden print:block text-2xl md:text-3xl font-bold text-gray-800 print-main-heading">
+                  {listName || 'Values Tier List'}
+                </h1>
 
-                          // Load another list or create new one
-                          const remainingLists = loadAllLists();
-                          if (remainingLists.length > 0) {
-                            const nextList = remainingLists[0];
-                            const dataset = preloadedDatasets[nextList.datasetName];
-                            if (dataset) {
-                              const canonicalOrder = getCanonicalCategoryOrder(dataset);
-                              const persisted = decodeUrlToState(nextList.fragment, dataset.data.length, canonicalOrder);
-                              if (persisted) {
-                                hydrateState(persisted as PersistedState);
-                                setCurrentListId(nextList.id);
-                                lastKnownModified.current = nextList.lastModified;
-                              }
-                            }
-                          } else {
-                            createNewList(selectedDataset);
-                          }
-                        }
+                {/* Screen: editable title with dropdown button */}
+                <div className="print-hide relative" ref={dropdownRef}>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={listName}
+                      onChange={(e) => {
+                        const newName = e.target.value;
+                        setListName(newName);
+                        debouncedRenameList(listId, newName);
                       }}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Delete this list"
+                      className="text-2xl md:text-3xl font-bold text-gray-800 bg-transparent border-2 border-transparent hover:border-gray-300 focus:border-emerald-500 focus:outline-none rounded px-2 py-1 flex-1"
+                      placeholder="Enter list name..."
+                    />
+                    <button
+                      onClick={() => setShowListDropdown(!showListDropdown)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      title="Switch list"
                     >
-                      <Trash2 size={20} />
+                      <ChevronDown size={24} className={`transition-transform ${showListDropdown ? 'rotate-180' : ''}`} />
                     </button>
+                  </div>
+
+                  {/* Dropdown menu */}
+                  {showListDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+                      <div className="p-2">
+                        {savedLists.map((list) => (
+                          <button
+                            key={list.id}
+                            onClick={() => {
+                              if (list.id !== listId) {
+                                const dataset = preloadedDatasets[list.datasetName];
+                                if (dataset) {
+                                  const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                                  const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
+                                  if (persisted) {
+                                    hydrateState(persisted as PersistedState);
+                                    setCurrentListId(list.id);
+                                    lastKnownModified.current = list.lastModified;
+                                  }
+                                }
+                              }
+                              setShowListDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-between ${
+                              list.id === listId ? 'bg-emerald-50 font-medium' : ''
+                            }`}
+                          >
+                            <span>{list.name}</span>
+                            {list.id === listId && savedLists.length > 1 && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`Delete "${list.name}"? This cannot be undone.`)) {
+                                    deleteList(list.id);
+                                    refreshSavedLists();
+
+                                    // Load another list or create new one
+                                    const remainingLists = loadAllLists();
+                                    if (remainingLists.length > 0) {
+                                      const nextList = remainingLists[0];
+                                      const dataset = preloadedDatasets[nextList.datasetName];
+                                      if (dataset) {
+                                        const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                                        const persisted = decodeUrlToState(nextList.fragment, dataset.data.length, canonicalOrder);
+                                        if (persisted) {
+                                          hydrateState(persisted as PersistedState);
+                                          setCurrentListId(nextList.id);
+                                          lastKnownModified.current = nextList.lastModified;
+                                        }
+                                      }
+                                    } else {
+                                      createNewList(selectedDataset);
+                                    }
+                                    setShowListDropdown(false);
+                                  }
+                                }}
+                                className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
+                                title="Delete this list"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => {
+                            createNewList(selectedDataset);
+                            setShowListDropdown(false);
+                          }}
+                          className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-emerald-600 font-medium"
+                        >
+                          + New List
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
+
+                <p className="text-sm md:text-base text-gray-600 mt-1 print-hide px-3">
+                  {isTouchDevice ? 'Tap a tier, then tap values to add them' : 'Drag values to rank them!'}
+                </p>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide md:opacity-0">Actions</label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleShare}
-                    className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors flex-1 md:flex-initial"
-                  >
-                    <Share2 size={18} />
-                    <span className="md:inline">Share</span>
-                  </button>
-                  <button
-                    onClick={() => createNewList(selectedDataset)}
-                    className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors flex-1 md:flex-initial"
-                  >
-                    New List
-                  </button>
-                  <button
-                    onClick={() => window.print()}
-                    className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors flex-1 md:flex-initial"
-                  >
-                    <Printer size={18} />
-                    <span className="md:inline">Print</span>
-                  </button>
-                </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2 print-hide">
+                <button
+                  onClick={handleShare}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                  title="Share"
+                >
+                  <Share2 size={18} />
+                  <span className="hidden md:inline">Share</span>
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
+                  title="Print"
+                >
+                  <Printer size={18} />
+                  <span className="hidden md:inline">Print</span>
+                </button>
               </div>
             </div>
           </div>
