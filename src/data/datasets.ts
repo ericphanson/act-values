@@ -1,4 +1,6 @@
-export const preloadedDatasets = {
+import { Dataset } from '../types';
+
+export const preloadedDatasets: Record<string, Dataset> = {
   'act-comprehensive': {
     name: 'ACT Comprehensive Values',
     version: 1,

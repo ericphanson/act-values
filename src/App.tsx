@@ -1,83 +1,183 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Download, ChevronDown, ChevronRight } from 'lucide-react';
 import { preloadedDatasets } from './data/datasets';
+import { Value, TierId, PersistedState } from './types';
+import { saveState, loadState, requestPersist } from './storage';
+import { debounce } from './utils/debounce';
 
 const ValuesTierList = () => {
-  const [values, setValues] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [collapsedCategories, setCollapsedCategories] = useState({});
-  const [draggedValue, setDraggedValue] = useState(null);
-  const [draggedCategory, setDraggedCategory] = useState(null);
-  const [hoveredValue, setHoveredValue] = useState(null);
-  const [changesMade, setChangesMade] = useState(false);
-  const [lastExportTime, setLastExportTime] = useState(null);
-  const [animatingValues, setAnimatingValues] = useState(new Set());
+  const [values, setValues] = useState<Value[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
+  const [draggedValue, setDraggedValue] = useState<Value | null>(null);
+  const [draggedCategory, setDraggedCategory] = useState<string | null>(null);
+  const [hoveredValue, setHoveredValue] = useState<Value | null>(null);
+  const [animatingValues, setAnimatingValues] = useState(new Set<string>());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedDataset, setSelectedDataset] = useState('act-comprehensive');
+  const persistRequested = useRef(false);
 
   const tiers = [
-    { id: 'very-important', label: 'Very Important to Me', color: 'bg-emerald-50 border-emerald-200', icon: '💎' },
-    { id: 'somewhat-important', label: 'Somewhat Important to Me', color: 'bg-blue-50 border-blue-200', icon: '⭐' },
-    { id: 'not-important', label: 'Not Important to Me', color: 'bg-gray-50 border-gray-200', icon: '○' }
+    { id: 'very-important' as TierId, label: 'Very Important to Me', color: 'bg-emerald-50 border-emerald-200', icon: '💎' },
+    { id: 'somewhat-important' as TierId, label: 'Somewhat Important to Me', color: 'bg-blue-50 border-blue-200', icon: '⭐' },
+    { id: 'not-important' as TierId, label: 'Not Important to Me', color: 'bg-gray-50 border-gray-200', icon: '○' }
   ];
 
-  const tierKeys = {
+  const tierKeys: Record<string, TierId> = {
     '1': 'very-important',
     '2': 'somewhat-important',
     '3': 'not-important'
   };
 
-  // Load default dataset on mount
-  React.useEffect(() => {
-    if (values.length === 0) {
-      loadDataset('act-comprehensive');
+  // Convert runtime state to persisted format
+  const serializeState = useCallback((): PersistedState => {
+    const dataset = preloadedDatasets[selectedDataset];
+    const tiers: Record<TierId, number[]> = {
+      'very-important': [],
+      'somewhat-important': [],
+      'not-important': [],
+      'uncategorized': []
+    };
+
+    values.forEach((value) => {
+      const index = parseInt(value.id.replace('value-', ''));
+      const tier = value.location as TierId;
+      if (tier in tiers) {
+        tiers[tier].push(index);
+      }
+    });
+
+    return {
+      datasetName: selectedDataset,
+      datasetVersion: dataset.version,
+      tiers,
+      categoryOrder: categories,
+      collapsedCategories,
+      timestamp: Date.now()
+    };
+  }, [values, categories, collapsedCategories, selectedDataset]);
+
+  // Debounced save function
+  const debouncedSave = useRef(
+    debounce(() => {
+      const state = serializeState();
+      saveState(state);
+    }, 150)
+  ).current;
+
+  // Request persistence on first interaction
+  const ensurePersistence = useCallback(() => {
+    if (!persistRequested.current) {
+      persistRequested.current = true;
+      requestPersist();
     }
   }, []);
 
-  const loadDataset = (datasetKey) => {
+  // Load dataset from data file
+  const loadDataset = useCallback((datasetKey: string, preserveState = false) => {
     const dataset = preloadedDatasets[datasetKey];
-    if (dataset) {
-      const importedValues = dataset.data.map((item, idx) => ({
-        id: item.id || `value-${idx}`,
-        value: item.value || item.name || '',
-        description: item.description || '',
-        category: item.category || 'Uncategorized',
-        location: item.location || item.category || 'Uncategorized'
-      }));
+    if (!dataset) return;
 
-      const uniqueCategories = [...new Set(importedValues.map(v => v.category))];
+    const importedValues: Value[] = dataset.data.map((item, idx) => ({
+      id: `value-${idx}`,
+      value: item.name,
+      name: item.name,
+      description: item.description,
+      category: item.category,
+      location: preserveState ? 'uncategorized' : item.category
+    }));
 
+    const uniqueCategories = [...new Set(importedValues.map(v => v.category))];
+
+    if (!preserveState) {
       setValues(importedValues);
       setCategories(uniqueCategories);
       setSelectedDataset(datasetKey);
-      setChangesMade(false);
-      setLastExportTime(null);
+      setCollapsedCategories({});
     }
-  };
+
+    return { importedValues, uniqueCategories };
+  }, []);
+
+  // Hydrate state from persisted data
+  const hydrateState = useCallback((persisted: PersistedState) => {
+    const dataset = preloadedDatasets[persisted.datasetName];
+
+    // Validate dataset version exists
+    if (!dataset || dataset.version !== persisted.datasetVersion) {
+      console.log('[App] Dataset version mismatch, loading default');
+      loadDataset(persisted.datasetName || 'act-comprehensive');
+      return;
+    }
+
+    // Create values from dataset
+    const importedValues: Value[] = dataset.data.map((item, idx) => ({
+      id: `value-${idx}`,
+      value: item.name,
+      name: item.name,
+      description: item.description,
+      category: item.category,
+      location: 'uncategorized' // default, will be overridden below
+    }));
+
+    // Apply saved tier assignments
+    importedValues.forEach((value, idx) => {
+      for (const [tier, indices] of Object.entries(persisted.tiers)) {
+        if (indices.includes(idx)) {
+          value.location = tier;
+          break;
+        }
+      }
+    });
+
+    const uniqueCategories = [...new Set(importedValues.map(v => v.category))];
+
+    setValues(importedValues);
+    setCategories(persisted.categoryOrder.length > 0 ? persisted.categoryOrder : uniqueCategories);
+    setSelectedDataset(persisted.datasetName);
+    setCollapsedCategories(persisted.collapsedCategories);
+  }, []);
+
+  // Load state on mount
+  useEffect(() => {
+    loadState().then((persisted) => {
+      if (persisted) {
+        hydrateState(persisted);
+      } else {
+        loadDataset('act-comprehensive');
+      }
+    });
+  }, [hydrateState, loadDataset]);
+
+  // Save state when it changes
+  useEffect(() => {
+    if (values.length > 0) {
+      debouncedSave();
+    }
+  }, [values, categories, collapsedCategories, debouncedSave]);
 
   const handleExport = () => {
     try {
-      const dataStr = JSON.stringify(values, null, 2);
+      const state = serializeState();
+      const dataStr = JSON.stringify(state, null, 2);
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `act-values-rankings-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `act-values-export-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      setLastExportTime(new Date());
-      setChangesMade(false);
       alert('Progress exported successfully!');
     } catch (error) {
-      alert('Failed to export: ' + error.message);
+      alert('Failed to export: ' + (error as Error).message);
     }
   };
 
   // Track mouse position
-  React.useEffect(() => {
-    const handleMouseMove = (e) => {
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
     document.addEventListener('mousemove', handleMouseMove);
@@ -102,10 +202,11 @@ const ValuesTierList = () => {
   };
 
   // Keyboard shortcut handler
-  React.useEffect(() => {
-    const handleKeyPress = (e) => {
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
       if (hoveredValue && (tierKeys[e.key] || e.key === '4')) {
-        let targetLocation;
+        ensurePersistence();
+        let targetLocation: string;
 
         if (e.key === '4') {
           targetLocation = hoveredValue.category;
@@ -117,7 +218,6 @@ const ValuesTierList = () => {
           setValues(prev => prev.map(v =>
             v.id === hoveredValue.id ? { ...v, location: targetLocation } : v
           ));
-          setChangesMade(true);
 
           const valueId = hoveredValue.id;
           setAnimatingValues(prev => new Set(prev).add(valueId));
@@ -137,40 +237,40 @@ const ValuesTierList = () => {
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [hoveredValue, mousePosition, values]);
+  }, [hoveredValue, mousePosition, values, tierKeys, ensurePersistence]);
 
-  const handleDragStart = (e, value) => {
+  const handleDragStart = (e: React.DragEvent, value: Value) => {
+    ensurePersistence();
     setDraggedValue(value);
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e, newLocation) => {
+  const handleDrop = (e: React.DragEvent, newLocation: string) => {
     e.preventDefault();
     if (draggedValue && draggedValue.location !== newLocation) {
       setValues(prev => prev.map(v =>
         v.id === draggedValue.id ? { ...v, location: newLocation } : v
       ));
-      setChangesMade(true);
     }
     setDraggedValue(null);
   };
 
-  const handleCategoryDragStart = (e, category) => {
+  const handleCategoryDragStart = (e: React.DragEvent, category: string) => {
     setDraggedCategory(category);
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleCategoryDragOver = (e) => {
+  const handleCategoryDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleCategoryDrop = (e, targetCategory) => {
+  const handleCategoryDrop = (e: React.DragEvent, targetCategory: string) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -183,19 +283,18 @@ const ValuesTierList = () => {
       newCategories.splice(targetIndex, 0, draggedCategory);
 
       setCategories(newCategories);
-      setChangesMade(true);
     }
     setDraggedCategory(null);
   };
 
-  const toggleCategory = (category) => {
+  const toggleCategory = (category: string) => {
     setCollapsedCategories(prev => ({
       ...prev,
       [category]: !prev[category]
     }));
   };
 
-  const getValuesByLocation = (location) => {
+  const getValuesByLocation = (location: string) => {
     return values.filter(v => v.location === location);
   };
 
@@ -269,7 +368,7 @@ const ValuesTierList = () => {
                         animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300' : ''
                       }`}
                     >
-                      <span className="font-medium text-gray-800 block">{value.value || value.name || 'Unnamed Value'}</span>
+                      <span className="font-medium text-gray-800 block">{value.value}</span>
                       {hoveredValue?.id === value.id && value.description && (
                         <div className="absolute z-10 bottom-full left-0 mb-2 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96">
                           <div className="mb-1 text-emerald-300 text-xs font-semibold">Press 1, 2, 3 (tiers) or 4 (category)</div>
@@ -341,7 +440,7 @@ const ValuesTierList = () => {
                                 animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300' : ''
                               }`}
                             >
-                              <span className="text-gray-800 font-medium">{value.value || value.name || 'Unnamed Value'}</span>
+                              <span className="text-gray-800 font-medium">{value.value}</span>
                               {hoveredValue?.id === value.id && value.description && (
                                 <div className="absolute z-10 left-full ml-2 top-0 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96">
                                   <div className="mb-1 text-emerald-300 text-xs font-semibold">Press 1, 2, 3 (tiers) or 4 (category)</div>
