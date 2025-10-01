@@ -44,6 +44,12 @@ export interface PersistedState {
   hasSeenPersistInfo?: boolean; // Track if user has seen the info banner
 }
 
+export interface MultiDatasetState {
+  activeDataset: string; // Which dataset is currently being worked on
+  datasets: Record<string, PersistedState>; // Map of dataset name to its state
+  hasSeenPersistInfo?: boolean; // Global flag for persistence info banner
+}
+
 export interface AppState {
   values: Value[];
   categories: string[];

@@ -1,9 +1,9 @@
-import { PersistedState } from './types';
+import { PersistedState, MultiDatasetState } from './types';
 
 const DB_NAME = 'act-values-db';
 const STORE_NAME = 'app_state';
 const STORAGE_KEY = 'act-values-snapshot';
-const STATE_KEY = 'current_state';
+const MULTI_STATE_KEY = 'multi_dataset_state';
 
 // Cache for persistence status
 let persistenceRequested = false;
@@ -52,16 +52,24 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-// Save state to IndexedDB and localStorage
-export async function saveState(state: PersistedState): Promise<void> {
+// Save state for a specific dataset
+export async function saveDatasetState(state: PersistedState): Promise<void> {
   try {
-    // Save to IndexedDB
+    // Load current multi-dataset state
+    const multiState = await loadMultiState();
+
+    // Update the specific dataset
+    multiState.datasets[state.datasetName] = state;
+    multiState.activeDataset = state.datasetName;
+    multiState.hasSeenPersistInfo = state.hasSeenPersistInfo ?? multiState.hasSeenPersistInfo;
+
+    // Save back to storage
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
 
     await new Promise<void>((resolve, reject) => {
-      const request = store.put(state, STATE_KEY);
+      const request = store.put(multiState, MULTI_STATE_KEY);
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
@@ -69,15 +77,18 @@ export async function saveState(state: PersistedState): Promise<void> {
     db.close();
 
     // Mirror to localStorage as backup
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(multiState));
 
-    console.log('[Storage] State saved successfully');
+    console.log(`[Storage] Dataset '${state.datasetName}' saved successfully`);
   } catch (error) {
-    console.error('[Storage] Error saving to IndexedDB:', error);
+    console.error('[Storage] Error saving dataset:', error);
 
     // Fallback: at least save to localStorage
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const multiState = await loadMultiState();
+      multiState.datasets[state.datasetName] = state;
+      multiState.activeDataset = state.datasetName;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(multiState));
       console.log('[Storage] Saved to localStorage fallback');
     } catch (lsError) {
       console.error('[Storage] Error saving to localStorage:', lsError);
@@ -85,25 +96,27 @@ export async function saveState(state: PersistedState): Promise<void> {
   }
 }
 
-// Load state from IndexedDB, fallback to localStorage
-export async function loadState(): Promise<PersistedState | null> {
+export const saveState = saveDatasetState;
+
+// Load multi-dataset state
+async function loadMultiState(): Promise<MultiDatasetState> {
   // Try IndexedDB first
   try {
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readonly');
     const store = transaction.objectStore(STORE_NAME);
 
-    const state = await new Promise<PersistedState | null>((resolve, reject) => {
-      const request = store.get(STATE_KEY);
+    const multiState = await new Promise<MultiDatasetState | null>((resolve, reject) => {
+      const request = store.get(MULTI_STATE_KEY);
       request.onsuccess = () => resolve(request.result ?? null);
       request.onerror = () => reject(request.error);
     });
 
     db.close();
 
-    if (state) {
-      console.log('[Storage] Loaded from IndexedDB');
-      return state;
+    if (multiState) {
+      console.log('[Storage] Loaded multi-dataset state from IndexedDB');
+      return multiState;
     }
   } catch (error) {
     console.error('[Storage] Error loading from IndexedDB:', error);
@@ -113,14 +126,44 @@ export async function loadState(): Promise<PersistedState | null> {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const state = JSON.parse(stored) as PersistedState;
-      console.log('[Storage] Loaded from localStorage backup');
-      return state;
+      const multiState = JSON.parse(stored) as MultiDatasetState;
+      console.log('[Storage] Loaded multi-dataset state from localStorage');
+      return multiState;
     }
   } catch (error) {
     console.error('[Storage] Error loading from localStorage:', error);
   }
 
-  console.log('[Storage] No saved state found');
-  return null;
+  // Return empty multi-state
+  return {
+    activeDataset: 'act-comprehensive',
+    datasets: {},
+    hasSeenPersistInfo: false
+  };
+}
+
+// Load state for active dataset (or specific dataset)
+export async function loadState(datasetName?: string): Promise<PersistedState | null> {
+  const multiState = await loadMultiState();
+  const targetDataset = datasetName ?? multiState.activeDataset;
+
+  const state = multiState.datasets[targetDataset] ?? null;
+
+  if (state) {
+    console.log(`[Storage] Loaded state for dataset '${targetDataset}'`);
+    // Update hasSeenPersistInfo from global flag if not set
+    if (state.hasSeenPersistInfo === undefined) {
+      state.hasSeenPersistInfo = multiState.hasSeenPersistInfo;
+    }
+  } else {
+    console.log(`[Storage] No saved state found for dataset '${targetDataset}'`);
+  }
+
+  return state;
+}
+
+// Get active dataset name
+export async function getActiveDataset(): Promise<string> {
+  const multiState = await loadMultiState();
+  return multiState.activeDataset;
 }

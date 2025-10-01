@@ -410,7 +410,17 @@ const ValuesTierList = () => {
             <div className="flex gap-3 items-center">
               <select
                 value={selectedDataset}
-                onChange={(e) => loadDataset(e.target.value)}
+                onChange={async (e) => {
+                  const newDataset = e.target.value;
+                  // Try to load persisted state for this dataset
+                  const persisted = await loadState(newDataset);
+                  if (persisted) {
+                    hydrateState(persisted);
+                  } else {
+                    // No saved state for this dataset, load fresh
+                    loadDataset(newDataset);
+                  }
+                }}
                 className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 {Object.entries(preloadedDatasets).map(([key, dataset]) => (
@@ -427,7 +437,12 @@ const ValuesTierList = () => {
                 Share Link
               </button>
               <button
-                onClick={() => loadDataset(selectedDataset)}
+                onClick={() => {
+                  // Reset current dataset to fresh state
+                  loadDataset(selectedDataset);
+                  // Note: This loads fresh data in memory but doesn't delete from storage
+                  // The fresh state will be saved on the next change
+                }}
                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
               >
                 Reset
