@@ -15,7 +15,7 @@ const ValuesTierList = () => {
   const [animatingValues, setAnimatingValues] = useState(new Set<string>());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedDataset, setSelectedDataset] = useState('act-comprehensive');
-  const [showPersistInfo, setShowPersistInfo] = useState(true);
+  const [showPersistInfo, setShowPersistInfo] = useState(false); // Will be set based on persisted state
   const persistRequested = useRef(false);
 
   const tiers = [
@@ -64,7 +64,8 @@ const ValuesTierList = () => {
       tiers,
       categoryOrder: categories,
       collapsedCategories,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      hasSeenPersistInfo: true // Mark that user has interacted with the app
     };
   }, [values, categories, collapsedCategories, selectedDataset]);
 
@@ -164,6 +165,10 @@ const ValuesTierList = () => {
     setCategories(persisted.categoryOrder.length > 0 ? persisted.categoryOrder : uniqueCategories);
     setSelectedDataset(persisted.datasetName);
     setCollapsedCategories(persisted.collapsedCategories);
+
+    // Show info banner only if user hasn't seen it before
+    setShowPersistInfo(!persisted.hasSeenPersistInfo);
+
     console.log('[App] State hydrated successfully');
   }, [loadDataset]);
 
@@ -173,6 +178,8 @@ const ValuesTierList = () => {
       if (persisted) {
         hydrateState(persisted);
       } else {
+        // First time user - show the info banner
+        setShowPersistInfo(true);
         loadDataset('act-comprehensive');
       }
     });
@@ -272,6 +279,12 @@ const ValuesTierList = () => {
     ensurePersistence();
     setDraggedValue(value);
     e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnd = () => {
+    // Clear dragged state even if dropped outside a valid target
+    setDraggedValue(null);
+    setDraggedCategory(null);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -411,6 +424,7 @@ const ValuesTierList = () => {
                       data-value-id={value.id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, value)}
+                      onDragEnd={handleDragEnd}
                       onMouseEnter={() => setHoveredValue(value)}
                       onMouseLeave={() => setHoveredValue(null)}
                       className={`relative px-4 py-2 bg-white border-2 border-gray-300 rounded-lg cursor-move hover:shadow-md hover:border-gray-400 transition-all select-none ${
@@ -454,6 +468,7 @@ const ValuesTierList = () => {
                       className={`border rounded-lg ${isDragging ? 'opacity-50' : ''}`}
                       draggable
                       onDragStart={(e) => handleCategoryDragStart(e, category)}
+                      onDragEnd={handleDragEnd}
                       onDragOver={handleCategoryDragOver}
                       onDrop={(e) => handleCategoryDrop(e, category)}
                     >
@@ -483,6 +498,7 @@ const ValuesTierList = () => {
                               data-value-id={value.id}
                               draggable
                               onDragStart={(e) => handleDragStart(e, value)}
+                              onDragEnd={handleDragEnd}
                               onMouseEnter={() => setHoveredValue(value)}
                               onMouseLeave={() => setHoveredValue(null)}
                               className={`relative px-3 py-2 bg-gray-50 border border-gray-300 rounded cursor-move hover:bg-white hover:shadow-md transition-all text-sm select-none ${

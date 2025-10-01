@@ -26,6 +26,7 @@ export interface PersistedState {
   categoryOrder: string[];
   collapsedCategories: Record<string, boolean>;
   timestamp: number;
+  hasSeenPersistInfo?: boolean; // Track if user has seen the info banner
 }
 
 export interface AppState {
