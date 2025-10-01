@@ -203,7 +203,7 @@ const SortableValue: React.FC<SortableValueProps> = ({
       {/* Render tooltip via portal to avoid clipping */}
       {hoveredValue?.id === value.id && value.description && !activeId && tooltipPosition && createPortal(
         <div
-          className="fixed z-[100] p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96 pointer-events-none"
+          className="fixed z-[100] p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96 pointer-events-none print-hide"
           style={{
             top: isInTier ? `${tooltipPosition.top}px` : `${tooltipPosition.top}px`,
             left: `${tooltipPosition.left}px`,
@@ -233,7 +233,7 @@ const SortableValue: React.FC<SortableValueProps> = ({
           )}
           {value.description}
           <div
-            className={`absolute w-0 h-0 ${
+            className={`absolute w-0 h-0 print-hide ${
               isInTier
                 ? 'top-full left-4 border-l-8 border-r-8 border-t-8 border-transparent border-t-gray-900'
                 : 'right-full top-4 border-t-8 border-b-8 border-r-8 border-transparent border-r-gray-900'
@@ -1234,6 +1234,17 @@ const ValuesTierList = () => {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
+      accessibility={{
+        announcements: {
+          onDragStart: () => '',
+          onDragOver: () => '',
+          onDragEnd: () => '',
+          onDragCancel: () => '',
+        },
+        screenReaderInstructions: {
+          draggable: '',
+        },
+      }}
     >
       <div className="h-screen bg-gradient-to-br from-blue-50 to-green-50 p-3 md:p-6 overflow-hidden">
       <div className="max-w-7xl mx-auto h-full flex flex-col">
@@ -1272,7 +1283,7 @@ const ValuesTierList = () => {
 
                   {/* Dropdown menu */}
                   {showListDropdown && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto print-hide">
                       <div className="p-2">
                         {savedLists.map((list) => (
                           <button
@@ -1494,8 +1505,8 @@ const ValuesTierList = () => {
           })}
 
           {/* Categories sidebar - fourth column on desktop */}
-          <div className="relative flex-1 min-h-0">
-            <div className="bg-white rounded-lg shadow-lg print-hide-sidebar h-full flex flex-col">
+          <div className="relative flex-1 min-h-0 print-hide-sidebar">
+            <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
             <div className="px-3 py-2 border-b">
               <h2 className="text-base font-semibold text-gray-800 flex items-center justify-between">
                 <span>Value Categories</span>

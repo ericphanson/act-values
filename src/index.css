@@ -28,8 +28,9 @@
     margin: 0 !important;
     padding: 0 !important;
     opacity: 0 !important;
-    position: absolute !important;
-    left: -9999px !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    overflow: hidden !important;
   }
 
   /* Avoid page breaks inside these elements - disabled to allow first tier to start on first page */
@@ -51,14 +52,32 @@
   }
 
   /* Remove backgrounds for better printing */
+  html,
   body {
     background: white !important;
     padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
   }
 
   /* Remove outer padding */
-  body > div {
+  body > div,
+  #root {
     padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  /* Force all containers to collapse to content */
+  body > div,
+  body > div > * {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
   }
 
   /* Remove all background colors - black and white only */
@@ -68,9 +87,41 @@
     color: black !important;
   }
 
+  /* Make everything static position except QR code which needs relative */
+  *:not(.print-qr-code) {
+    position: static !important;
+  }
+
+  .print-qr-code {
+    position: relative !important;
+  }
+
   /* Adjust margins for print */
   @page {
     margin: 0.75in;
+    size: letter;
+  }
+
+  /* Prevent content from creating extra pages */
+  html {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Chrome-specific print fixes */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    -webkit-transform: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+
+  /* Force body to contain only visible content */
+  body::after,
+  html::after {
+    content: none !important;
+    display: none !important;
   }
 
   /* Print-specific header styling */
@@ -101,11 +152,11 @@
   }
 
   .print-qr-code {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-end !important;
+    display: block !important;
     margin-top: 2rem !important;
     text-align: right !important;
+    position: relative !important;
+    float: right !important;
   }
 
   .print-qr-code svg {
@@ -206,11 +257,8 @@
     margin: 0 !important;
     padding: 0 !important;
     opacity: 0 !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: -9999px !important;
-    bottom: auto !important;
-    right: auto !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
     overflow: hidden !important;
   }
 
@@ -219,19 +267,24 @@
     grid-column: 1 / -1 !important;
   }
 
-  /* Remove min-height constraints */
-  * {
+  /* Remove min-height constraints - nuclear option */
+  *, *::before, *::after {
     min-height: 0 !important;
+    max-height: none !important;
+    height: auto !important;
   }
 
   /* Compact main container */
   .min-h-screen {
     min-height: 0 !important;
+    height: auto !important;
   }
 
   /* Remove extra gaps in grid */
   .grid {
     gap: 0 !important;
+    display: block !important;
+    height: auto !important;
   }
 
   /* Compact space-y */
@@ -240,8 +293,49 @@
   }
 
   /* Remove all flex display in print */
-  .flex {
+  .flex,
+  .flex-col {
     display: block !important;
+  }
+
+  /* Specifically target the flex-col container */
+  .flex.flex-col,
+  .h-full.flex.flex-col,
+  .max-w-7xl.h-full.flex.flex-col {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: none !important;
+  }
+
+  /* Target the outer h-screen container */
+  .h-screen.overflow-hidden {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Remove flex constraints */
+  .flex-1,
+  .flex-shrink-0 {
+    flex: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .min-h-0 {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Force grid containers to auto height */
+  .grid.flex-1 {
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none !important;
   }
 
   /* Ensure 4-column grid becomes single column on print */
@@ -254,6 +348,8 @@
   .h-full {
     height: auto !important;
     max-height: none !important;
+    min-height: 0 !important;
+    display: block !important;
   }
 
   /* Ensure containers take minimal space */
@@ -285,10 +381,29 @@
     break-inside: auto !important;
   }
 
-  /* Firefox-specific fixes */
-  * {
+  /* Force all overflow to visible - prevents clipping */
+  *,
+  *::before,
+  *::after {
     overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
     transform: none !important;
+  }
+
+  body,
+  html,
+  #root {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+
+  /* Remove overflow hidden which can cause issues */
+  .overflow-hidden,
+  .overflow-y-auto,
+  .overflow-visible {
+    overflow: visible !important;
   }
 
   /* Force everything to display: block for Firefox */
@@ -303,6 +418,22 @@
     display: block !important;
     position: static !important;
     float: none !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Hide DragOverlay which might cause phantom pages */
+  [class*="DragOverlay"] {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+
+  /* Ensure the outer containers don't create space */
+  body > div {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
   }
 
   /* Ensure everything can break in Firefox */
@@ -317,5 +448,23 @@
   .print-value-item {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+  }
+
+  /* Force content to end - no page breaks after last tier */
+  .print-tier:last-of-type {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* Prevent orphan page breaks */
+  body {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* Cap body height to actual content */
+  body {
+    max-height: fit-content !important;
+    height: fit-content !important;
   }
 }
