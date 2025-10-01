@@ -15,7 +15,6 @@ import {
   useDroppable,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
@@ -187,6 +186,14 @@ const ValuesTierList = () => {
   const [showPersistInfo, setShowPersistInfo] = useState(false); // Will be set based on persisted state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const persistRequested = useRef(false);
+  const lastDragState = useRef<{ activeId: string; overId: string } | null>(null);
+  const pendingDragUpdate = useRef<{
+    activeId: string;
+    overId: string;
+    activeData?: Record<string, any>;
+    overData?: Record<string, any>;
+  } | null>(null);
+  const dragUpdateFrame = useRef<number | null>(null);
 
   // Configure sensors for drag and drop
   const sensors = useSensors(
@@ -197,19 +204,185 @@ const ValuesTierList = () => {
     })
   );
 
+  const prioritizeValues = useCallback((collisions: ReturnType<typeof pointerWithin>) => {
+    if (!collisions || collisions.length === 0) {
+      return collisions;
+    }
+
+    const valueCollision = collisions.find((collision) => {
+      const container = collision.data?.droppableContainer;
+      const type = container?.data?.current?.type;
+      return type === 'value';
+    });
+
+    return valueCollision ? [valueCollision] : collisions;
+  }, []);
+
   const collisionDetection = useCallback((args: Parameters<typeof closestCenter>[0]) => {
-    const pointerCollisions = pointerWithin(args);
-    if (pointerCollisions.length > 0) {
+    const pointerCollisions = prioritizeValues(pointerWithin(args));
+    if (pointerCollisions && pointerCollisions.length > 0) {
       return pointerCollisions;
     }
 
-    const intersections = rectIntersection(args);
-    if (intersections.length > 0) {
+    const intersections = prioritizeValues(rectIntersection(args));
+    if (intersections && intersections.length > 0) {
       return intersections;
     }
 
-    return closestCenter(args);
+    return prioritizeValues(closestCenter(args));
+  }, [prioritizeValues]);
+
+  const reorderValuesForDrag = useCallback((
+    prevValues: Value[],
+    activeId: string,
+    overId: string,
+    activeData: Record<string, any> | undefined,
+    overData: Record<string, any> | undefined
+  ): Value[] => {
+    if (activeId === overId) {
+      return prevValues;
+    }
+
+    const activeValue = prevValues.find(value => value.id === activeId);
+    if (!activeValue) {
+      return prevValues;
+    }
+
+    const activeContainer = activeData?.containerId ?? activeValue.location;
+
+    let overContainer: string | undefined;
+    const overType = overData?.type;
+    if (overType === 'container') {
+      overContainer = overData.containerId;
+    } else if (overType === 'value') {
+      overContainer = overData.containerId;
+    } else {
+      const overValue = prevValues.find(value => value.id === overId);
+      overContainer = overValue?.location;
+    }
+
+    if (!overContainer) {
+      return prevValues;
+    }
+
+    const tierLocations: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
+    const containerMap = new Map<string, Value[]>();
+    for (const value of prevValues) {
+      const list = containerMap.get(value.location) ?? [];
+      list.push(value);
+      containerMap.set(value.location, list);
+    }
+
+    const sourceItems = [...(containerMap.get(activeContainer) ?? [])];
+    const activeIndex = sourceItems.findIndex(value => value.id === activeId);
+    if (activeIndex === -1) {
+      return prevValues;
+    }
+
+    const [removedValue] = sourceItems.splice(activeIndex, 1);
+    containerMap.set(activeContainer, sourceItems);
+
+    const destinationItems = activeContainer === overContainer
+      ? sourceItems
+      : [...(containerMap.get(overContainer) ?? [])];
+
+    let targetIndex = destinationItems.length;
+    if (overType === 'container') {
+      targetIndex = destinationItems.length;
+    } else if (overData?.sortable) {
+      targetIndex = overData.sortable.index ?? destinationItems.length;
+      if (activeContainer === overContainer && targetIndex > activeIndex) {
+        targetIndex -= 1;
+      }
+    } else {
+      const fallbackIndex = destinationItems.findIndex(value => value.id === overId);
+      if (fallbackIndex >= 0) {
+        targetIndex = fallbackIndex;
+      }
+    }
+
+    if (activeContainer === overContainer && targetIndex === activeIndex) {
+      return prevValues;
+    }
+
+    const updatedActiveValue: Value = { ...removedValue, location: overContainer };
+    const clampedIndex = Math.min(Math.max(targetIndex, 0), destinationItems.length);
+    destinationItems.splice(clampedIndex, 0, updatedActiveValue);
+    containerMap.set(overContainer, destinationItems);
+
+    const orderedLocations: string[] = [...tierLocations, ...categories];
+    const seen = new Set<string>();
+    const nextValues: Value[] = [];
+
+    for (const location of orderedLocations) {
+      const items = containerMap.get(location);
+      if (!items || items.length === 0) {
+        continue;
+      }
+      seen.add(location);
+      nextValues.push(...items);
+    }
+
+    for (const [location, items] of containerMap.entries()) {
+      if (items.length === 0 || seen.has(location)) {
+        continue;
+      }
+      nextValues.push(...items);
+    }
+
+    const hasChanged = nextValues.length !== prevValues.length
+      || nextValues.some((value, index) => {
+        const previous = prevValues[index];
+        return value.id !== previous.id || value.location !== previous.location;
+      });
+
+    return hasChanged ? nextValues : prevValues;
+  }, [categories]);
+
+  const clearPendingDragUpdate = useCallback(() => {
+    if (dragUpdateFrame.current !== null) {
+      cancelAnimationFrame(dragUpdateFrame.current);
+      dragUpdateFrame.current = null;
+    }
+    pendingDragUpdate.current = null;
   }, []);
+
+  const runPendingDragUpdate = useCallback(() => {
+    const payload = pendingDragUpdate.current;
+    if (!payload) {
+      dragUpdateFrame.current = null;
+      return;
+    }
+
+    pendingDragUpdate.current = null;
+    const { activeId, overId, activeData, overData } = payload;
+
+    setValues(prevValues => {
+      const nextValues = reorderValuesForDrag(prevValues, activeId, overId, activeData, overData);
+      lastDragState.current = { activeId, overId };
+      return nextValues === prevValues ? prevValues : nextValues;
+    });
+
+    dragUpdateFrame.current = null;
+  }, [reorderValuesForDrag]);
+
+  const scheduleDragUpdate = useCallback((payload: {
+    activeId: string;
+    overId: string;
+    activeData?: Record<string, any>;
+    overData?: Record<string, any>;
+  }) => {
+    pendingDragUpdate.current = payload;
+    if (dragUpdateFrame.current === null) {
+      dragUpdateFrame.current = requestAnimationFrame(runPendingDragUpdate);
+    }
+  }, [runPendingDragUpdate]);
+
+  useEffect(() => {
+    return () => {
+      clearPendingDragUpdate();
+    };
+  }, [clearPendingDragUpdate]);
 
   const tiers = [
     { id: 'very-important' as TierId, label: 'Very Important to Me', color: 'bg-emerald-50 border-emerald-200', icon: '💎' },
@@ -539,14 +712,22 @@ const ValuesTierList = () => {
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const id = String(active.id);
+    clearPendingDragUpdate();
     setActiveId(id);
     ensurePersistence();
     setHoveredValue(null);
+    lastDragState.current = null;
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    const { over } = event;
-    if (over && over.data?.current?.type === 'value') {
+    const { active, over } = event;
+
+    if (!over) {
+      setHoveredValue(null);
+      return;
+    }
+
+    if (over.data?.current?.type === 'value') {
       const value = findValueById(String(over.id));
       if (value) {
         setHoveredValue(value);
@@ -554,14 +735,32 @@ const ValuesTierList = () => {
     } else {
       setHoveredValue(null);
     }
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    if (activeId === overId) {
+      return;
+    }
+
+    const lastState = lastDragState.current;
+    if (lastState && lastState.activeId === activeId && lastState.overId === overId) {
+      return;
+    }
+
+    const activeData = active.data?.current as Record<string, any> | undefined;
+    const overData = over.data?.current as Record<string, any> | undefined;
+
+    scheduleDragUpdate({ activeId, overId, activeData, overData });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    clearPendingDragUpdate();
     setActiveId(null);
 
     if (!over) {
       setHoveredValue(null);
+      lastDragState.current = null;
       return;
     }
 
@@ -570,83 +769,27 @@ const ValuesTierList = () => {
 
     if (activeId === overId) {
       setHoveredValue(null);
+      lastDragState.current = null;
       return;
     }
 
+    const activeData = active.data?.current as Record<string, any> | undefined;
+    const overData = over.data?.current as Record<string, any> | undefined;
+
     setValues(prevValues => {
-      const activeValue = prevValues.find(v => v.id === activeId);
-      if (!activeValue) {
-        return prevValues;
-      }
-
-      const activeContainer = (active.data?.current as { containerId?: string } | undefined)?.containerId ?? activeValue.location;
-
-      let overContainer: string | undefined;
-      const overData = over.data?.current as { containerId?: string; type?: string; sortable?: { index: number } } | undefined;
-
-      if (overData?.type === 'container') {
-        overContainer = overData.containerId;
-      } else if (overData?.type === 'value') {
-        overContainer = overData.containerId;
-      } else {
-        const overValue = prevValues.find(v => v.id === overId);
-        overContainer = overValue?.location;
-      }
-
-      if (!overContainer) {
-        return prevValues;
-      }
-
-      const sourceValues = prevValues.filter(v => v.location === activeContainer);
-      const activeIndex = sourceValues.findIndex(v => v.id === activeId);
-      if (activeIndex === -1) {
-        return prevValues;
-      }
-
-      const targetValues = activeContainer === overContainer
-        ? sourceValues
-        : prevValues.filter(v => v.location === overContainer && v.id !== activeId);
-
-      let targetIndex: number;
-
-      if (overData?.type === 'container') {
-        targetIndex = targetValues.length;
-      } else if (overData?.sortable) {
-        targetIndex = overData.sortable.index;
-        if (activeContainer === overContainer && targetIndex > activeIndex) {
-          targetIndex -= 1;
-        }
-      } else {
-        const fallbackIndex = targetValues.findIndex(v => v.id === overId);
-        targetIndex = fallbackIndex === -1 ? targetValues.length : fallbackIndex;
-      }
-
-      if (activeContainer === overContainer) {
-        if (targetIndex === activeIndex) {
-          return prevValues;
-        }
-
-        const reordered = arrayMove(sourceValues, activeIndex, targetIndex);
-        const otherValues = prevValues.filter(v => v.location !== activeContainer);
-        return [...otherValues, ...reordered];
-      }
-
-      const remainingValues = prevValues.filter(v => v.id !== activeId);
-      const updatedActiveValue: Value = { ...activeValue, location: overContainer };
-      const destinationValues = remainingValues.filter(v => v.location === overContainer);
-      const clampedIndex = Math.min(Math.max(targetIndex, 0), destinationValues.length);
-      const reorderedDestination = [...destinationValues];
-      reorderedDestination.splice(clampedIndex, 0, updatedActiveValue);
-      const otherValues = remainingValues.filter(v => v.location !== overContainer);
-      return [...otherValues, ...reorderedDestination];
+      const nextValues = reorderValuesForDrag(prevValues, activeId, overId, activeData, overData);
+      lastDragState.current = null;
+      return nextValues === prevValues ? prevValues : nextValues;
     });
 
     setHoveredValue(null);
   };
 
   const handleDragCancel = () => {
+    clearPendingDragUpdate();
     setActiveId(null);
     setHoveredValue(null);
+    lastDragState.current = null;
   };
 
   const toggleCategory = (category: string) => {
