@@ -495,12 +495,22 @@ const ValuesTierList = () => {
               <p className="text-sm text-gray-600 mb-4">Drag values to the tiers to rank them</p>
 
               <div className="space-y-2">
-                {categories.map(category => {
-                  const categoryValues = getValuesByLocation(category);
-                  const isCollapsed = collapsedCategories[category];
-                  const isDragging = draggedCategory === category;
+                {[...categories]
+                  .sort((a, b) => {
+                    const aCount = getValuesByLocation(a).length;
+                    const bCount = getValuesByLocation(b).length;
+                    // Categories with items come first
+                    if (aCount > 0 && bCount === 0) return -1;
+                    if (aCount === 0 && bCount > 0) return 1;
+                    // Within same group (both empty or both non-empty), preserve original order
+                    return categories.indexOf(a) - categories.indexOf(b);
+                  })
+                  .map(category => {
+                    const categoryValues = getValuesByLocation(category);
+                    const isCollapsed = collapsedCategories[category];
+                    const isDragging = draggedCategory === category;
 
-                  return (
+                    return (
                     <div
                       key={category}
                       className={`border rounded-lg ${isDragging ? 'opacity-50' : ''}`}
