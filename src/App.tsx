@@ -1235,8 +1235,28 @@ const ValuesTierList = () => {
                   onChange={(e) => {
                     const newDataset = e.target.value;
                     setSelectedDataset(newDataset);
-                    // Reset to new list when changing datasets
-                    createNewList(newDataset);
+
+                    // Try to find the most recent list for this dataset
+                    const allLists = loadAllLists();
+                    const datasetLists = allLists.filter(list => list.datasetName === newDataset);
+
+                    if (datasetLists.length > 0) {
+                      // Load the most recent list (already sorted by lastModified desc)
+                      const mostRecentList = datasetLists[0];
+                      const dataset = preloadedDatasets[mostRecentList.datasetName];
+                      if (dataset) {
+                        const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                        const persisted = decodeUrlToState(mostRecentList.fragment, dataset.data.length, canonicalOrder);
+                        if (persisted) {
+                          hydrateState(persisted as PersistedState);
+                          setCurrentListId(mostRecentList.id);
+                          lastKnownModified.current = mostRecentList.lastModified;
+                        }
+                      }
+                    } else {
+                      // No existing list for this dataset, create a new one
+                      createNewList(newDataset);
+                    }
                   }}
                   className="px-3 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full"
                 >
