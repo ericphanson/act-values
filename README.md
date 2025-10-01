@@ -11,3 +11,4 @@
 - [ ] intro: when you first load it, have something show you how to use it, with an arrow showing how to drag a value into a tier
 - [x] "Drag values to rank them, or hover and press 1, 2, 3 (tiers) or 4 (categories)" text: doesn't haev enough room
 - [x] UI responsiveness
+- [ ] bug in tap mode: tapping an element in a tier which isn't the selected tier sends it back to the categories. It should send it to the selected tier. They should only go back to the categroies when you tap an element IN the tier that is selected.
