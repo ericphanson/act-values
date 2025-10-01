@@ -77,6 +77,23 @@
     border: none !important;
   }
 
+  /* QR code styling for print */
+  .print\:block {
+    display: block !important;
+  }
+
+  .hidden.print\:block {
+    display: block !important;
+  }
+
+  .print-qr-code {
+    position: fixed !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    display: block !important;
+    background: white !important;
+  }
+
   /* Print-specific tier styling */
   .print-tier {
     border: none !important;

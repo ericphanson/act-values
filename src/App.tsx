@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { ChevronDown, ChevronRight, Share2, Trash2 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   DndContext,
   DragEndEvent,
@@ -1430,6 +1431,21 @@ const ValuesTierList = () => {
           {toastMessage}
         </div>
       )}
+
+      {/* QR code - only visible when printing, bottom-right corner */}
+      <div className="hidden print:block print-qr-code">
+        <QRCodeSVG
+          value={(() => {
+            const state = serializeState();
+            const dataset = preloadedDatasets[selectedDataset];
+            const canonicalOrder = getCanonicalCategoryOrder(dataset);
+            return getShareableUrl(state, dataset.data.length, canonicalOrder);
+          })()}
+          size={80}
+          level="M"
+        />
+        <p className="text-xs text-gray-600 mt-1 text-center">Scan to edit</p>
+      </div>
       </div>
       <DragOverlay>
         {activeValue ? (
