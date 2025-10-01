@@ -36,6 +36,9 @@ interface SortableValueProps {
   isInTier?: boolean;
   containerId: string;
   activeId: string | null;
+  isTouchDevice?: boolean;
+  selectedTierForTouch?: TierId | null;
+  onTouchSelect?: (value: Value) => void;
 }
 
 const getValueClass = (value: Value, animatingValues: Set<string>, isInTier: boolean) => {
@@ -56,7 +59,13 @@ const SortableValue: React.FC<SortableValueProps> = ({
   isInTier = false,
   containerId,
   activeId,
+  isTouchDevice = false,
+  selectedTierForTouch = null,
+  onTouchSelect,
 }) => {
+  const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const longPressTriggeredRef = React.useRef(false);
+
   const {
     attributes,
     listeners,
@@ -81,6 +90,51 @@ const SortableValue: React.FC<SortableValueProps> = ({
 
   const baseClass = getValueClass(value, animatingValues, isInTier);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (isTouchDevice && selectedTierForTouch) {
+      longPressTriggeredRef.current = false;
+      longPressTimerRef.current = setTimeout(() => {
+        longPressTriggeredRef.current = true;
+        setHoveredValue(value);
+      }, 500); // 500ms for long press
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    // If long press was triggered, close tooltip on release
+    if (longPressTriggeredRef.current) {
+      setTimeout(() => setHoveredValue(null), 2000); // Auto-hide after 2s
+      longPressTriggeredRef.current = false;
+    }
+  };
+
+  const handleTouchCancel = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    longPressTriggeredRef.current = false;
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (isTouchDevice && selectedTierForTouch && onTouchSelect && !longPressTriggeredRef.current) {
+      e.stopPropagation();
+      onTouchSelect(value);
+    } else if (isTouchDevice && !selectedTierForTouch) {
+      // If no tier is selected, toggle hover on tap to show description
+      e.stopPropagation();
+      if (hoveredValue?.id === value.id) {
+        setHoveredValue(null);
+      } else {
+        setHoveredValue(value);
+      }
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -89,7 +143,11 @@ const SortableValue: React.FC<SortableValueProps> = ({
       {...listeners}
       onMouseEnter={() => setHoveredValue(value)}
       onMouseLeave={() => setHoveredValue(null)}
-      className={baseClass}
+      onClick={handleClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
+      className={`${baseClass} ${isTouchDevice && selectedTierForTouch ? 'cursor-pointer' : ''}`}
       data-value-id={value.id}
     >
       <span className={isInTier ? 'font-medium text-gray-800 block' : 'text-gray-800 font-medium'}>
@@ -188,6 +246,8 @@ const ValuesTierList = () => {
   const [listId, setListId] = useState<string>('');
   const [listName, setListName] = useState<string>('');
   const [savedLists, setSavedLists] = useState<SavedList[]>([]);
+  const [selectedTierForTouch, setSelectedTierForTouch] = useState<TierId | null>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const lastKnownModified = useRef<number>(0);
   const currentFragmentRef = useRef<string | null>(null);
   const initializedRef = useRef<boolean>(false);
@@ -446,6 +506,15 @@ const ValuesTierList = () => {
   // Refresh saved lists
   const refreshSavedLists = useCallback(() => {
     setSavedLists(loadAllLists());
+  }, []);
+
+  // Detect if this is a touch device
+  useEffect(() => {
+    const checkTouch = () => {
+      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      setIsTouchDevice(hasTouch);
+    };
+    checkTouch();
   }, []);
 
   const debouncedSaveList = useMemo(
@@ -976,6 +1045,70 @@ const ValuesTierList = () => {
     setHoveredValue(null);
   };
 
+  const handleTouchSelect = useCallback((value: Value) => {
+    if (!selectedTierForTouch) return;
+
+    const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
+    const isInTier = tierOrder.includes(value.location as TierId);
+
+    // If tapping an item already in a tier, remove it (send back to category)
+    if (isInTier) {
+      setValues(prevValues => {
+        const filtered = prevValues.filter(v => v.id !== value.id);
+        const updatedValue = { ...value, location: value.category };
+
+        // Find insert position in category (after all tiers)
+        const tiersCount = filtered.filter(v => tierOrder.includes(v.location as TierId)).length;
+        const categoryIndex = categories.indexOf(value.category);
+
+        let insertIndex = tiersCount;
+        // Skip all categories before this one
+        for (let i = 0; i < categoryIndex; i++) {
+          const catCount = filtered.filter(v => v.location === categories[i]).length;
+          insertIndex += catCount;
+        }
+        // Add count of items in target category (to get to the end)
+        const targetCatCount = filtered.filter(v => v.location === value.category).length;
+        insertIndex += targetCatCount;
+
+        filtered.splice(insertIndex, 0, updatedValue);
+        return filtered;
+      });
+    } else {
+      // Tapping an item in a category - move to the selected tier at the back
+      setValues(prevValues => {
+        const filtered = prevValues.filter(v => v.id !== value.id);
+        const updatedValue = { ...value, location: selectedTierForTouch };
+
+        // Find insert position at the back of the target tier
+        const targetTierIndex = tierOrder.indexOf(selectedTierForTouch);
+
+        let insertIndex = 0;
+        // Skip all tiers before this one
+        for (let i = 0; i < targetTierIndex; i++) {
+          const tierCount = filtered.filter(v => v.location === tierOrder[i]).length;
+          insertIndex += tierCount;
+        }
+        // Add count of items in target tier (to get to the end)
+        const targetTierCount = filtered.filter(v => v.location === selectedTierForTouch).length;
+        insertIndex += targetTierCount;
+
+        filtered.splice(insertIndex, 0, updatedValue);
+        return filtered;
+      });
+    }
+
+    // Show animation
+    setAnimatingValues(prev => new Set(prev).add(value.id));
+    setTimeout(() => {
+      setAnimatingValues(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(value.id);
+        return newSet;
+      });
+    }, 500);
+  }, [selectedTierForTouch, categories]);
+
   const toggleCategory = (category: string) => {
     setCollapsedCategories(prev => ({
       ...prev,
@@ -996,15 +1129,17 @@ const ValuesTierList = () => {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-3 md:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex items-start justify-between gap-6">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-800">ACT Values Tier List</h1>
-              <p className="text-gray-600 mt-1">Drag values to rank them, or hover and press 1, 2, 3 (tiers) or 4 (categories)</p>
+        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6">
+          <div className="flex flex-col gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Values Tier List</h1>
+              <p className="text-sm md:text-base text-gray-600 mt-1">
+                {isTouchDevice ? 'Tap a tier, then tap values to add them' : 'Drag values to rank them!'}
+              </p>
             </div>
-            <div className="flex gap-6 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">List Name</label>
                 <input
@@ -1015,7 +1150,7 @@ const ValuesTierList = () => {
                     setListName(newName);
                     debouncedRenameList(listId, newName);
                   }}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-w-[200px]"
+                  className="px-3 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full"
                   placeholder="Enter name..."
                 />
               </div>
@@ -1044,7 +1179,7 @@ const ValuesTierList = () => {
                         }
                       }
                     }}
-                    className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     {savedLists.map((list) => (
                       <option key={list.id} value={list.id}>
@@ -1097,7 +1232,7 @@ const ValuesTierList = () => {
                     // Reset to new list when changing datasets
                     createNewList(newDataset);
                   }}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="px-3 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full"
                 >
                   {Object.entries(preloadedDatasets).map(([key, dataset]) => (
                     <option key={key} value={key}>
@@ -1107,25 +1242,20 @@ const ValuesTierList = () => {
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide opacity-0">Actions</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide md:opacity-0">Actions</label>
                 <div className="flex gap-2">
                   <button
                     onClick={handleShare}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                    className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors flex-1 md:flex-initial"
                   >
                     <Share2 size={18} />
-                    Share
+                    <span className="md:inline">Share</span>
                   </button>
                   <button
-                    onClick={() => {
-                      // Reset current dataset to fresh state
-                      loadDataset(selectedDataset);
-                      // Note: This loads fresh data in memory but doesn't delete from storage
-                      // The fresh state will be saved on the next change
-                    }}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
+                    onClick={() => createNewList(selectedDataset)}
+                    className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors flex-1 md:flex-initial"
                   >
-                    Reset
+                    New List
                   </button>
                 </div>
               </div>
@@ -1144,16 +1274,37 @@ const ValuesTierList = () => {
                   items={tierValues.map(value => value.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className={`${tier.color} border-2 rounded-lg p-4 min-h-32`}>
+                  <div
+                    className={`${tier.color} border-2 rounded-lg p-4 min-h-32 ${
+                      isTouchDevice && selectedTierForTouch === tier.id
+                        ? 'ring-4 ring-blue-500 border-blue-500'
+                        : ''
+                    } ${isTouchDevice ? 'cursor-pointer' : ''}`}
+                    onClick={() => {
+                      if (isTouchDevice) {
+                        setSelectedTierForTouch(selectedTierForTouch === tier.id ? null : tier.id);
+                      }
+                    }}
+                  >
                     <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
                       <span>{tier.icon}</span>
                       {tier.label}
                       <span className="text-sm font-normal text-gray-600">
                         ({tierValues.length})
                       </span>
-                      <span className="ml-auto text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 text-gray-600">
-                        Press {index + 1}
-                      </span>
+                      {isTouchDevice ? (
+                        <span className={`ml-auto text-xs font-mono px-2 py-1 rounded border ${
+                          selectedTierForTouch === tier.id
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white border-gray-300 text-gray-600'
+                        }`}>
+                          {selectedTierForTouch === tier.id ? '✓ Selected' : 'Tap to Select'}
+                        </span>
+                      ) : (
+                        <span className="ml-auto text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 text-gray-600">
+                          Press {index + 1}
+                        </span>
+                      )}
                     </h2>
                     <ValueContainer
                       containerId={tier.id}
@@ -1176,6 +1327,9 @@ const ValuesTierList = () => {
                           isInTier
                           containerId={tier.id}
                           activeId={activeId}
+                          isTouchDevice={isTouchDevice}
+                          selectedTierForTouch={selectedTierForTouch}
+                          onTouchSelect={handleTouchSelect}
                         />
                       ))}
                     </ValueContainer>
@@ -1244,6 +1398,9 @@ const ValuesTierList = () => {
                                   animatingValues={animatingValues}
                                   containerId={category}
                                   activeId={activeId}
+                                  isTouchDevice={isTouchDevice}
+                                  selectedTierForTouch={selectedTierForTouch}
+                                  onTouchSelect={handleTouchSelect}
                                 />
                               ))}
                             </ValueContainer>
