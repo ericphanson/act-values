@@ -276,13 +276,15 @@ const ValuesTierList = () => {
   }, [hoveredValue, mousePosition, values, tierKeys, ensurePersistence]);
 
   const handleDragStart = (e: React.DragEvent, value: Value) => {
+    e.stopPropagation(); // Prevent parent category from becoming dragged
     ensurePersistence();
     setDraggedValue(value);
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (e: React.DragEvent) => {
     // Clear dragged state even if dropped outside a valid target
+    e.stopPropagation(); // Prevent parent drag events from interfering
     setDraggedValue(null);
     setDraggedCategory(null);
   };
