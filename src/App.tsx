@@ -17,6 +17,7 @@ const ValuesTierList = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedDataset, setSelectedDataset] = useState('act-comprehensive');
   const [showPersistInfo, setShowPersistInfo] = useState(false); // Will be set based on persisted state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const persistRequested = useRef(false);
 
   const tiers = [
@@ -222,6 +223,11 @@ const ValuesTierList = () => {
     }
   }, [values, categories, collapsedCategories, debouncedSave, selectedDataset, serializeState]);
 
+  const showToast = (message: string, duration = 3000) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), duration);
+  };
+
   const handleShare = async () => {
     try {
       const state = serializeState();
@@ -231,13 +237,13 @@ const ValuesTierList = () => {
 
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(shareUrl);
-        alert('Shareable link copied to clipboard!');
+        showToast('✓ Link copied to clipboard!');
       } else {
         // Fallback for older browsers
         prompt('Copy this URL to share:', shareUrl);
       }
     } catch (error) {
-      alert('Failed to copy link: ' + (error as Error).message);
+      showToast('✗ Failed to copy link');
     }
   };
 
@@ -557,6 +563,13 @@ const ValuesTierList = () => {
           </div>
         </div>
       </div>
+
+      {/* Toast notification */}
+      {toastMessage && (
+        <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg animate-fade-in-up z-50">
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 };
