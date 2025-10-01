@@ -267,6 +267,32 @@ const ValuesTierList = () => {
     }
 
     const tierLocations: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
+
+    // Check if source and destination are both categories (not tiers)
+    const sourceIsTier = tierLocations.includes(activeContainer as TierId);
+    const destIsTier = tierLocations.includes(overContainer as TierId);
+    const sourceIsCategory = !sourceIsTier;
+    const destIsCategory = !destIsTier;
+
+    // RESTRICTION: Cannot drag within a category (reordering within category)
+    if (sourceIsCategory && activeContainer === overContainer) {
+      return prevValues;
+    }
+
+    // RESTRICTION: Cannot drag from one category to another category
+    // Can only drag: category → tier, or tier → category (home), or tier → tier
+    if (sourceIsCategory && destIsCategory && activeContainer !== overContainer) {
+      // Only allow if going back to home category
+      if (overContainer !== activeValue.category) {
+        return prevValues;
+      }
+    }
+
+    // SPECIAL: When dragging from tier to ANY category, send it to home category
+    if (sourceIsTier && destIsCategory) {
+      // Override the destination to always be the home category
+      overContainer = activeValue.category;
+    }
     const containerMap = new Map<string, Value[]>();
     for (const value of prevValues) {
       const list = containerMap.get(value.location) ?? [];
@@ -808,30 +834,71 @@ const ValuesTierList = () => {
           targetLocation = tierKeys[e.key];
         }
 
-        if (hoveredValue.location !== targetLocation) {
-          setValues(prev => prev.map(v =>
-            v.id === hoveredValue.id ? { ...v, location: targetLocation } : v
-          ));
+        // Always trigger animation and move to front, even if already in the tier
+        const valueId = hoveredValue.id;
 
-          const valueId = hoveredValue.id;
-          setAnimatingValues(prev => new Set(prev).add(valueId));
-          setTimeout(() => {
-            setAnimatingValues(prev => {
-              const newSet = new Set(prev);
-              newSet.delete(valueId);
-              return newSet;
-            });
-          }, 500);
+        setValues(prev => {
+          // Remove the value from its current position
+          const filtered = prev.filter(v => v.id !== valueId);
 
-          setHoveredValue(null);
-          updateHoverFromMousePosition();
-        }
+          // Update the value's location
+          const updatedValue = { ...hoveredValue, location: targetLocation };
+
+          // Find where to insert (back/end of target location)
+          const tierOrder: string[] = ['very-important', 'somewhat-important', 'not-important'];
+          const targetTierIndex = tierOrder.indexOf(targetLocation);
+
+          if (targetTierIndex !== -1) {
+            // It's a tier - insert at the end of this tier
+            let insertIndex = 0;
+            // Skip all tiers before this one
+            for (let i = 0; i < targetTierIndex; i++) {
+              const tierCount = filtered.filter(v => v.location === tierOrder[i]).length;
+              insertIndex += tierCount;
+            }
+            // Add count of items in target tier (to get to the end)
+            const targetTierCount = filtered.filter(v => v.location === targetLocation).length;
+            insertIndex += targetTierCount;
+
+            filtered.splice(insertIndex, 0, updatedValue);
+          } else {
+            // It's a category - find position among categories (after all tiers)
+            const tiersCount = filtered.filter(v => tierOrder.includes(v.location)).length;
+            const categoryIndex = categories.indexOf(targetLocation);
+
+            let insertIndex = tiersCount;
+            // Skip all categories before this one
+            for (let i = 0; i < categoryIndex; i++) {
+              const catCount = filtered.filter(v => v.location === categories[i]).length;
+              insertIndex += catCount;
+            }
+            // Add count of items in target category (to get to the end)
+            const targetCatCount = filtered.filter(v => v.location === targetLocation).length;
+            insertIndex += targetCatCount;
+
+            filtered.splice(insertIndex, 0, updatedValue);
+          }
+
+          return filtered;
+        });
+
+        setAnimatingValues(prev => new Set(prev).add(valueId));
+        setTimeout(() => {
+          setAnimatingValues(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(valueId);
+            return newSet;
+          });
+        }, 500);
+
+        setHoveredValue(null);
+        updateHoverFromMousePosition();
       }
     };
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [hoveredValue, mousePosition, values, tierKeys]);
+  }, [hoveredValue, mousePosition, values, tierKeys, categories]);
 
   const findValueById = useCallback(
     (id: string) => values.find(value => value.id === id) ?? null,
