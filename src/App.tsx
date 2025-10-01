@@ -1,17 +1,186 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { ChevronDown, ChevronRight, Share2 } from 'lucide-react';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+  DragOverlay,
+  closestCenter,
+  pointerWithin,
+  rectIntersection,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { preloadedDatasets } from './data/datasets';
 import { Value, TierId, PersistedState, getCanonicalCategoryOrder } from './types';
 import { saveState, loadState, requestPersist } from './storage';
 import { debounce } from './utils/debounce';
 import { decodeUrlToState, encodeStateToUrl, getShareableUrl } from './urlState';
 
+// Sortable value item component
+interface SortableValueProps {
+  value: Value;
+  hoveredValue: Value | null;
+  setHoveredValue: (value: Value | null) => void;
+  animatingValues: Set<string>;
+  isInTier?: boolean;
+  containerId: string;
+  activeId: string | null;
+}
+
+const getValueClass = (value: Value, animatingValues: Set<string>, isInTier: boolean) => {
+  return isInTier
+    ? `relative px-4 py-2 bg-white border-2 border-gray-300 rounded-lg cursor-move hover:shadow-md hover:border-gray-400 transition-all select-none ${
+        animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300' : ''
+      }`
+    : `relative px-3 py-2 bg-gray-50 border border-gray-300 rounded cursor-move hover:bg-white hover:shadow-md transition-all text-sm select-none ${
+        animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300' : ''
+      }`;
+};
+
+const SortableValue: React.FC<SortableValueProps> = ({
+  value,
+  hoveredValue,
+  setHoveredValue,
+  animatingValues,
+  isInTier = false,
+  containerId,
+  activeId,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: value.id,
+    data: {
+      type: 'value',
+      containerId,
+      value,
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const baseClass = getValueClass(value, animatingValues, isInTier);
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onMouseEnter={() => setHoveredValue(value)}
+      onMouseLeave={() => setHoveredValue(null)}
+      className={baseClass}
+      data-value-id={value.id}
+    >
+      <span className={isInTier ? 'font-medium text-gray-800 block' : 'text-gray-800 font-medium'}>
+        {value.value}
+      </span>
+      {hoveredValue?.id === value.id && value.description && !activeId && (
+        <div
+          className={`absolute z-10 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96 ${
+            isInTier ? 'bottom-full left-0 mb-2' : 'left-full ml-2 top-0'
+          }`}
+        >
+          <div className="mb-1 text-emerald-300 text-xs font-semibold">
+            {(() => {
+              const otherTiers = ['very-important', 'somewhat-important', 'not-important']
+                .map((tierId, idx) => (tierId !== value.location ? `${idx + 1}` : null))
+                .filter(Boolean);
+
+              if (value.location === value.category) {
+                // In category
+                return `Press ${otherTiers.join(', ').replace(/,([^,]*)$/, ', or$1')} to move to a tier`;
+              } else {
+                // In tier
+                const tierText = otherTiers.length > 0
+                  ? `Press ${otherTiers.join(' or ')} to move to a different tier`
+                  : '';
+                const categoryText = ' (or 4 to return it)';
+                return tierText + categoryText;
+              }
+            })()}
+          </div>
+          {value.description}
+          <div
+            className={`absolute w-0 h-0 ${
+              isInTier
+                ? 'top-full left-4 border-l-8 border-r-8 border-t-8 border-transparent border-t-gray-900'
+                : 'right-full top-4 border-t-8 border-b-8 border-r-8 border-transparent border-r-gray-900'
+            }`}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface ValueContainerProps {
+  containerId: string;
+  isTier?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}
+
+const ValueContainer: React.FC<ValueContainerProps> = ({
+  containerId,
+  isTier = false,
+  className = '',
+  children,
+}) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: containerId,
+    data: {
+      type: 'container',
+      containerId,
+      isTier,
+    },
+  });
+
+  const highlightClass = isOver
+    ? isTier
+      ? 'ring-2 ring-emerald-300'
+      : 'ring-2 ring-blue-300'
+    : '';
+
+  const baseClass = 'relative w-full transition-shadow';
+  const sizeClass = isTier ? 'min-h-[4.5rem] flex flex-wrap gap-2 items-start p-2' : '';
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={[baseClass, sizeClass, className, highlightClass].filter(Boolean).join(' ')}
+      data-container-id={containerId}
+    >
+      {children}
+    </div>
+  );
+};
+
 const ValuesTierList = () => {
   const [values, setValues] = useState<Value[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
-  const [draggedValue, setDraggedValue] = useState<Value | null>(null);
-  const [draggedCategory, setDraggedCategory] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [hoveredValue, setHoveredValue] = useState<Value | null>(null);
   const [animatingValues, setAnimatingValues] = useState(new Set<string>());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -19,6 +188,29 @@ const ValuesTierList = () => {
   const [showPersistInfo, setShowPersistInfo] = useState(false); // Will be set based on persisted state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const persistRequested = useRef(false);
+
+  // Configure sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required before drag starts
+      },
+    })
+  );
+
+  const collisionDetection = useCallback((args: Parameters<typeof closestCenter>[0]) => {
+    const pointerCollisions = pointerWithin(args);
+    if (pointerCollisions.length > 0) {
+      return pointerCollisions;
+    }
+
+    const intersections = rectIntersection(args);
+    if (intersections.length > 0) {
+      return intersections;
+    }
+
+    return closestCenter(args);
+  }, []);
 
   const tiers = [
     { id: 'very-important' as TierId, label: 'Very Important to Me', color: 'bg-emerald-50 border-emerald-200', icon: '💎' },
@@ -35,29 +227,27 @@ const ValuesTierList = () => {
   // Convert runtime state to persisted format
   const serializeState = useCallback((): PersistedState => {
     const dataset = preloadedDatasets[selectedDataset];
-    const tierIds: TierId[] = ['very-important', 'somewhat-important', 'not-important', 'uncategorized'];
+    const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
     const tiers: Record<TierId, number[]> = {
       'very-important': [],
       'somewhat-important': [],
       'not-important': [],
-      'uncategorized': []
+      'uncategorized': [],
     };
 
     console.log('[Serialize] Processing values count:', values.length);
-    const locationCounts: Record<string, number> = {};
 
-    values.forEach((value) => {
-      locationCounts[value.location] = (locationCounts[value.location] || 0) + 1;
-      const index = parseInt(value.id.replace('value-', ''));
-      // Only save values that are in tiers (not in categories)
-      if (tierIds.includes(value.location as TierId)) {
-        const tier = value.location as TierId;
-        tiers[tier].push(index);
-      }
-      // Values in categories (not in a tier) aren't saved - they default to category on load
-    });
+    for (const tier of tierOrder) {
+      const tierValues = values.filter(value => value.location === tier);
+      tiers[tier] = tierValues.map(value => parseInt(value.id.replace('value-', ''), 10));
+    }
 
-    console.log('[Serialize] Location distribution:', locationCounts);
+    // Values not in tiers remain uncategorized
+    const uncategorizedValues = values.filter(
+      value => !tierOrder.includes(value.location as TierId)
+    );
+    tiers['uncategorized'] = uncategorizedValues.map(value => parseInt(value.id.replace('value-', ''), 10));
+
     console.log('[Serialize] Tiers being saved:', tiers);
 
     return {
@@ -141,33 +331,54 @@ const ValuesTierList = () => {
     console.log('[App] Created values:', importedValues.length);
     console.log('[App] Persisted tiers data:', persisted.tiers);
 
-    // Apply saved tier assignments
-    // Note: 'uncategorized' is a special tier - values in it should have location = category
-    importedValues.forEach((value, idx) => {
-      for (const [tier, indices] of Object.entries(persisted.tiers)) {
-        if (indices.includes(idx)) {
-          // If in uncategorized tier, location stays as category (already set above)
-          if (tier !== 'uncategorized') {
-            value.location = tier;
-          }
-          break;
-        }
-      }
-    });
+    const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
 
-    const sampleLocations = importedValues.slice(0, 5).map(v => `${v.id}: location="${v.location}", category="${v.category}"`);
+    // Apply saved tier assignments and preserve the saved ordering for each tier
+    const orderedValues: Value[] = [];
+    const usedIds = new Set<string>();
+
+    for (const tier of tierOrder) {
+      const indices = persisted.tiers?.[tier] ?? [];
+      for (const idx of indices) {
+        const value = importedValues[idx];
+        if (!value || usedIds.has(value.id)) continue;
+        value.location = tier;
+        orderedValues.push(value);
+        usedIds.add(value.id);
+      }
+    }
+
+    // Append uncategorized values in the saved order (falls back to dataset order)
+    const uncategorizedIndices = persisted.tiers?.['uncategorized'] ?? [];
+    for (const idx of uncategorizedIndices) {
+      const value = importedValues[idx];
+      if (!value || usedIds.has(value.id)) continue;
+      value.location = value.category;
+      orderedValues.push(value);
+      usedIds.add(value.id);
+    }
+
+    // Append any remaining values (shouldn't happen, but keep dataset order as fallback)
+    for (const value of importedValues) {
+      if (usedIds.has(value.id)) continue;
+      value.location = value.category;
+      orderedValues.push(value);
+      usedIds.add(value.id);
+    }
+
+    const sampleLocations = orderedValues.slice(0, 5).map(v => `${v.id}: location="${v.location}", category="${v.category}"`);
     console.log('[App] Sample locations after tier assignment:', sampleLocations);
 
     // Count values by location
     const locationCounts: Record<string, number> = {};
-    importedValues.forEach(v => {
+    orderedValues.forEach(v => {
       locationCounts[v.location] = (locationCounts[v.location] || 0) + 1;
     });
     console.log('[App] Values by location:', locationCounts);
 
     const uniqueCategories = [...new Set(importedValues.map(v => v.category))];
 
-    setValues(importedValues);
+    setValues(orderedValues);
     setCategories(persisted.categoryOrder.length > 0 ? persisted.categoryOrder : uniqueCategories);
     setSelectedDataset(persisted.datasetName);
     setCollapsedCategories(persisted.collapsedCategories);
@@ -218,7 +429,8 @@ const ValuesTierList = () => {
       const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
       const newHash = encodeStateToUrl(state, dataset.data.length, canonicalCategoryOrder);
       if (window.location.hash !== newHash) {
-        window.history.replaceState(null, '', newHash);
+        const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${newHash}`;
+        window.history.replaceState(null, '', nextUrl);
       }
     }
   }, [values, categories, collapsedCategories, debouncedSave, selectedDataset, serializeState]);
@@ -311,60 +523,124 @@ const ValuesTierList = () => {
     return () => document.removeEventListener('keydown', handleKeyPress);
   }, [hoveredValue, mousePosition, values, tierKeys, ensurePersistence]);
 
-  const handleDragStart = (e: React.DragEvent, value: Value) => {
-    e.stopPropagation(); // Prevent parent category from becoming dragged
+  const findValueById = useCallback(
+    (id: string) => values.find(value => value.id === id) ?? null,
+    [values]
+  );
+
+  const activeValue = useMemo(() => (activeId ? findValueById(activeId) : null), [activeId, findValueById]);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const id = String(active.id);
+    setActiveId(id);
     ensurePersistence();
-    setDraggedValue(value);
-    e.dataTransfer.effectAllowed = 'move';
+    setHoveredValue(null);
   };
 
-  const handleDragEnd = (e: React.DragEvent) => {
-    // Clear dragged state even if dropped outside a valid target
-    e.stopPropagation(); // Prevent parent drag events from interfering
-    setDraggedValue(null);
-    setDraggedCategory(null);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e: React.DragEvent, newLocation: string) => {
-    e.preventDefault();
-    if (draggedValue && draggedValue.location !== newLocation) {
-      setValues(prev => prev.map(v =>
-        v.id === draggedValue.id ? { ...v, location: newLocation } : v
-      ));
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    if (over && over.data?.current?.type === 'value') {
+      const value = findValueById(String(over.id));
+      if (value) {
+        setHoveredValue(value);
+      }
+    } else {
+      setHoveredValue(null);
     }
-    setDraggedValue(null);
   };
 
-  const handleCategoryDragStart = (e: React.DragEvent, category: string) => {
-    setDraggedCategory(category);
-    e.dataTransfer.effectAllowed = 'move';
-  };
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
 
-  const handleCategoryDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleCategoryDrop = (e: React.DragEvent, targetCategory: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (draggedCategory && draggedCategory !== targetCategory) {
-      const draggedIndex = categories.indexOf(draggedCategory);
-      const targetIndex = categories.indexOf(targetCategory);
-
-      const newCategories = [...categories];
-      newCategories.splice(draggedIndex, 1);
-      newCategories.splice(targetIndex, 0, draggedCategory);
-
-      setCategories(newCategories);
+    if (!over) {
+      setHoveredValue(null);
+      return;
     }
-    setDraggedCategory(null);
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
+    if (activeId === overId) {
+      setHoveredValue(null);
+      return;
+    }
+
+    setValues(prevValues => {
+      const activeValue = prevValues.find(v => v.id === activeId);
+      if (!activeValue) {
+        return prevValues;
+      }
+
+      const activeContainer = (active.data?.current as { containerId?: string } | undefined)?.containerId ?? activeValue.location;
+
+      let overContainer: string | undefined;
+      const overData = over.data?.current as { containerId?: string; type?: string; sortable?: { index: number } } | undefined;
+
+      if (overData?.type === 'container') {
+        overContainer = overData.containerId;
+      } else if (overData?.type === 'value') {
+        overContainer = overData.containerId;
+      } else {
+        const overValue = prevValues.find(v => v.id === overId);
+        overContainer = overValue?.location;
+      }
+
+      if (!overContainer) {
+        return prevValues;
+      }
+
+      const sourceValues = prevValues.filter(v => v.location === activeContainer);
+      const activeIndex = sourceValues.findIndex(v => v.id === activeId);
+      if (activeIndex === -1) {
+        return prevValues;
+      }
+
+      const targetValues = activeContainer === overContainer
+        ? sourceValues
+        : prevValues.filter(v => v.location === overContainer && v.id !== activeId);
+
+      let targetIndex: number;
+
+      if (overData?.type === 'container') {
+        targetIndex = targetValues.length;
+      } else if (overData?.sortable) {
+        targetIndex = overData.sortable.index;
+        if (activeContainer === overContainer && targetIndex > activeIndex) {
+          targetIndex -= 1;
+        }
+      } else {
+        const fallbackIndex = targetValues.findIndex(v => v.id === overId);
+        targetIndex = fallbackIndex === -1 ? targetValues.length : fallbackIndex;
+      }
+
+      if (activeContainer === overContainer) {
+        if (targetIndex === activeIndex) {
+          return prevValues;
+        }
+
+        const reordered = arrayMove(sourceValues, activeIndex, targetIndex);
+        const otherValues = prevValues.filter(v => v.location !== activeContainer);
+        return [...otherValues, ...reordered];
+      }
+
+      const remainingValues = prevValues.filter(v => v.id !== activeId);
+      const updatedActiveValue: Value = { ...activeValue, location: overContainer };
+      const destinationValues = remainingValues.filter(v => v.location === overContainer);
+      const clampedIndex = Math.min(Math.max(targetIndex, 0), destinationValues.length);
+      const reorderedDestination = [...destinationValues];
+      reorderedDestination.splice(clampedIndex, 0, updatedActiveValue);
+      const otherValues = remainingValues.filter(v => v.location !== overContainer);
+      return [...otherValues, ...reorderedDestination];
+    });
+
+    setHoveredValue(null);
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setHoveredValue(null);
   };
 
   const toggleCategory = (category: string) => {
@@ -379,7 +655,15 @@ const ValuesTierList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
+    <DndContext
+      sensors={sensors}
+      collisionDetection={collisionDetection}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
       <div className="max-w-7xl mx-auto">
         {showPersistInfo && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -453,63 +737,49 @@ const ValuesTierList = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
-            {tiers.map((tier, index) => (
-              <div
-                key={tier.id}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, tier.id)}
-                className={`${tier.color} border-2 rounded-lg p-4 min-h-32`}
-              >
-                <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <span>{tier.icon}</span>
-                  {tier.label}
-                  <span className="text-sm font-normal text-gray-600">
-                    ({getValuesByLocation(tier.id).length})
-                  </span>
-                  <span className="ml-auto text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 text-gray-600">
-                    Press {index + 1}
-                  </span>
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {getValuesByLocation(tier.id).map(value => (
-                    <div
-                      key={value.id}
-                      data-value-id={value.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, value)}
-                      onDragEnd={handleDragEnd}
-                      onMouseEnter={() => setHoveredValue(value)}
-                      onMouseLeave={() => setHoveredValue(null)}
-                      className={`relative px-4 py-2 bg-white border-2 border-gray-300 rounded-lg cursor-move hover:shadow-md hover:border-gray-400 transition-all select-none ${
-                        animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300' : ''
-                      }`}
-                    >
-                      <span className="font-medium text-gray-800 block">{value.value}</span>
-                      {hoveredValue?.id === value.id && value.description && (
-                        <div className="absolute z-10 bottom-full left-0 mb-2 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96">
-                          <div className="mb-1 text-emerald-300 text-xs font-semibold">
-                            {(() => {
-                              const otherTiers = ['very-important', 'somewhat-important', 'not-important']
-                                .map((tierId, idx) => tierId !== value.location ? `${idx + 1}` : null)
-                                .filter(Boolean);
-                              const tierText = otherTiers.length > 0
-                                ? `Press ${otherTiers.join(' or ')} to move to a different tier`
-                                : '';
-                              const categoryText = value.location !== value.category
-                                ? ' (or 4 to return it)'
-                                : '';
-                              return tierText + categoryText;
-                            })()}
-                          </div>
-                          {value.description}
-                          <div className="absolute top-full left-4 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-gray-900"></div>
+            {tiers.map((tier, index) => {
+              const tierValues = getValuesByLocation(tier.id);
+              return (
+                <SortableContext
+                  key={tier.id}
+                  id={tier.id}
+                  items={tierValues.map(value => value.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className={`${tier.color} border-2 rounded-lg p-4 min-h-32`}>
+                    <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                      <span>{tier.icon}</span>
+                      {tier.label}
+                      <span className="text-sm font-normal text-gray-600">
+                        ({tierValues.length})
+                      </span>
+                      <span className="ml-auto text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 text-gray-600">
+                        Press {index + 1}
+                      </span>
+                    </h2>
+                    <ValueContainer containerId={tier.id} isTier className="flex flex-wrap gap-2">
+                      {tierValues.length === 0 && (
+                        <div className="text-sm text-gray-500 italic select-none">
+                          Drop values here
                         </div>
                       )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+                      {tierValues.map(value => (
+                        <SortableValue
+                          key={value.id}
+                          value={value}
+                          hoveredValue={hoveredValue}
+                          setHoveredValue={setHoveredValue}
+                          animatingValues={animatingValues}
+                          isInTier
+                          containerId={tier.id}
+                          activeId={activeId}
+                        />
+                      ))}
+                    </ValueContainer>
+                  </div>
+                </SortableContext>
+              );
+            })}
           </div>
 
           <div className="space-y-3">
@@ -527,81 +797,58 @@ const ValuesTierList = () => {
                   .sort((a, b) => {
                     const aCount = getValuesByLocation(a).length;
                     const bCount = getValuesByLocation(b).length;
-                    // Categories with items come first
                     if (aCount > 0 && bCount === 0) return -1;
                     if (aCount === 0 && bCount > 0) return 1;
-                    // Within same group (both empty or both non-empty), preserve original order
                     return categories.indexOf(a) - categories.indexOf(b);
                   })
                   .map(category => {
                     const categoryValues = getValuesByLocation(category);
                     const isCollapsed = collapsedCategories[category];
-                    const isDragging = draggedCategory === category;
 
                     return (
-                    <div
-                      key={category}
-                      className={`border rounded-lg ${isDragging ? 'opacity-50' : ''}`}
-                      draggable
-                      onDragStart={(e) => handleCategoryDragStart(e, category)}
-                      onDragEnd={handleDragEnd}
-                      onDragOver={handleCategoryDragOver}
-                      onDrop={(e) => handleCategoryDrop(e, category)}
-                    >
-                      <button
-                        onClick={() => toggleCategory(category)}
-                        className="w-full flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer"
-                      >
-                        <span className="font-medium text-gray-700 flex items-center gap-2">
-                          <span className="cursor-move text-gray-400">⋮⋮</span>
-                          {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
-                          {category}
-                          <span className="text-sm font-normal text-gray-500">
-                            ({categoryValues.length})
-                          </span>
-                        </span>
-                      </button>
-
-                      {!isCollapsed && (
-                        <div
-                          onDragOver={handleDragOver}
-                          onDrop={(e) => handleDrop(e, category)}
-                          className="p-3 pt-0 flex flex-wrap gap-2"
+                      <div key={category} className="border rounded-lg">
+                        <button
+                          onClick={() => toggleCategory(category)}
+                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer"
                         >
-                          {categoryValues.map(value => (
-                            <div
-                              key={value.id}
-                              data-value-id={value.id}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, value)}
-                              onDragEnd={handleDragEnd}
-                              onMouseEnter={() => setHoveredValue(value)}
-                              onMouseLeave={() => setHoveredValue(null)}
-                              className={`relative px-3 py-2 bg-gray-50 border border-gray-300 rounded cursor-move hover:bg-white hover:shadow-md transition-all text-sm select-none ${
-                                animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300' : ''
-                              }`}
-                            >
-                              <span className="text-gray-800 font-medium">{value.value}</span>
-                              {hoveredValue?.id === value.id && value.description && (
-                                <div className="absolute z-10 left-full ml-2 top-0 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96">
-                                  <div className="mb-1 text-emerald-300 text-xs font-semibold">
-                                    Press {['very-important', 'somewhat-important', 'not-important']
-                                      .map((tierId, idx) => tierId !== value.location ? `${idx + 1}` : null)
-                                      .filter(Boolean)
-                                      .join(', ')
-                                      .replace(/,([^,]*)$/, ', or$1')} to move to a tier
-                                  </div>
-                                  {value.description}
-                                  <div className="absolute right-full top-4 w-0 h-0 border-t-8 border-b-8 border-r-8 border-transparent border-r-gray-900"></div>
+                          <span className="font-medium text-gray-700 flex items-center gap-2">
+                            {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
+                            {category}
+                            <span className="text-sm font-normal text-gray-500">
+                              ({categoryValues.length})
+                            </span>
+                          </span>
+                        </button>
+
+                        {!isCollapsed && (
+                          <SortableContext
+                            id={category}
+                            items={categoryValues.map(value => value.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <ValueContainer containerId={category} className="p-3 pt-0 flex flex-wrap gap-2">
+                              {categoryValues.length === 0 && (
+                                <div className="text-sm text-gray-400 italic select-none">
+                                  No values yet
                                 </div>
                               )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                              {categoryValues.map(value => (
+                                <SortableValue
+                                  key={value.id}
+                                  value={value}
+                                  hoveredValue={hoveredValue}
+                                  setHoveredValue={setHoveredValue}
+                                  animatingValues={animatingValues}
+                                  containerId={category}
+                                  activeId={activeId}
+                                />
+                              ))}
+                            </ValueContainer>
+                          </SortableContext>
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           </div>
@@ -614,7 +861,21 @@ const ValuesTierList = () => {
           {toastMessage}
         </div>
       )}
-    </div>
+      </div>
+      <DragOverlay>
+        {activeValue ? (
+          <div
+            className={getValueClass(
+              activeValue,
+              animatingValues,
+              tiers.some(tier => tier.id === activeValue.location)
+            )}
+          >
+            <span className="font-medium text-gray-800 block">{activeValue.value}</span>
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 };
 
