@@ -247,7 +247,7 @@ const ValuesTierList = () => {
   const [hoveredValue, setHoveredValue] = useState<Value | null>(null);
   const [animatingValues, setAnimatingValues] = useState(new Set<string>());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [selectedDataset, setSelectedDataset] = useState('act-comprehensive');
+  const [selectedDataset, setSelectedDataset] = useState('act-shorter');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [listId, setListId] = useState<string>('');
   const [listName, setListName] = useState<string>('');
@@ -1145,7 +1145,7 @@ const ValuesTierList = () => {
                 {isTouchDevice ? 'Tap a tier, then tap values to add them' : 'Drag values to rank them!'}
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 print-hide">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 print-hide">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">List Name</label>
                 <input
@@ -1227,45 +1227,6 @@ const ValuesTierList = () => {
                     </button>
                   )}
                 </div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Values Dataset</label>
-                <select
-                  value={selectedDataset}
-                  onChange={(e) => {
-                    const newDataset = e.target.value;
-                    setSelectedDataset(newDataset);
-
-                    // Try to find the most recent list for this dataset
-                    const allLists = loadAllLists();
-                    const datasetLists = allLists.filter(list => list.datasetName === newDataset);
-
-                    if (datasetLists.length > 0) {
-                      // Load the most recent list (already sorted by lastModified desc)
-                      const mostRecentList = datasetLists[0];
-                      const dataset = preloadedDatasets[mostRecentList.datasetName];
-                      if (dataset) {
-                        const canonicalOrder = getCanonicalCategoryOrder(dataset);
-                        const persisted = decodeUrlToState(mostRecentList.fragment, dataset.data.length, canonicalOrder);
-                        if (persisted) {
-                          hydrateState(persisted as PersistedState);
-                          setCurrentListId(mostRecentList.id);
-                          lastKnownModified.current = mostRecentList.lastModified;
-                        }
-                      }
-                    } else {
-                      // No existing list for this dataset, create a new one
-                      createNewList(newDataset);
-                    }
-                  }}
-                  className="px-3 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full"
-                >
-                  {Object.entries(preloadedDatasets).map(([key, dataset]) => (
-                    <option key={key} value={key}>
-                      {dataset.name} ({dataset.data.length})
-                    </option>
-                  ))}
-                </select>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide md:opacity-0">Actions</label>
