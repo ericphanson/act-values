@@ -183,18 +183,13 @@ const ValuesTierList = () => {
   const [animatingValues, setAnimatingValues] = useState(new Set<string>());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedDataset, setSelectedDataset] = useState('act-comprehensive');
-  const [showPersistInfo, setShowPersistInfo] = useState(false); // Will be set based on persisted state
+  const [showPersistInfo, setShowPersistInfo] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const persistRequested = useRef(false);
-  const lastDragState = useRef<{ activeId: string; overId: string } | null>(null);
-  const pendingDragUpdate = useRef<{
-    activeId: string;
-    overId: string;
-    activeData?: Record<string, any>;
-    overData?: Record<string, any>;
-  } | null>(null);
-  const dragUpdateFrame = useRef<number | null>(null);
   const currentFragmentRef = useRef<string | null>(null);
+  
+  // Simple throttling: track if update is already scheduled
+  const updateScheduled = useRef(false);
 
   // Configure sensors for drag and drop
   const sensors = useSensors(
@@ -254,9 +249,9 @@ const ValuesTierList = () => {
     let overContainer: string | undefined;
     const overType = overData?.type;
     if (overType === 'container') {
-      overContainer = overData.containerId;
+      overContainer = overData?.containerId;
     } else if (overType === 'value') {
-      overContainer = overData.containerId;
+      overContainer = overData?.containerId;
     } else {
       const overValue = prevValues.find(value => value.id === overId);
       overContainer = overValue?.location;
@@ -340,50 +335,25 @@ const ValuesTierList = () => {
     return hasChanged ? nextValues : prevValues;
   }, [categories]);
 
-  const clearPendingDragUpdate = useCallback(() => {
-    if (dragUpdateFrame.current !== null) {
-      cancelAnimationFrame(dragUpdateFrame.current);
-      dragUpdateFrame.current = null;
-    }
-    pendingDragUpdate.current = null;
-  }, []);
-
-  const runPendingDragUpdate = useCallback(() => {
-    const payload = pendingDragUpdate.current;
-    if (!payload) {
-      dragUpdateFrame.current = null;
-      return;
-    }
-
-    pendingDragUpdate.current = null;
-    const { activeId, overId, activeData, overData } = payload;
-
-    setValues(prevValues => {
-      const nextValues = reorderValuesForDrag(prevValues, activeId, overId, activeData, overData);
-      lastDragState.current = { activeId, overId };
-      return nextValues === prevValues ? prevValues : nextValues;
+  // Simple throttled update during drag - prevents too many re-renders
+  const scheduleReorder = useCallback((
+    activeId: string,
+    overId: string,
+    activeData?: Record<string, any>,
+    overData?: Record<string, any>
+  ) => {
+    // Skip if update already scheduled
+    if (updateScheduled.current) return;
+    
+    updateScheduled.current = true;
+    requestAnimationFrame(() => {
+      setValues(prevValues => {
+        const nextValues = reorderValuesForDrag(prevValues, activeId, overId, activeData, overData);
+        return nextValues === prevValues ? prevValues : nextValues;
+      });
+      updateScheduled.current = false;
     });
-
-    dragUpdateFrame.current = null;
   }, [reorderValuesForDrag]);
-
-  const scheduleDragUpdate = useCallback((payload: {
-    activeId: string;
-    overId: string;
-    activeData?: Record<string, any>;
-    overData?: Record<string, any>;
-  }) => {
-    pendingDragUpdate.current = payload;
-    if (dragUpdateFrame.current === null) {
-      dragUpdateFrame.current = requestAnimationFrame(runPendingDragUpdate);
-    }
-  }, [runPendingDragUpdate]);
-
-  useEffect(() => {
-    return () => {
-      clearPendingDragUpdate();
-    };
-  }, [clearPendingDragUpdate]);
 
   const tiers = [
     { id: 'very-important' as TierId, label: 'Very Important to Me', color: 'bg-emerald-50 border-emerald-200', icon: '💎' },
@@ -726,11 +696,9 @@ const ValuesTierList = () => {
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const id = String(active.id);
-    clearPendingDragUpdate();
     setActiveId(id);
     ensurePersistence();
     setHoveredValue(null);
-    lastDragState.current = null;
   };
 
   const handleDragOver = (event: DragOverEvent) => {
@@ -756,25 +724,18 @@ const ValuesTierList = () => {
       return;
     }
 
-    const lastState = lastDragState.current;
-    if (lastState && lastState.activeId === activeId && lastState.overId === overId) {
-      return;
-    }
-
     const activeData = active.data?.current as Record<string, any> | undefined;
     const overData = over.data?.current as Record<string, any> | undefined;
 
-    scheduleDragUpdate({ activeId, overId, activeData, overData });
+    scheduleReorder(activeId, overId, activeData, overData);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    clearPendingDragUpdate();
     setActiveId(null);
 
     if (!over) {
       setHoveredValue(null);
-      lastDragState.current = null;
       return;
     }
 
@@ -783,7 +744,6 @@ const ValuesTierList = () => {
 
     if (activeId === overId) {
       setHoveredValue(null);
-      lastDragState.current = null;
       return;
     }
 
@@ -792,7 +752,6 @@ const ValuesTierList = () => {
 
     setValues(prevValues => {
       const nextValues = reorderValuesForDrag(prevValues, activeId, overId, activeData, overData);
-      lastDragState.current = null;
       return nextValues === prevValues ? prevValues : nextValues;
     });
 
@@ -800,10 +759,8 @@ const ValuesTierList = () => {
   };
 
   const handleDragCancel = () => {
-    clearPendingDragUpdate();
     setActiveId(null);
     setHoveredValue(null);
-    lastDragState.current = null;
   };
 
   const toggleCategory = (category: string) => {
