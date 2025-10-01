@@ -22,7 +22,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { preloadedDatasets } from './data/datasets';
 import { Value, TierId, PersistedState, SavedList, getCanonicalCategoryOrder } from './types';
-import { loadList, saveList, loadAllLists, deleteList, getCurrentListId, setCurrentListId } from './storage';
+import { loadList, saveList, loadAllLists, deleteList, renameList, getCurrentListId, setCurrentListId } from './storage';
 import { generateFriendlyName, generateListId } from './utils/nameGenerator';
 import { debounce } from './utils/debounce';
 import { encodeStateToUrl, getShareableUrl, decodeUrlToState } from './urlState';
@@ -190,6 +190,8 @@ const ValuesTierList = () => {
   const [savedLists, setSavedLists] = useState<SavedList[]>([]);
   const lastKnownModified = useRef<number>(0);
   const currentFragmentRef = useRef<string | null>(null);
+  const initializedRef = useRef<boolean>(false);
+
 
   // Simple throttling: track if update is already scheduled
   const updateScheduled = useRef(false);
@@ -415,40 +417,33 @@ const ValuesTierList = () => {
     };
   }, [values, categories, collapsedCategories, selectedDataset, listId, listName]);
 
-  const debouncedSaveList = useMemo(
-    () =>
-      debounce((list: SavedList, knownModified: number) => {
-        const success = saveList(list, knownModified);
-        if (!success) {
-          // Conflict detected - fork the list
-          console.log('[App] Forking list due to conflict');
-          const newId = generateListId();
-          const newName = list.name + ' (copy)';
-          setListId(newId);
-          setListName(newName);
-          lastKnownModified.current = Date.now();
-
-          // Save with new ID (no conflict check)
-          const forkedList: SavedList = {
-            ...list,
-            id: newId,
-            name: newName,
-            lastModified: Date.now(),
-            createdAt: Date.now()
-          };
-          saveList(forkedList);
-          setSavedLists(loadAllLists());
-        } else {
-          lastKnownModified.current = list.lastModified;
-        }
-      }, 150),
-    []
-  );
-
   // Refresh saved lists
   const refreshSavedLists = useCallback(() => {
     setSavedLists(loadAllLists());
   }, []);
+
+  const debouncedSaveList = useMemo(
+    () =>
+      debounce((list: SavedList) => {
+        saveList(list);
+        lastKnownModified.current = list.lastModified;
+      }, 150),
+    []
+  );
+
+  const debouncedRenameList = useMemo(
+    () =>
+      debounce((id: string, newName: string) => {
+        renameList(id, newName);
+        // Update lastKnownModified to prevent conflict detection
+        const updated = loadList(id);
+        if (updated) {
+          lastKnownModified.current = updated.lastModified;
+        }
+        setSavedLists(loadAllLists());
+      }, 300),
+    []
+  );
 
   // Load dataset from data file
   const loadDataset = useCallback((datasetKey: string, preserveState = false) => {
@@ -607,6 +602,15 @@ const ValuesTierList = () => {
 
   // Load state on mount - check URL first, then current list, then create new
   useEffect(() => {
+    // Prevent duplicate initialization (React StrictMode, hot reload)
+    if (initializedRef.current) {
+      console.log('[App] Already initialized, skipping');
+      return;
+    }
+
+    console.log('[App] Initializing app...');
+    initializedRef.current = true;
+
     let mounted = true;
 
     const initializeApp = () => {
@@ -706,10 +710,41 @@ const ValuesTierList = () => {
           lastModified: Date.now(),
           createdAt: loadList(listId)?.createdAt || Date.now()
         };
-        debouncedSaveList(listToSave, lastKnownModified.current);
+        debouncedSaveList(listToSave);
       }
     }
   }, [values, categories, collapsedCategories, selectedDataset, listId, listName, serializeState, debouncedSaveList]);
+
+  // Listen for storage changes from other tabs and auto-reload
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      // Only handle changes to our saved lists
+      if (e.key !== 'act-values-saved-lists' || !e.newValue) return;
+
+      console.log('[App] Storage changed in another tab, reloading current list');
+
+      // Reload the current list from storage
+      const list = loadList(listId);
+      if (list) {
+        const dataset = preloadedDatasets[list.datasetName];
+        if (dataset) {
+          const canonicalOrder = getCanonicalCategoryOrder(dataset);
+          const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
+          if (persisted) {
+            hydrateState(persisted as PersistedState);
+            lastKnownModified.current = list.lastModified;
+            currentFragmentRef.current = list.fragment;
+          }
+        }
+      }
+
+      // Also refresh the saved lists dropdown
+      refreshSavedLists();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [listId, hydrateState, refreshSavedLists]);
 
   const showToast = (message: string, duration = 3000) => {
     setToastMessage(message);
@@ -897,121 +932,136 @@ const ValuesTierList = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-start justify-between gap-6">
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-800">ACT Values Tier List</h1>
               <p className="text-gray-600 mt-1">Drag values to rank them, or hover and press 1, 2, 3 (tiers) or 4 (categories)</p>
             </div>
-            <div className="flex gap-3 items-center">
-              <input
-                type="text"
-                value={listName}
-                onChange={(e) => {
-                  const newName = e.target.value;
-                  setListName(newName);
-                }}
-                className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-w-[200px]"
-                placeholder="List name"
-              />
-              <div className="flex items-center gap-2">
-                <select
-                  value={listId}
+            <div className="flex gap-6 items-start">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">List Name</label>
+                <input
+                  type="text"
+                  value={listName}
                   onChange={(e) => {
-                    const selectedId = e.target.value;
-                    if (selectedId === '__new__') {
-                      createNewList(selectedDataset);
-                    } else {
-                      const list = loadList(selectedId);
-                      if (list) {
-                        const dataset = preloadedDatasets[list.datasetName];
-                        if (dataset) {
-                          const canonicalOrder = getCanonicalCategoryOrder(dataset);
-                          const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
-                          if (persisted) {
-                            hydrateState(persisted as PersistedState);
-                            setCurrentListId(selectedId);
-                            lastKnownModified.current = list.lastModified;
-                          }
-                        }
-                      }
-                    }
+                    const newName = e.target.value;
+                    setListName(newName);
+                    debouncedRenameList(listId, newName);
                   }}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  {savedLists.map((list) => (
-                    <option key={list.id} value={list.id}>
-                      {list.name}
-                    </option>
-                  ))}
-                  <option value="__new__">+ New List</option>
-                </select>
-                {savedLists.length > 1 && (
-                  <button
-                    onClick={() => {
-                      if (confirm(`Delete "${listName}"? This cannot be undone.`)) {
-                        deleteList(listId);
-                        refreshSavedLists();
-
-                        // Load another list or create new one
-                        const remainingLists = loadAllLists();
-                        if (remainingLists.length > 0) {
-                          const nextList = remainingLists[0];
-                          const dataset = preloadedDatasets[nextList.datasetName];
+                  className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-w-[200px]"
+                  placeholder="Enter name..."
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">My Lists</label>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={listId}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      if (selectedId === '__new__') {
+                        createNewList(selectedDataset);
+                      } else {
+                        const list = loadList(selectedId);
+                        if (list) {
+                          const dataset = preloadedDatasets[list.datasetName];
                           if (dataset) {
                             const canonicalOrder = getCanonicalCategoryOrder(dataset);
-                            const persisted = decodeUrlToState(nextList.fragment, dataset.data.length, canonicalOrder);
+                            const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
                             if (persisted) {
                               hydrateState(persisted as PersistedState);
-                              setCurrentListId(nextList.id);
-                              lastKnownModified.current = nextList.lastModified;
+                              setCurrentListId(selectedId);
+                              lastKnownModified.current = list.lastModified;
                             }
                           }
-                        } else {
-                          createNewList(selectedDataset);
                         }
                       }
                     }}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Delete this list"
+                    className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <Trash2 size={20} />
-                  </button>
-                )}
+                    {savedLists.map((list) => (
+                      <option key={list.id} value={list.id}>
+                        {list.name}
+                      </option>
+                    ))}
+                    <option value="__new__">+ New List</option>
+                  </select>
+                  {savedLists.length > 1 && (
+                    <button
+                      onClick={() => {
+                        if (confirm(`Delete "${listName}"? This cannot be undone.`)) {
+                          deleteList(listId);
+                          refreshSavedLists();
+
+                          // Load another list or create new one
+                          const remainingLists = loadAllLists();
+                          if (remainingLists.length > 0) {
+                            const nextList = remainingLists[0];
+                            const dataset = preloadedDatasets[nextList.datasetName];
+                            if (dataset) {
+                              const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                              const persisted = decodeUrlToState(nextList.fragment, dataset.data.length, canonicalOrder);
+                              if (persisted) {
+                                hydrateState(persisted as PersistedState);
+                                setCurrentListId(nextList.id);
+                                lastKnownModified.current = nextList.lastModified;
+                              }
+                            }
+                          } else {
+                            createNewList(selectedDataset);
+                          }
+                        }
+                      }}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete this list"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  )}
+                </div>
               </div>
-              <select
-                value={selectedDataset}
-                onChange={(e) => {
-                  const newDataset = e.target.value;
-                  setSelectedDataset(newDataset);
-                  // Reset to new list when changing datasets
-                  createNewList(newDataset);
-                }}
-                className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                {Object.entries(preloadedDatasets).map(([key, dataset]) => (
-                  <option key={key} value={key}>
-                    {dataset.name} ({dataset.data.length} values)
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-              >
-                <Share2 size={20} />
-                Share Link
-              </button>
-              <button
-                onClick={() => {
-                  // Reset current dataset to fresh state
-                  loadDataset(selectedDataset);
-                  // Note: This loads fresh data in memory but doesn't delete from storage
-                  // The fresh state will be saved on the next change
-                }}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
-              >
-                Reset
-              </button>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Values Dataset</label>
+                <select
+                  value={selectedDataset}
+                  onChange={(e) => {
+                    const newDataset = e.target.value;
+                    setSelectedDataset(newDataset);
+                    // Reset to new list when changing datasets
+                    createNewList(newDataset);
+                  }}
+                  className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  {Object.entries(preloadedDatasets).map(([key, dataset]) => (
+                    <option key={key} value={key}>
+                      {dataset.name} ({dataset.data.length})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide opacity-0">Actions</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleShare}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                  >
+                    <Share2 size={18} />
+                    Share
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Reset current dataset to fresh state
+                      loadDataset(selectedDataset);
+                      // Note: This loads fresh data in memory but doesn't delete from storage
+                      // The fresh state will be saved on the next change
+                    }}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

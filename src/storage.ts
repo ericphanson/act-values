@@ -36,31 +36,19 @@ export function loadList(id: string): SavedList | null {
 }
 
 /**
- * Save or update a list
- * Returns true if saved successfully, false if there was a conflict
+ * Save or update a list (last write wins)
  */
-export function saveList(list: SavedList, knownLastModified?: number): boolean {
+export function saveList(list: SavedList): void {
   try {
     const stored = localStorage.getItem(SAVED_LISTS_KEY);
     const listsMap: Record<string, SavedList> = stored ? JSON.parse(stored) : {};
-
-    // Check for conflict (another tab modified this list)
-    if (knownLastModified !== undefined) {
-      const existing = listsMap[list.id];
-      if (existing && existing.lastModified > knownLastModified) {
-        console.log('[Storage] Conflict detected, list was modified elsewhere');
-        return false; // Signal conflict
-      }
-    }
 
     listsMap[list.id] = list;
     localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(listsMap));
 
     console.log(`[Storage] Saved list '${list.name}' (${list.id})`);
-    return true;
   } catch (error) {
     console.error('[Storage] Error saving list:', error);
-    return true; // Assume success to avoid forking on storage errors
   }
 }
 
