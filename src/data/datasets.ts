@@ -1,6 +1,7 @@
 export const preloadedDatasets = {
   'act-comprehensive': {
     name: 'ACT Comprehensive Values',
+    version: 1,
     data: [
       {"name":"Compassion","description":"Actively caring about others' suffering and taking steps to relieve it.","category":"Compassion & Care"},
       {"name":"Empathy","description":"Understanding and sharing another person's feelings and perspectives.","category":"Compassion & Care"},
