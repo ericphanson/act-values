@@ -10,4 +10,4 @@
 - [x] touch-friendlyness. I think to support touch, we could have a mode where you press on a tier, then every value you press on gets added to that tier. So you can fill it out ergonomically that way. This should only happen for touch displays, since dragging isn't ergonomic there
 - [ ] intro: when you first load it, have something show you how to use it, with an arrow showing how to drag a value into a tier
 - [x] "Drag values to rank them, or hover and press 1, 2, 3 (tiers) or 4 (categories)" text: doesn't haev enough room
-- [ ] UI responsiveness
+- [x] UI responsiveness
