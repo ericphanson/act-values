@@ -39,7 +39,7 @@ function decodeCategoryPermutation(permIndices: number[], canonicalOrder: string
 
 /**
  * Encode persisted state to URL hash
- * Format: #<lehmer-fragment>.<category-lehmer>&d=<datasetName>&v=<datasetVersion>&o=<collapsedCategories>
+ * Format: #<lehmer-fragment>.<category-lehmer>&id=<listId>&n=<listName>&d=<datasetName>&v=<datasetVersion>&o=<collapsedCategories>
  */
 export function encodeStateToUrl(
   state: PersistedState,
@@ -72,6 +72,8 @@ export function encodeStateToUrl(
 
   // Build URL params for the rest of the state
   const params = new URLSearchParams();
+  params.set('id', state.listId);
+  params.set('n', encodeURIComponent(state.listName));
   params.set('d', state.datasetName);
   params.set('v', state.datasetVersion.toString());
 
@@ -172,6 +174,8 @@ export function decodeUrlToState(
 
     // Parse URL params
     const params = new URLSearchParams(paramsString);
+    const listId = params.get('id') || '';
+    const listName = decodeURIComponent(params.get('n') || '');
     const datasetName = params.get('d') || 'act-comprehensive';
     const datasetVersion = parseInt(params.get('v') || '1', 10);
 
@@ -210,13 +214,14 @@ export function decodeUrlToState(
     };
 
     return {
+      listId,
+      listName,
       datasetName,
       datasetVersion,
       tiers,
       categoryOrder,
       collapsedCategories,
-      timestamp: Date.now(),
-      hasSeenPersistInfo: true // If loading from URL, they've used the app before
+      timestamp: Date.now()
     };
   } catch (error) {
     console.error('[URL] Failed to decode URL hash:', error);

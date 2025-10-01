@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { ChevronDown, ChevronRight, Share2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Share2, Trash2 } from 'lucide-react';
 import {
   DndContext,
   DragEndEvent,
@@ -21,10 +21,11 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { preloadedDatasets } from './data/datasets';
-import { Value, TierId, PersistedState, getCanonicalCategoryOrder } from './types';
-import { decodeFragment, saveDatasetFragment, loadState, requestPersist, setActiveDataset } from './storage';
+import { Value, TierId, PersistedState, SavedList, getCanonicalCategoryOrder } from './types';
+import { loadList, saveList, loadAllLists, deleteList, getCurrentListId, setCurrentListId } from './storage';
+import { generateFriendlyName, generateListId } from './utils/nameGenerator';
 import { debounce } from './utils/debounce';
-import { encodeStateToUrl, getShareableUrl } from './urlState';
+import { encodeStateToUrl, getShareableUrl, decodeUrlToState } from './urlState';
 
 // Sortable value item component
 interface SortableValueProps {
@@ -183,11 +184,13 @@ const ValuesTierList = () => {
   const [animatingValues, setAnimatingValues] = useState(new Set<string>());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedDataset, setSelectedDataset] = useState('act-comprehensive');
-  const [showPersistInfo, setShowPersistInfo] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const persistRequested = useRef(false);
+  const [listId, setListId] = useState<string>('');
+  const [listName, setListName] = useState<string>('');
+  const [savedLists, setSavedLists] = useState<SavedList[]>([]);
+  const lastKnownModified = useRef<number>(0);
   const currentFragmentRef = useRef<string | null>(null);
-  
+
   // Simple throttling: track if update is already scheduled
   const updateScheduled = useRef(false);
 
@@ -344,7 +347,7 @@ const ValuesTierList = () => {
   ) => {
     // Skip if update already scheduled
     if (updateScheduled.current) return;
-    
+
     updateScheduled.current = true;
     requestAnimationFrame(() => {
       setValues(prevValues => {
@@ -401,33 +404,50 @@ const ValuesTierList = () => {
     console.log('[Serialize] Tiers being saved:', tiers);
 
     return {
+      listId,
+      listName,
       datasetName: selectedDataset,
       datasetVersion: dataset.version,
       tiers,
       categoryOrder: categories,
       collapsedCategories,
-      timestamp: Date.now(),
-      hasSeenPersistInfo: true // Mark that user has interacted with the app
+      timestamp: Date.now()
     };
-  }, [values, categories, collapsedCategories, selectedDataset]);
+  }, [values, categories, collapsedCategories, selectedDataset, listId, listName]);
 
-  const persistFragment = useMemo(
+  const debouncedSaveList = useMemo(
     () =>
-      debounce((datasetName: string, fragment: string, hasSeen: boolean) => {
-        saveDatasetFragment(datasetName, fragment, { hasSeenPersistInfo: hasSeen }).catch(error => {
-          console.error('[App] Failed to persist fragment:', error);
-        });
+      debounce((list: SavedList, knownModified: number) => {
+        const success = saveList(list, knownModified);
+        if (!success) {
+          // Conflict detected - fork the list
+          console.log('[App] Forking list due to conflict');
+          const newId = generateListId();
+          const newName = list.name + ' (copy)';
+          setListId(newId);
+          setListName(newName);
+          lastKnownModified.current = Date.now();
+
+          // Save with new ID (no conflict check)
+          const forkedList: SavedList = {
+            ...list,
+            id: newId,
+            name: newName,
+            lastModified: Date.now(),
+            createdAt: Date.now()
+          };
+          saveList(forkedList);
+          setSavedLists(loadAllLists());
+        } else {
+          lastKnownModified.current = list.lastModified;
+        }
       }, 150),
     []
   );
 
-  // Request persistence on first interaction
-  const ensurePersistence = useCallback(() => {
-    if (!persistRequested.current) {
-      persistRequested.current = true;
-      setShowPersistInfo(false);
-      requestPersist();
-    }
+  // Refresh saved lists
+  const refreshSavedLists = useCallback(() => {
+    setSavedLists(loadAllLists());
   }, []);
 
   // Load dataset from data file
@@ -532,71 +552,164 @@ const ValuesTierList = () => {
     setCategories(persisted.categoryOrder.length > 0 ? persisted.categoryOrder : uniqueCategories);
     setSelectedDataset(persisted.datasetName);
     setCollapsedCategories(persisted.collapsedCategories);
-
-    // Show info banner only if user hasn't seen it before
-    setShowPersistInfo(!persisted.hasSeenPersistInfo);
+    setListId(persisted.listId);
+    setListName(persisted.listName);
 
     console.log('[App] State hydrated successfully');
   }, [loadDataset]);
 
-  // Load state on mount - check URL first, then storage
+  // Create a new list
+  const createNewList = useCallback((datasetKey: string = 'act-comprehensive') => {
+    const newId = generateListId();
+    const newName = generateFriendlyName();
+
+    setListId(newId);
+    setListName(newName);
+    setCurrentListId(newId);
+    lastKnownModified.current = Date.now();
+
+    loadDataset(datasetKey);
+
+    // Create initial empty state and save it immediately so it appears in the list picker
+    const dataset = preloadedDatasets[datasetKey];
+    const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
+    const initialState: PersistedState = {
+      listId: newId,
+      listName: newName,
+      datasetName: datasetKey,
+      datasetVersion: dataset.version,
+      tiers: {
+        'very-important': [],
+        'somewhat-important': [],
+        'not-important': [],
+        'uncategorized': []
+      },
+      categoryOrder: canonicalCategoryOrder,
+      collapsedCategories: {},
+      timestamp: Date.now()
+    };
+
+    const initialHash = encodeStateToUrl(initialState, dataset.data.length, canonicalCategoryOrder);
+    const newList: SavedList = {
+      id: newId,
+      name: newName,
+      datasetName: datasetKey,
+      fragment: initialHash,
+      lastModified: Date.now(),
+      createdAt: Date.now()
+    };
+
+    saveList(newList);
+    refreshSavedLists();
+
+    console.log(`[App] Created new list: ${newName} (${newId})`);
+  }, [loadDataset, refreshSavedLists]);
+
+  // Load state on mount - check URL first, then current list, then create new
   useEffect(() => {
-    const hash = window.location.hash;
+    let mounted = true;
 
-    // Try URL first
-    if (hash && hash.length > 1) {
-      const persistedFromHash = decodeFragment(hash);
-      if (persistedFromHash) {
-        console.log('[App] Loading state from URL fragment');
-        currentFragmentRef.current = hash;
-        hydrateState(persistedFromHash);
-        return;
-      }
-    }
+    const initializeApp = () => {
+      if (!mounted) return;
 
-    // Fall back to stored fragments
-    loadState().then(async ({ activeDataset, fragment, hasSeenPersistInfo }) => {
-      const datasetKey = preloadedDatasets[activeDataset] ? activeDataset : 'act-comprehensive';
+      const hash = window.location.hash;
 
-      if (fragment) {
-        await setActiveDataset(datasetKey);
-        const persisted = decodeFragment(fragment);
-        if (persisted) {
-          if (persisted.hasSeenPersistInfo === undefined) {
-            persisted.hasSeenPersistInfo = hasSeenPersistInfo;
+      // Try URL first
+      if (hash && hash.length > 1) {
+        const dataset = preloadedDatasets['act-comprehensive']; // Default for decoding
+        const canonicalOrder = getCanonicalCategoryOrder(dataset);
+        const persistedFromHash = decodeUrlToState(hash, dataset.data.length, canonicalOrder);
+
+        if (persistedFromHash && persistedFromHash.listId) {
+          console.log('[App] Loading state from URL fragment');
+          currentFragmentRef.current = hash;
+
+          // Save this list to storage if it's new
+          const existingList = loadList(persistedFromHash.listId);
+          if (!existingList) {
+            const newList: SavedList = {
+              id: persistedFromHash.listId,
+              name: persistedFromHash.listName || 'Shared List',
+              datasetName: persistedFromHash.datasetName || 'act-comprehensive',
+              fragment: hash,
+              lastModified: Date.now(),
+              createdAt: Date.now()
+            };
+            saveList(newList);
+            console.log('[App] Saved shared list from URL');
           }
-          currentFragmentRef.current = fragment;
-          hydrateState(persisted);
+
+          hydrateState(persistedFromHash as PersistedState);
+          setCurrentListId(persistedFromHash.listId);
+          lastKnownModified.current = Date.now();
+          refreshSavedLists();
           return;
         }
       }
 
-      // No fragment stored or failed decode
-      await setActiveDataset(datasetKey);
-      currentFragmentRef.current = null;
-      setShowPersistInfo(!hasSeenPersistInfo);
-      loadDataset(datasetKey);
-    });
-  }, [hydrateState, loadDataset, setActiveDataset]);
+      // Try loading current list
+      const currentId = getCurrentListId();
+      if (currentId) {
+        const list = loadList(currentId);
+        if (list) {
+          console.log('[App] Loading current list:', list.name);
+          const dataset = preloadedDatasets[list.datasetName];
+          if (dataset) {
+            const canonicalOrder = getCanonicalCategoryOrder(dataset);
+            const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
+            if (persisted) {
+              currentFragmentRef.current = list.fragment;
+              hydrateState(persisted as PersistedState);
+              lastKnownModified.current = list.lastModified;
+              refreshSavedLists();
+              return;
+            }
+          }
+        }
+      }
+
+      // No URL state and no current list - create new
+      console.log('[App] No existing state, creating new list');
+      createNewList();
+    };
+
+    initializeApp();
+
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run once on mount
 
   // Save state when it changes (both to storage and URL)
   useEffect(() => {
-    if (values.length > 0) {
+    if (values.length > 0 && listId) {
       const state = serializeState();
       const dataset = preloadedDatasets[selectedDataset];
       const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
       const newHash = encodeStateToUrl(state, dataset.data.length, canonicalCategoryOrder);
+
+      // Update URL
       if (currentFragmentRef.current !== newHash && window.location.hash !== newHash) {
         const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${newHash}`;
         window.history.replaceState(null, '', nextUrl);
       }
 
+      // Save to localStorage
       if (currentFragmentRef.current !== newHash) {
         currentFragmentRef.current = newHash;
-        persistFragment(selectedDataset, newHash, state.hasSeenPersistInfo ?? true);
+        const listToSave: SavedList = {
+          id: listId,
+          name: listName,
+          datasetName: selectedDataset,
+          fragment: newHash,
+          lastModified: Date.now(),
+          createdAt: loadList(listId)?.createdAt || Date.now()
+        };
+        debouncedSaveList(listToSave, lastKnownModified.current);
       }
     }
-  }, [values, categories, collapsedCategories, selectedDataset, serializeState, persistFragment]);
+  }, [values, categories, collapsedCategories, selectedDataset, listId, listName, serializeState, debouncedSaveList]);
 
   const showToast = (message: string, duration = 3000) => {
     setToastMessage(message);
@@ -652,7 +765,6 @@ const ValuesTierList = () => {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (hoveredValue && (tierKeys[e.key] || e.key === '4')) {
-        ensurePersistence();
         let targetLocation: string;
 
         if (e.key === '4') {
@@ -684,7 +796,7 @@ const ValuesTierList = () => {
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [hoveredValue, mousePosition, values, tierKeys, ensurePersistence]);
+  }, [hoveredValue, mousePosition, values, tierKeys]);
 
   const findValueById = useCallback(
     (id: string) => values.find(value => value.id === id) ?? null,
@@ -697,7 +809,6 @@ const ValuesTierList = () => {
     const { active } = event;
     const id = String(active.id);
     setActiveId(id);
-    ensurePersistence();
     setHoveredValue(null);
   };
 
@@ -785,26 +896,6 @@ const ValuesTierList = () => {
     >
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {showPersistInfo && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <div className="flex items-start gap-3">
-              <div className="text-blue-600 text-lg">ℹ️</div>
-              <div className="flex-1">
-                <p className="text-sm text-blue-900">
-                  <strong>Auto-save enabled:</strong> Your rankings will be saved automatically as you work.
-                  When you first drag a value, your browser may ask permission to store data persistently -
-                  this prevents your progress from being lost if storage is cleared.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowPersistInfo(false)}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
-        )}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -812,28 +903,88 @@ const ValuesTierList = () => {
               <p className="text-gray-600 mt-1">Drag values to rank them, or hover and press 1, 2, 3 (tiers) or 4 (categories)</p>
             </div>
             <div className="flex gap-3 items-center">
+              <input
+                type="text"
+                value={listName}
+                onChange={(e) => {
+                  const newName = e.target.value;
+                  setListName(newName);
+                }}
+                className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-w-[200px]"
+                placeholder="List name"
+              />
+              <div className="flex items-center gap-2">
+                <select
+                  value={listId}
+                  onChange={(e) => {
+                    const selectedId = e.target.value;
+                    if (selectedId === '__new__') {
+                      createNewList(selectedDataset);
+                    } else {
+                      const list = loadList(selectedId);
+                      if (list) {
+                        const dataset = preloadedDatasets[list.datasetName];
+                        if (dataset) {
+                          const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                          const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
+                          if (persisted) {
+                            hydrateState(persisted as PersistedState);
+                            setCurrentListId(selectedId);
+                            lastKnownModified.current = list.lastModified;
+                          }
+                        }
+                      }
+                    }
+                  }}
+                  className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  {savedLists.map((list) => (
+                    <option key={list.id} value={list.id}>
+                      {list.name}
+                    </option>
+                  ))}
+                  <option value="__new__">+ New List</option>
+                </select>
+                {savedLists.length > 1 && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Delete "${listName}"? This cannot be undone.`)) {
+                        deleteList(listId);
+                        refreshSavedLists();
+
+                        // Load another list or create new one
+                        const remainingLists = loadAllLists();
+                        if (remainingLists.length > 0) {
+                          const nextList = remainingLists[0];
+                          const dataset = preloadedDatasets[nextList.datasetName];
+                          if (dataset) {
+                            const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                            const persisted = decodeUrlToState(nextList.fragment, dataset.data.length, canonicalOrder);
+                            if (persisted) {
+                              hydrateState(persisted as PersistedState);
+                              setCurrentListId(nextList.id);
+                              lastKnownModified.current = nextList.lastModified;
+                            }
+                          }
+                        } else {
+                          createNewList(selectedDataset);
+                        }
+                      }
+                    }}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete this list"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                )}
+              </div>
               <select
                 value={selectedDataset}
-                onChange={async (e) => {
+                onChange={(e) => {
                   const newDataset = e.target.value;
-                  const { fragment, hasSeenPersistInfo } = await loadState(newDataset);
-                  await setActiveDataset(newDataset);
-
-                  if (fragment) {
-                    const persisted = decodeFragment(fragment);
-                    if (persisted) {
-                      if (persisted.hasSeenPersistInfo === undefined) {
-                        persisted.hasSeenPersistInfo = hasSeenPersistInfo;
-                      }
-                      currentFragmentRef.current = fragment;
-                      hydrateState(persisted);
-                      return;
-                    }
-                  }
-
-                  currentFragmentRef.current = null;
-                  setShowPersistInfo(!hasSeenPersistInfo);
-                  loadDataset(newDataset);
+                  setSelectedDataset(newDataset);
+                  // Reset to new list when changing datasets
+                  createNewList(newDataset);
                 }}
                 className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >

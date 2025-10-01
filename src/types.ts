@@ -35,19 +35,23 @@ export function getCanonicalCategoryOrder(dataset: Dataset): string[] {
 export type TierId = 'very-important' | 'somewhat-important' | 'not-important' | 'uncategorized';
 
 export interface PersistedState {
+  listId: string;
+  listName: string;
   datasetName: string;
   datasetVersion: number;
   tiers: Record<TierId, number[]>;
   categoryOrder: string[];
   collapsedCategories: Record<string, boolean>;
   timestamp: number;
-  hasSeenPersistInfo?: boolean; // Track if user has seen the info banner
 }
 
-export interface MultiDatasetState {
-  activeDataset: string; // Which dataset is currently being worked on
-  fragments: Record<string, string>; // Map of dataset name to encoded URL fragment
-  hasSeenPersistInfo?: boolean; // Global flag for persistence info banner
+export interface SavedList {
+  id: string;
+  name: string;
+  datasetName: string;
+  fragment: string; // Compressed URL hash
+  lastModified: number;
+  createdAt: number;
 }
 
 export interface AppState {
