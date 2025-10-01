@@ -487,7 +487,20 @@ const ValuesTierList = () => {
                       <span className="font-medium text-gray-800 block">{value.value}</span>
                       {hoveredValue?.id === value.id && value.description && (
                         <div className="absolute z-10 bottom-full left-0 mb-2 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96">
-                          <div className="mb-1 text-emerald-300 text-xs font-semibold">Press 1, 2, 3 (tiers) or 4 (category)</div>
+                          <div className="mb-1 text-emerald-300 text-xs font-semibold">
+                            {(() => {
+                              const otherTiers = ['very-important', 'somewhat-important', 'not-important']
+                                .map((tierId, idx) => tierId !== value.location ? `${idx + 1}` : null)
+                                .filter(Boolean);
+                              const tierText = otherTiers.length > 0
+                                ? `Press ${otherTiers.join(' or ')} to move to a different tier`
+                                : '';
+                              const categoryText = value.location !== value.category
+                                ? ' (or 4 to return it)'
+                                : '';
+                              return tierText + categoryText;
+                            })()}
+                          </div>
                           {value.description}
                           <div className="absolute top-full left-4 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-gray-900"></div>
                         </div>
@@ -571,7 +584,13 @@ const ValuesTierList = () => {
                               <span className="text-gray-800 font-medium">{value.value}</span>
                               {hoveredValue?.id === value.id && value.description && (
                                 <div className="absolute z-10 left-full ml-2 top-0 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96">
-                                  <div className="mb-1 text-emerald-300 text-xs font-semibold">Press 1, 2, 3 (tiers) or 4 (category)</div>
+                                  <div className="mb-1 text-emerald-300 text-xs font-semibold">
+                                    Press {['very-important', 'somewhat-important', 'not-important']
+                                      .map((tierId, idx) => tierId !== value.location ? `${idx + 1}` : null)
+                                      .filter(Boolean)
+                                      .join(', ')
+                                      .replace(/,([^,]*)$/, ', or$1')} to move to a tier
+                                  </div>
                                   {value.description}
                                   <div className="absolute right-full top-4 w-0 h-0 border-t-8 border-b-8 border-r-8 border-transparent border-r-gray-900"></div>
                                 </div>
