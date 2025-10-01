@@ -1,4 +1,7 @@
-import { PersistedState, MultiDatasetState } from './types';
+import { MultiDatasetState, PersistedState, TierId, getCanonicalCategoryOrder } from './types';
+import { preloadedDatasets } from './data/datasets';
+import { decodeUrlToState } from './urlState';
+import LZString from 'lz-string';
 
 const DB_NAME = 'act-values-db';
 const STORE_NAME = 'app_state';
@@ -52,53 +55,113 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-// Save state for a specific dataset
-export async function saveDatasetState(state: PersistedState): Promise<void> {
+interface SaveFragmentOptions {
+  hasSeenPersistInfo?: boolean;
+}
+
+async function saveFragmentsState(state: MultiDatasetState): Promise<void> {
   try {
-    // Load current multi-dataset state
-    const multiState = await loadMultiState();
-
-    // Update the specific dataset
-    multiState.datasets[state.datasetName] = state;
-    multiState.activeDataset = state.datasetName;
-    multiState.hasSeenPersistInfo = state.hasSeenPersistInfo ?? multiState.hasSeenPersistInfo;
-
-    // Save back to storage
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
 
     await new Promise<void>((resolve, reject) => {
-      const request = store.put(multiState, MULTI_STATE_KEY);
+      const request = store.put(state, MULTI_STATE_KEY);
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
 
     db.close();
 
-    // Mirror to localStorage as backup
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(multiState));
-
-    console.log(`[Storage] Dataset '${state.datasetName}' saved successfully`);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (error) {
-    console.error('[Storage] Error saving dataset:', error);
-
-    // Fallback: at least save to localStorage
+    console.error('[Storage] Error persisting fragments state:', error);
+    // Attempt localStorage fallback
     try {
-      const multiState = await loadMultiState();
-      multiState.datasets[state.datasetName] = state;
-      multiState.activeDataset = state.datasetName;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(multiState));
-      console.log('[Storage] Saved to localStorage fallback');
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (lsError) {
-      console.error('[Storage] Error saving to localStorage:', lsError);
+      console.error('[Storage] Error saving fallback state:', lsError);
     }
   }
 }
 
-export const saveState = saveDatasetState;
+// Save URL fragment for a specific dataset and mark it active
+export async function saveDatasetFragment(
+  datasetName: string,
+  fragment: string,
+  options: SaveFragmentOptions = {}
+): Promise<void> {
+  const multiState = await loadMultiState();
+  multiState.fragments[datasetName] = fragment;
+  multiState.activeDataset = datasetName;
+  if (options.hasSeenPersistInfo !== undefined) {
+    multiState.hasSeenPersistInfo = options.hasSeenPersistInfo;
+  }
+
+  await saveFragmentsState(multiState);
+  console.log(`[Storage] Fragment for dataset '${datasetName}' saved successfully`);
+}
 
 // Load multi-dataset state
+function createEmptyMultiState(): MultiDatasetState {
+  return {
+    activeDataset: 'act-comprehensive',
+    fragments: {},
+    hasSeenPersistInfo: false,
+  };
+}
+
+function extractDatasetNameFromFragment(fragment: string): string | null {
+  try {
+    const hash = fragment.startsWith('#') ? fragment.slice(1) : fragment;
+    const decompressed = LZString.decompressFromEncodedURIComponent(hash);
+    if (!decompressed) {
+      return null;
+    }
+    const firstAmpersand = decompressed.indexOf('&');
+    const paramsString = firstAmpersand === -1 ? '' : decompressed.slice(firstAmpersand + 1);
+    const params = new URLSearchParams(paramsString);
+    return params.get('d');
+  } catch (error) {
+    console.error('[Storage] Failed to extract dataset name from fragment:', error);
+    return null;
+  }
+}
+
+export function decodeFragment(fragment: string): PersistedState | null {
+  const datasetName = extractDatasetNameFromFragment(fragment) ?? 'act-comprehensive';
+  const dataset = preloadedDatasets[datasetName];
+  if (!dataset) {
+    console.warn('[Storage] Unknown dataset for fragment:', datasetName);
+    return null;
+  }
+
+  const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
+  const decoded = decodeUrlToState(fragment, dataset.data.length, canonicalCategoryOrder);
+  if (!decoded) {
+    console.warn('[Storage] Failed to decode fragment for dataset:', datasetName);
+    return null;
+  }
+
+  const tiersFallback: Record<TierId, number[]> = {
+    'very-important': [],
+    'somewhat-important': [],
+    'not-important': [],
+    'uncategorized': [],
+  };
+
+  const partial = decoded as Partial<PersistedState>;
+  return {
+    datasetName: partial.datasetName ?? datasetName,
+    datasetVersion: partial.datasetVersion ?? dataset.version,
+    tiers: partial.tiers ?? tiersFallback,
+    categoryOrder: partial.categoryOrder ?? canonicalCategoryOrder,
+    collapsedCategories: partial.collapsedCategories ?? {},
+    timestamp: partial.timestamp ?? Date.now(),
+    hasSeenPersistInfo: partial.hasSeenPersistInfo,
+  };
+}
+
 async function loadMultiState(): Promise<MultiDatasetState> {
   // Try IndexedDB first
   try {
@@ -106,7 +169,7 @@ async function loadMultiState(): Promise<MultiDatasetState> {
     const transaction = db.transaction(STORE_NAME, 'readonly');
     const store = transaction.objectStore(STORE_NAME);
 
-    const multiState = await new Promise<MultiDatasetState | null>((resolve, reject) => {
+    const loaded = await new Promise<any | null>((resolve, reject) => {
       const request = store.get(MULTI_STATE_KEY);
       request.onsuccess = () => resolve(request.result ?? null);
       request.onerror = () => reject(request.error);
@@ -114,9 +177,16 @@ async function loadMultiState(): Promise<MultiDatasetState> {
 
     db.close();
 
-    if (multiState) {
-      console.log('[Storage] Loaded multi-dataset state from IndexedDB');
-      return multiState;
+    if (loaded) {
+      if (isValidFragmentsState(loaded)) {
+        console.log('[Storage] Loaded multi-dataset state from IndexedDB');
+        return loaded;
+      }
+
+      console.warn('[Storage] Legacy or invalid state detected in IndexedDB, resetting');
+      const empty = createEmptyMultiState();
+      await saveFragmentsState(empty);
+      return empty;
     }
   } catch (error) {
     console.error('[Storage] Error loading from IndexedDB:', error);
@@ -126,44 +196,70 @@ async function loadMultiState(): Promise<MultiDatasetState> {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const multiState = JSON.parse(stored) as MultiDatasetState;
-      console.log('[Storage] Loaded multi-dataset state from localStorage');
-      return multiState;
+      const parsed = JSON.parse(stored);
+      if (isValidFragmentsState(parsed)) {
+        console.log('[Storage] Loaded multi-dataset state from localStorage');
+        return parsed;
+      }
+
+      console.warn('[Storage] Legacy or invalid state detected in localStorage, resetting');
+      const empty = createEmptyMultiState();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(empty));
+      return empty;
     }
   } catch (error) {
     console.error('[Storage] Error loading from localStorage:', error);
   }
 
-  // Return empty multi-state
-  return {
-    activeDataset: 'act-comprehensive',
-    datasets: {},
-    hasSeenPersistInfo: false
-  };
+  return createEmptyMultiState();
+}
+
+function isValidFragmentsState(state: any): state is MultiDatasetState {
+  return (
+    state &&
+    typeof state === 'object' &&
+    typeof state.activeDataset === 'string' &&
+    state.fragments &&
+    typeof state.fragments === 'object'
+  );
 }
 
 // Load state for active dataset (or specific dataset)
-export async function loadState(datasetName?: string): Promise<PersistedState | null> {
+export interface LoadedFragmentState {
+  activeDataset: string;
+  fragment: string | null;
+  hasSeenPersistInfo: boolean;
+}
+
+export async function loadState(datasetName?: string): Promise<LoadedFragmentState> {
   const multiState = await loadMultiState();
   const targetDataset = datasetName ?? multiState.activeDataset;
+  const fragment = multiState.fragments[targetDataset] ?? null;
 
-  const state = multiState.datasets[targetDataset] ?? null;
-
-  if (state) {
-    console.log(`[Storage] Loaded state for dataset '${targetDataset}'`);
-    // Update hasSeenPersistInfo from global flag if not set
-    if (state.hasSeenPersistInfo === undefined) {
-      state.hasSeenPersistInfo = multiState.hasSeenPersistInfo;
-    }
+  if (fragment) {
+    console.log(`[Storage] Loaded fragment for dataset '${targetDataset}'`);
   } else {
-    console.log(`[Storage] No saved state found for dataset '${targetDataset}'`);
+    console.log(`[Storage] No stored fragment found for dataset '${targetDataset}'`);
   }
 
-  return state;
+  return {
+    activeDataset: targetDataset,
+    fragment,
+    hasSeenPersistInfo: multiState.hasSeenPersistInfo ?? false,
+  };
 }
 
 // Get active dataset name
 export async function getActiveDataset(): Promise<string> {
   const multiState = await loadMultiState();
   return multiState.activeDataset;
+}
+
+export async function setActiveDataset(datasetName: string): Promise<void> {
+  const multiState = await loadMultiState();
+  if (multiState.activeDataset === datasetName) {
+    return;
+  }
+  multiState.activeDataset = datasetName;
+  await saveFragmentsState(multiState);
 }

@@ -46,7 +46,7 @@ export interface PersistedState {
 
 export interface MultiDatasetState {
   activeDataset: string; // Which dataset is currently being worked on
-  datasets: Record<string, PersistedState>; // Map of dataset name to its state
+  fragments: Record<string, string>; // Map of dataset name to encoded URL fragment
   hasSeenPersistInfo?: boolean; // Global flag for persistence info banner
 }
 

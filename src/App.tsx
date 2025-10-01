@@ -22,9 +22,9 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { preloadedDatasets } from './data/datasets';
 import { Value, TierId, PersistedState, getCanonicalCategoryOrder } from './types';
-import { saveState, loadState, requestPersist } from './storage';
+import { decodeFragment, saveDatasetFragment, loadState, requestPersist, setActiveDataset } from './storage';
 import { debounce } from './utils/debounce';
-import { decodeUrlToState, encodeStateToUrl, getShareableUrl } from './urlState';
+import { encodeStateToUrl, getShareableUrl } from './urlState';
 
 // Sortable value item component
 interface SortableValueProps {
@@ -194,6 +194,7 @@ const ValuesTierList = () => {
     overData?: Record<string, any>;
   } | null>(null);
   const dragUpdateFrame = useRef<number | null>(null);
+  const currentFragmentRef = useRef<string | null>(null);
 
   // Configure sensors for drag and drop
   const sensors = useSensors(
@@ -440,14 +441,14 @@ const ValuesTierList = () => {
     };
   }, [values, categories, collapsedCategories, selectedDataset]);
 
-  // Debounced save function - recreate when serializeState changes
-  const debouncedSave = useCallback(
-    debounce(() => {
-      const state = serializeState();
-      console.log('[App] Saving state:', state);
-      saveState(state);
-    }, 150),
-    [serializeState]
+  const persistFragment = useMemo(
+    () =>
+      debounce((datasetName: string, fragment: string, hasSeen: boolean) => {
+        saveDatasetFragment(datasetName, fragment, { hasSeenPersistInfo: hasSeen }).catch(error => {
+          console.error('[App] Failed to persist fragment:', error);
+        });
+      }, 150),
+    []
   );
 
   // Request persistence on first interaction
@@ -574,45 +575,58 @@ const ValuesTierList = () => {
 
     // Try URL first
     if (hash && hash.length > 1) {
-      const dataset = preloadedDatasets['act-comprehensive']; // TODO: get from URL params
-      const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
-      const urlState = decodeUrlToState(hash, dataset.data.length, canonicalCategoryOrder);
-
-      if (urlState) {
-        console.log('[App] Loading state from URL');
-        hydrateState(urlState as PersistedState);
+      const persistedFromHash = decodeFragment(hash);
+      if (persistedFromHash) {
+        console.log('[App] Loading state from URL fragment');
+        currentFragmentRef.current = hash;
+        hydrateState(persistedFromHash);
         return;
       }
     }
 
-    // Fall back to stored state
-    loadState().then((persisted) => {
-      if (persisted) {
-        hydrateState(persisted);
-      } else {
-        // First time user - show the info banner
-        setShowPersistInfo(true);
-        loadDataset('act-comprehensive');
+    // Fall back to stored fragments
+    loadState().then(async ({ activeDataset, fragment, hasSeenPersistInfo }) => {
+      const datasetKey = preloadedDatasets[activeDataset] ? activeDataset : 'act-comprehensive';
+
+      if (fragment) {
+        await setActiveDataset(datasetKey);
+        const persisted = decodeFragment(fragment);
+        if (persisted) {
+          if (persisted.hasSeenPersistInfo === undefined) {
+            persisted.hasSeenPersistInfo = hasSeenPersistInfo;
+          }
+          currentFragmentRef.current = fragment;
+          hydrateState(persisted);
+          return;
+        }
       }
+
+      // No fragment stored or failed decode
+      await setActiveDataset(datasetKey);
+      currentFragmentRef.current = null;
+      setShowPersistInfo(!hasSeenPersistInfo);
+      loadDataset(datasetKey);
     });
-  }, [hydrateState, loadDataset]);
+  }, [hydrateState, loadDataset, setActiveDataset]);
 
   // Save state when it changes (both to storage and URL)
   useEffect(() => {
     if (values.length > 0) {
-      debouncedSave();
-
-      // Update URL hash
       const state = serializeState();
       const dataset = preloadedDatasets[selectedDataset];
       const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
       const newHash = encodeStateToUrl(state, dataset.data.length, canonicalCategoryOrder);
-      if (window.location.hash !== newHash) {
+      if (currentFragmentRef.current !== newHash && window.location.hash !== newHash) {
         const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${newHash}`;
         window.history.replaceState(null, '', nextUrl);
       }
+
+      if (currentFragmentRef.current !== newHash) {
+        currentFragmentRef.current = newHash;
+        persistFragment(selectedDataset, newHash, state.hasSeenPersistInfo ?? true);
+      }
     }
-  }, [values, categories, collapsedCategories, debouncedSave, selectedDataset, serializeState]);
+  }, [values, categories, collapsedCategories, selectedDataset, serializeState, persistFragment]);
 
   const showToast = (message: string, duration = 3000) => {
     setToastMessage(message);
@@ -845,14 +859,24 @@ const ValuesTierList = () => {
                 value={selectedDataset}
                 onChange={async (e) => {
                   const newDataset = e.target.value;
-                  // Try to load persisted state for this dataset
-                  const persisted = await loadState(newDataset);
-                  if (persisted) {
-                    hydrateState(persisted);
-                  } else {
-                    // No saved state for this dataset, load fresh
-                    loadDataset(newDataset);
+                  const { fragment, hasSeenPersistInfo } = await loadState(newDataset);
+                  await setActiveDataset(newDataset);
+
+                  if (fragment) {
+                    const persisted = decodeFragment(fragment);
+                    if (persisted) {
+                      if (persisted.hasSeenPersistInfo === undefined) {
+                        persisted.hasSeenPersistInfo = hasSeenPersistInfo;
+                      }
+                      currentFragmentRef.current = fragment;
+                      hydrateState(persisted);
+                      return;
+                    }
                   }
+
+                  currentFragmentRef.current = null;
+                  setShowPersistInfo(!hasSeenPersistInfo);
+                  loadDataset(newDataset);
                 }}
                 className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
