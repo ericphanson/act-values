@@ -147,12 +147,17 @@ const SortableValue: React.FC<SortableValueProps> = ({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchCancel}
-      className={`${baseClass} ${isTouchDevice && selectedTierForTouch ? 'cursor-pointer' : ''}`}
+      className={`${baseClass} ${isTouchDevice && selectedTierForTouch ? 'cursor-pointer' : ''} print-value-item`}
       data-value-id={value.id}
     >
-      <span className={isInTier ? 'font-medium text-gray-800 block' : 'text-gray-800 font-medium'}>
+      <span className={`${isInTier ? 'font-medium text-gray-800 block' : 'text-gray-800 font-medium'} print-value-name`}>
         {value.value}
       </span>
+      {value.description && (
+        <span className="hidden print:inline print-value-description">
+          {value.description}
+        </span>
+      )}
       {hoveredValue?.id === value.id && value.description && !activeId && (
         <div
           className={`absolute z-10 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96 ${
@@ -1131,15 +1136,15 @@ const ValuesTierList = () => {
     >
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-3 md:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6 print-header">
           <div className="flex flex-col gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Values Tier List</h1>
-              <p className="text-sm md:text-base text-gray-600 mt-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 print-main-heading">{listName || 'Values Tier List'}</h1>
+              <p className="text-sm md:text-base text-gray-600 mt-1 print-hide">
                 {isTouchDevice ? 'Tap a tier, then tap values to add them' : 'Drag values to rank them!'}
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 print-hide">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">List Name</label>
                 <input
@@ -1264,7 +1269,7 @@ const ValuesTierList = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-4 print-full-width">
             {tiers.map((tier, index) => {
               const tierValues = getValuesByLocation(tier.id);
               return (
@@ -1275,7 +1280,7 @@ const ValuesTierList = () => {
                   strategy={verticalListSortingStrategy}
                 >
                   <div
-                    className={`${tier.color} border-2 rounded-lg p-4 min-h-32 ${
+                    className={`${tier.color} border-2 rounded-lg p-4 min-h-32 print-tier print-avoid-break-before ${
                       isTouchDevice && selectedTierForTouch === tier.id
                         ? 'ring-4 ring-blue-500 border-blue-500'
                         : ''
@@ -1286,14 +1291,14 @@ const ValuesTierList = () => {
                       }
                     }}
                   >
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                      <span>{tier.icon}</span>
+                    <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2 print-tier-heading">
+                      <span className="print-hide">{tier.icon}</span>
                       {tier.label}
-                      <span className="text-sm font-normal text-gray-600">
+                      <span className="text-sm font-normal text-gray-600 print-hide">
                         ({tierValues.length})
                       </span>
                       {isTouchDevice ? (
-                        <span className={`ml-auto text-xs font-mono px-2 py-1 rounded border ${
+                        <span className={`ml-auto text-xs font-mono px-2 py-1 rounded border print-hide ${
                           selectedTierForTouch === tier.id
                             ? 'bg-blue-600 text-white border-blue-600'
                             : 'bg-white border-gray-300 text-gray-600'
@@ -1301,7 +1306,7 @@ const ValuesTierList = () => {
                           {selectedTierForTouch === tier.id ? '✓ Selected' : 'Tap to Select'}
                         </span>
                       ) : (
-                        <span className="ml-auto text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 text-gray-600">
+                        <span className="ml-auto text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 text-gray-600 print-hide">
                           Press {index + 1}
                         </span>
                       )}
@@ -1309,11 +1314,11 @@ const ValuesTierList = () => {
                     <ValueContainer
                       containerId={tier.id}
                       isTier
-                      className="flex flex-wrap gap-2"
+                      className="flex flex-wrap gap-2 print-value-list"
                       highlightRingClass={tierHighlightClass[tier.id]}
                     >
                       {tierValues.length === 0 && (
-                        <div className="text-sm text-gray-500 italic select-none">
+                        <div className="text-sm text-gray-500 italic select-none print-hide">
                           Drop values here
                         </div>
                       )}
@@ -1339,15 +1344,15 @@ const ValuesTierList = () => {
             })}
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 print-hide-sidebar">
             <div className="bg-white rounded-lg shadow-lg p-4">
               <h2 className="text-lg font-semibold text-gray-800 mb-1 flex items-center justify-between">
                 <span>Value Categories</span>
-                <span className="text-xs font-mono bg-emerald-50 px-2 py-1 rounded border border-emerald-300 text-emerald-700">
+                <span className="text-xs font-mono bg-emerald-50 px-2 py-1 rounded border border-emerald-300 text-emerald-700 print-hide">
                   Press 4
                 </span>
               </h2>
-              <p className="text-sm text-gray-600 mb-4">Drag values to the tiers to rank them</p>
+              <p className="text-sm text-gray-600 mb-4 print-hide">Drag values to the tiers to rank them</p>
 
               <div className="space-y-2">
                 {[...categories]
@@ -1363,10 +1368,10 @@ const ValuesTierList = () => {
                     const isCollapsed = collapsedCategories[category];
 
                     return (
-                      <div key={category} className="border rounded-lg">
+                      <div key={category} className="border rounded-lg print-avoid-break">
                         <button
                           onClick={() => toggleCategory(category)}
-                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer"
+                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer print-hide"
                         >
                           <span className="font-medium text-gray-700 flex items-center gap-2">
                             {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
@@ -1377,13 +1382,17 @@ const ValuesTierList = () => {
                           </span>
                         </button>
 
+                        <h3 className="hidden print:block font-medium text-gray-700 px-3 pt-3 pb-1">
+                          {category} ({categoryValues.length})
+                        </h3>
+
                         {!isCollapsed && (
                           <SortableContext
                             id={category}
                             items={categoryValues.map(value => value.id)}
                             strategy={verticalListSortingStrategy}
                           >
-                            <ValueContainer containerId={category} className="p-3 pt-0 flex flex-wrap gap-2">
+                            <ValueContainer containerId={category} className="p-3 pt-0 flex flex-wrap gap-2 print:block">
                               {categoryValues.length === 0 && (
                                 <div className="text-sm text-gray-400 italic select-none">
                                   No values yet
@@ -1417,7 +1426,7 @@ const ValuesTierList = () => {
 
       {/* Toast notification */}
       {toastMessage && (
-        <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg animate-fade-in-up z-50">
+        <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg animate-fade-in-up z-50 print-hide">
           {toastMessage}
         </div>
       )}

@@ -16,3 +16,154 @@
 .animate-fade-in-up {
   animation: fade-in-up 0.3s ease-out;
 }
+
+/* Print styles */
+@media print {
+  /* Hide header controls when printing */
+  .print-hide {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Avoid page breaks inside these elements */
+  .print-avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Prefer to avoid breaks before these elements */
+  .print-avoid-break-before {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+
+  /* Force page break before element if needed */
+  .print-break-before {
+    page-break-before: always;
+    break-before: always;
+  }
+
+  /* Remove backgrounds for better printing */
+  body {
+    background: white !important;
+    padding: 0 !important;
+  }
+
+  /* Remove outer padding */
+  body > div {
+    padding: 0 !important;
+  }
+
+  /* Adjust margins for print */
+  @page {
+    margin: 0.75in;
+  }
+
+  /* Print-specific header styling */
+  .print-header {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-bottom: 1.5rem !important;
+    background: white !important;
+  }
+
+  .print-main-heading {
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0 !important;
+    border: none !important;
+  }
+
+  /* Print-specific tier styling */
+  .print-tier {
+    border: none !important;
+    background: white !important;
+    padding: 0 !important;
+    margin-bottom: 1.25rem !important;
+    min-height: auto !important;
+  }
+
+  .print-tier-heading {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.5rem !important;
+    padding-bottom: 0.25rem !important;
+    border-bottom: 2px solid #333 !important;
+  }
+
+  /* Print-specific value list styling */
+  .print-value-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-value-item {
+    display: list-item !important;
+    margin-left: 1.5rem !important;
+    margin-bottom: 0.35rem !important;
+    line-height: 1.4 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    min-height: auto !important;
+  }
+
+  .print-value-item::before {
+    content: "• " !important;
+    margin-left: -1rem !important;
+    font-weight: bold !important;
+  }
+
+  .print-value-name {
+    font-weight: 600 !important;
+    display: inline !important;
+  }
+
+  .print-value-description {
+    color: #555 !important;
+    font-style: italic !important;
+    display: inline !important;
+    font-size: 0.9em !important;
+  }
+
+  .print-value-description::before {
+    content: " — " !important;
+  }
+
+  /* Hide category sidebar on print */
+  .print-hide-sidebar {
+    display: none !important;
+  }
+
+  /* Make main content full width on print */
+  .print-full-width {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Remove min-height constraints */
+  * {
+    min-height: 0 !important;
+  }
+
+  /* Compact main container */
+  .min-h-screen {
+    min-height: 0 !important;
+  }
+
+  /* Remove extra gaps in grid */
+  .grid {
+    gap: 0 !important;
+  }
+
+  /* Compact space-y */
+  .space-y-4 > * + * {
+    margin-top: 1rem !important;
+  }
+}
