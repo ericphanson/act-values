@@ -1248,7 +1248,7 @@ const ValuesTierList = () => {
     >
       <div className="h-screen bg-gradient-to-br from-blue-50 to-green-50 p-3 md:p-6 overflow-hidden">
       <div className="max-w-7xl mx-auto h-full flex flex-col">
-        <div className="bg-white rounded-lg shadow-lg p-4 mb-3 print-header flex-shrink-0">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 print-header flex-shrink-0">
           <div className="flex flex-col gap-3">
             {/* Consolidated title with dropdown */}
             <div className="flex items-start justify-between gap-3">
@@ -1383,7 +1383,7 @@ const ValuesTierList = () => {
         </div>
 
         {/* Main content area with tiers and categories */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 print:static overflow-visible flex-1 min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 print:static overflow-visible flex-1 min-h-0">
           {/* Three tier columns */}
           {tiers.map((tier, index) => {
             const tierValues = getValuesByLocation(tier.id);
@@ -1397,10 +1397,10 @@ const ValuesTierList = () => {
                 items={tierValues.map(value => value.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="flex flex-col border-2 rounded-lg overflow-hidden print-tier bg-white h-full">
+                <div className="flex flex-col border border-gray-200 rounded-xl overflow-hidden print-tier bg-white h-full">
                   {/* Sticky header - droppable area */}
                   <div
-                    className={`${tier.color} border-b-2 ${tier.color.replace('bg-', 'border-').replace('-50', '-200')} rounded-t-lg sticky top-0 z-10 ${
+                    className={`bg-white border-b border-gray-200 sticky top-0 z-10 ${
                       isTouchDevice && selectedTierForTouch === tier.id
                         ? 'ring-4 ring-blue-500 border-blue-500'
                         : ''
@@ -1414,7 +1414,7 @@ const ValuesTierList = () => {
                     <ValueContainer
                       containerId={`${tier.id}-header`}
                       isTier
-                      className="p-3"
+                      className="p-4"
                       highlightRingClass={tierHighlightClass[tier.id]}
                     >
                       <div className="w-full">
@@ -1432,7 +1432,9 @@ const ValuesTierList = () => {
                               {selectedTierForTouch === tier.id ? '✓' : 'Tap'}
                             </span>
                           ) : (
-                            <span className="text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 text-gray-600 print-hide">
+                            <span className={`text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 print-hide transition-opacity ${
+                              hoveredValue ? 'text-gray-600 opacity-100' : 'text-gray-400 opacity-40'
+                            }`}>
                               {index + 1}
                             </span>
                           )}
@@ -1474,7 +1476,7 @@ const ValuesTierList = () => {
                     <ValueContainer
                       containerId={tier.id}
                       isTier
-                      className="p-2 grid grid-cols-1 md:grid-cols-2 gap-2 print-value-list"
+                      className="p-4 grid grid-cols-1 md:grid-cols-2 gap-2 print-value-list"
                       highlightRingClass={tierHighlightClass[tier.id]}
                     >
                       {tierValues.length === 0 && (
@@ -1506,12 +1508,14 @@ const ValuesTierList = () => {
 
           {/* Categories sidebar - fourth column on desktop */}
           <div className="relative flex-1 min-h-0 print-hide-sidebar">
-            <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
-            <div className="px-3 py-2 border-b">
+            <div className="bg-white border border-gray-200 rounded-xl h-full flex flex-col">
+            <div className="px-4 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
               <h2 className="text-base font-semibold text-gray-800 flex items-center justify-between">
                 <span>Value Categories</span>
                 {!isTouchDevice && (
-                  <span className="text-xs bg-white px-2 py-1 rounded border border-gray-300 text-gray-600 print-hide">
+                  <span className={`text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 print-hide transition-opacity ${
+                    hoveredValue ? 'text-gray-600 opacity-100' : 'text-gray-400 opacity-40'
+                  }`}>
                     4
                   </span>
                 )}
@@ -1523,7 +1527,7 @@ const ValuesTierList = () => {
               </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-2">
+            <div className="flex-1 overflow-y-auto p-4">
               <div className="space-y-2">
                 {[...categories]
                   .sort((a, b) => {
