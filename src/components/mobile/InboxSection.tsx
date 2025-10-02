@@ -57,10 +57,10 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
         <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 mb-4">
           <p className="text-sm font-semibold text-amber-900 mb-1.5 flex items-center gap-2">
             <span className="text-base">💾</span>
-            Save your work!
+            Save for later
           </p>
           <p className="text-xs text-amber-800 leading-relaxed">
-            Your data is stored locally. <strong>Share or print</strong> to save permanently, or bookmark this page's URL.
+            <strong>Share the link</strong> to access from another device, or <strong>print</strong> for a paper copy.
           </p>
         </div>
 
