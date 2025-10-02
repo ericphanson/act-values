@@ -173,9 +173,9 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
     }, 100);
   }, []);
 
-  // Keyboard shortcuts for non-touch devices
+  // Keyboard shortcuts for non-touch devices (only in inbox mode, not review mode)
   useEffect(() => {
-    if (isTouchDevice) return; // Only for non-touch devices
+    if (isTouchDevice || reviewMode) return; // Only for non-touch devices and not in review mode
 
     const handleKeyPress = (e: KeyboardEvent) => {
       // Get the first inbox value
@@ -209,7 +209,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [isTouchDevice, values, onMoveValue, undoStack]);
+  }, [isTouchDevice, reviewMode, values, onMoveValue, undoStack]);
 
   if (reviewMode) {
     return (
