@@ -9,6 +9,16 @@ interface InboxSectionProps {
   onTapValue: (value: Value) => void;
   onSwipeValue: (value: Value, direction: SwipeDirection) => void;
   animatingValues: Set<string>;
+  tierCounts: {
+    'very-important': number;
+    'somewhat-important': number;
+    'not-important': number;
+  };
+  tierQuotas: {
+    'very-important': number | null;
+    'somewhat-important': number | null;
+    'not-important': number | null;
+  };
 }
 
 export const InboxSection: React.FC<InboxSectionProps> = ({
@@ -16,6 +26,8 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
   onTapValue,
   onSwipeValue,
   animatingValues,
+  tierCounts,
+  tierQuotas,
 }) => {
   if (values.length === 0) {
     return (
@@ -43,10 +55,14 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
         {/* First value with surrounding targets frame - extends to screen edges */}
         <div className="-mx-4 bg-white border-y-2 border-gray-200 overflow-hidden">
           {/* Top: Swipe Up target - Not Important - extends to screen edges */}
-          <div className="bg-gray-50 py-3 text-center border-b-2 border-gray-200">
+          <div className="bg-gray-50 py-3 text-center border-b-2 border-gray-200 relative">
             <div className="text-2xl mb-1">○</div>
             <div className="text-xs font-semibold text-gray-700">Swipe Up ↑</div>
             <div className="text-xs text-gray-600">Not Important</div>
+            {/* Counter in top-right corner */}
+            <div className="absolute top-2 right-3 text-xs font-bold text-gray-700 bg-white px-2 py-1 rounded">
+              {tierCounts['not-important']} values
+            </div>
           </div>
 
           {/* Middle row: Left target | Value | Right target */}
@@ -58,6 +74,10 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                 Somewhat
               </div>
               <div className="text-lg mt-1">←</div>
+              {/* Counter at bottom */}
+              <div className="text-xs font-bold text-gray-700 mt-2 bg-white px-2 py-0.5 rounded">
+                {tierCounts['somewhat-important']} values
+              </div>
             </div>
 
             {/* Center: The value */}
@@ -86,6 +106,27 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                 Very
               </div>
               <div className="text-lg mt-1">→</div>
+              {/* Counter at bottom with quota - red if over */}
+              <div className={`text-xs font-bold mt-2 px-2 py-0.5 rounded ${
+                tierQuotas['very-important'] && tierCounts['very-important'] > tierQuotas['very-important']
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-white text-gray-700'
+              }`}>
+                {tierQuotas['very-important'] ? (
+                  <>
+                    {tierCounts['very-important']}
+                    <span className={`${
+                      tierCounts['very-important'] > tierQuotas['very-important']
+                        ? 'text-red-600'
+                        : 'text-gray-500'
+                    }`}>
+                      /{tierQuotas['very-important']}
+                    </span>
+                  </>
+                ) : (
+                  `${tierCounts['very-important']} values`
+                )}
+              </div>
             </div>
           </div>
         </div>

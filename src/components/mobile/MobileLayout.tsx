@@ -214,6 +214,16 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
           onTapValue={handleTapValue}
           onSwipeValue={handleSwipe}
           animatingValues={animatingValues}
+          tierCounts={{
+            'very-important': getValuesByTier('very-important').length,
+            'somewhat-important': getValuesByTier('somewhat-important').length,
+            'not-important': getValuesByTier('not-important').length,
+          }}
+          tierQuotas={{
+            'very-important': tiers.find(t => t.id === 'very-important')?.quota ?? null,
+            'somewhat-important': tiers.find(t => t.id === 'somewhat-important')?.quota ?? null,
+            'not-important': tiers.find(t => t.id === 'not-important')?.quota ?? null,
+          }}
         />
 
         {/* Tiers (accordion) - with padding */}
