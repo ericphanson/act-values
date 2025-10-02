@@ -35,6 +35,7 @@ interface MobileLayoutProps {
   onCreateList: () => void;
   onSwitchToDesktop: () => void;
   onShowAbout: () => void;
+  showingACTIntro: boolean;
 }
 
 export const MobileLayout: React.FC<MobileLayoutProps> = ({
@@ -54,6 +55,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   onCreateList,
   onSwitchToDesktop,
   onShowAbout,
+  showingACTIntro,
 }) => {
   const [expandedTier, setExpandedTier] = useState<TierId | null>('very-important');
   const [actionSheetValue, setActionSheetValue] = useState<Value | null>(null);
@@ -71,8 +73,14 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
     setIsTouchDevice(hasTouch);
   }, []);
 
-  // Check if user has seen the hint
+  // Check if user has seen the hint - show after ACT intro is dismissed
   useEffect(() => {
+    // Don't show hint if ACT intro is showing
+    if (showingACTIntro) {
+      setShowHint(false);
+      return;
+    }
+
     const hasSeenHint = localStorage.getItem('act-values-seen-mobile-hint');
     const urlParams = new URLSearchParams(window.location.search);
     const forceHint = urlParams.get('hint') === 'true';
@@ -80,7 +88,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
     if (!hasSeenHint || forceHint) {
       setShowHint(true);
     }
-  }, []);
+  }, [showingACTIntro]);
 
   const handleDismissHint = () => {
     setShowHint(false);

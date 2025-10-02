@@ -301,7 +301,11 @@ const ValuesTierList = () => {
   // Force dataset to always be act-shorter
   const selectedDataset = 'act-shorter';
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [showACTIntro, setShowACTIntro] = useState(false);
+  const [showACTIntro, setShowACTIntro] = useState(() => {
+    // Show intro on first visit
+    const hasSeenIntro = localStorage.getItem('act-values-seen-intro');
+    return !hasSeenIntro;
+  });
   const [listId, setListId] = useState<string>('');
   const [listName, setListName] = useState<string>('');
   const [savedLists, setSavedLists] = useState<SavedList[]>([]);
@@ -1436,6 +1440,7 @@ const ValuesTierList = () => {
             }}
             onSwitchToDesktop={() => setForcedMode('desktop')}
             onShowAbout={() => setShowACTIntro(true)}
+            showingACTIntro={showACTIntro}
           />
         </div>
       )}
@@ -1946,7 +1951,10 @@ const ValuesTierList = () => {
     </DndContext>
 
     {/* ACT Intro overlay - outside DndContext so it works in both mobile and desktop layouts */}
-    {showACTIntro && <ACTIntro onClose={() => setShowACTIntro(false)} />}
+    {showACTIntro && <ACTIntro onClose={() => {
+      setShowACTIntro(false);
+      localStorage.setItem('act-values-seen-intro', 'true');
+    }} />}
     </>
   );
 };
