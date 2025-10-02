@@ -829,6 +829,9 @@ const ValuesTierList = () => {
             const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
             if (persisted) {
               currentFragmentRef.current = list.fragment;
+              // Update URL with the loaded fragment
+              const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${list.fragment}`;
+              window.history.replaceState(null, '', nextUrl);
               hydrateState(persisted as PersistedState);
               lastKnownModified.current = list.lastModified;
               refreshSavedLists();
@@ -1333,6 +1336,10 @@ const ValuesTierList = () => {
                                   const canonicalOrder = getCanonicalCategoryOrder(dataset);
                                   const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
                                   if (persisted) {
+                                    // Update URL with the loaded fragment
+                                    const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${list.fragment}`;
+                                    window.history.replaceState(null, '', nextUrl);
+                                    currentFragmentRef.current = list.fragment;
                                     hydrateState(persisted as PersistedState);
                                     setCurrentListId(list.id);
                                     lastKnownModified.current = list.lastModified;
@@ -1363,6 +1370,10 @@ const ValuesTierList = () => {
                                         const canonicalOrder = getCanonicalCategoryOrder(dataset);
                                         const persisted = decodeUrlToState(nextList.fragment, dataset.data.length, canonicalOrder);
                                         if (persisted) {
+                                          // Update URL with the loaded fragment
+                                          const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${nextList.fragment}`;
+                                          window.history.replaceState(null, '', nextUrl);
+                                          currentFragmentRef.current = nextList.fragment;
                                           hydrateState(persisted as PersistedState);
                                           setCurrentListId(nextList.id);
                                           lastKnownModified.current = nextList.lastModified;
