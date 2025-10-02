@@ -56,29 +56,34 @@ export const QuickTargetsBar: React.FC<QuickTargetsBarProps> = ({
         />
       </div>
 
-      {/* Quick targets */}
-      <div className="px-3 py-2">
-        <div className="flex gap-2">
-          <QuickTarget
-            id="very-important"
-            label="Very"
-            icon="💎"
-            color="bg-emerald-50"
-            onTap={() => onTargetTap?.('very-important')}
-          />
+      {/* Spatial layout: Somewhat at top, Not left, Very right */}
+      <div className="relative px-3 py-2">
+        {/* Top: Somewhat Important (swipe up) */}
+        <div className="mb-2">
           <QuickTarget
             id="somewhat-important"
-            label="Somewhat"
+            label="Swipe Up ↑"
             icon="⭐"
             color="bg-blue-50"
             onTap={() => onTargetTap?.('somewhat-important')}
           />
+        </div>
+
+        {/* Bottom row: Not (left) and Very (right) */}
+        <div className="flex gap-2">
           <QuickTarget
             id="not-important"
-            label="Not"
+            label="← Swipe Left"
             icon="○"
             color="bg-gray-50"
             onTap={() => onTargetTap?.('not-important')}
+          />
+          <QuickTarget
+            id="very-important"
+            label="Swipe Right →"
+            icon="💎"
+            color="bg-emerald-50"
+            onTap={() => onTargetTap?.('very-important')}
           />
         </div>
       </div>

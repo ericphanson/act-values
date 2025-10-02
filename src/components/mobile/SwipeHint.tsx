@@ -19,27 +19,31 @@ export const SwipeHint: React.FC<SwipeHintProps> = ({ onDismiss }) => {
             </div>
           </div>
 
+          <div className="border-t border-gray-200 pt-3 mt-3">
+            <p className="text-sm font-semibold text-gray-600 mb-2">Or swipe to categorize:</p>
+          </div>
+
           <div className="flex items-start gap-3">
             <span className="text-2xl">👉</span>
             <div>
-              <p className="font-medium text-gray-800">Swipe right</p>
-              <p className="text-sm text-gray-600">Very Important</p>
+              <p className="font-medium text-gray-800">Swipe right →</p>
+              <p className="text-sm text-gray-600">💎 Very Important</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
             <span className="text-2xl">👈</span>
             <div>
-              <p className="font-medium text-gray-800">Swipe left</p>
-              <p className="text-sm text-gray-600">Not Important</p>
+              <p className="font-medium text-gray-800">← Swipe left</p>
+              <p className="text-sm text-gray-600">○ Not Important</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <span className="text-2xl">👆</span>
+            <span className="text-2xl">☝️</span>
             <div>
-              <p className="font-medium text-gray-800">Swipe up</p>
-              <p className="text-sm text-gray-600">Somewhat Important</p>
+              <p className="font-medium text-gray-800">Swipe up ↑</p>
+              <p className="text-sm text-gray-600">⭐ Somewhat Important</p>
             </div>
           </div>
         </div>
