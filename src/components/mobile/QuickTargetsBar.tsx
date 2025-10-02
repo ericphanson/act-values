@@ -47,7 +47,7 @@ export const QuickTargetsBar: React.FC<QuickTargetsBarProps> = ({
   const progress = totalValues > 0 ? (categorizedCount / totalValues) * 100 : 0;
 
   return (
-    <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+    <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm overflow-hidden">
       {/* Progress bar */}
       <div className="h-1 bg-gray-200 relative overflow-hidden">
         <div
@@ -56,10 +56,10 @@ export const QuickTargetsBar: React.FC<QuickTargetsBarProps> = ({
         />
       </div>
 
-      {/* Spatial layout: Somewhat at top, Not left, Very right */}
-      <div className="relative px-3 py-2">
-        {/* Top: Somewhat Important (swipe up) */}
-        <div className="mb-2">
+      {/* Spatial layout: targets extend to screen edges */}
+      <div className="relative">
+        {/* Top: Somewhat Important (swipe up) - extends full width */}
+        <div className="-mx-0 mb-2">
           <QuickTarget
             id="somewhat-important"
             label="Swipe Up ↑"
@@ -69,28 +69,35 @@ export const QuickTargetsBar: React.FC<QuickTargetsBarProps> = ({
           />
         </div>
 
-        {/* Bottom row: Not (left) and Very (right) */}
-        <div className="flex gap-2">
-          <QuickTarget
-            id="not-important"
-            label="← Swipe Left"
-            icon="○"
-            color="bg-gray-50"
-            onTap={() => onTargetTap?.('not-important')}
-          />
-          <QuickTarget
-            id="very-important"
-            label="Swipe Right →"
-            icon="💎"
-            color="bg-emerald-50"
-            onTap={() => onTargetTap?.('very-important')}
-          />
+        {/* Bottom row: Not (left edge) and Very (right edge) */}
+        <div className="flex -mx-0 gap-0">
+          {/* Not Important - extends to left edge */}
+          <div className="flex-1">
+            <QuickTarget
+              id="not-important"
+              label="← Swipe Left"
+              icon="○"
+              color="bg-gray-50"
+              onTap={() => onTargetTap?.('not-important')}
+            />
+          </div>
+
+          {/* Very Important - extends to right edge */}
+          <div className="flex-1">
+            <QuickTarget
+              id="very-important"
+              label="Swipe Right →"
+              icon="💎"
+              color="bg-emerald-50"
+              onTap={() => onTargetTap?.('very-important')}
+            />
+          </div>
         </div>
       </div>
 
       {/* Progress text */}
       {totalValues > 0 && (
-        <div className="px-4 pb-2 text-center">
+        <div className="px-4 pb-2 pt-2 text-center">
           <span className="text-xs text-gray-600">
             {totalValues - categorizedCount} values remaining
           </span>
