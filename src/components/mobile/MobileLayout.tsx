@@ -189,11 +189,22 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         </div>
       </div>
 
-      {/* Quick targets bar */}
-      <QuickTargetsBar
-        totalValues={totalValues}
-        categorizedCount={categorizedCount}
-      />
+      {/* Progress bar only - targets are now framing the value */}
+      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+        <div className="h-2 bg-gray-200 relative overflow-hidden">
+          <div
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-blue-500 transition-all duration-300"
+            style={{ width: `${totalValues > 0 ? (categorizedCount / totalValues) * 100 : 0}%` }}
+          />
+        </div>
+        {totalValues > 0 && (
+          <div className="px-4 py-2 text-center">
+            <span className="text-xs text-gray-600 font-medium">
+              {totalValues - categorizedCount} values remaining
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">

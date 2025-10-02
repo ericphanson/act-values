@@ -35,45 +35,67 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between px-1">
-        <h2 className="text-lg font-bold text-gray-800">
-          Inbox
-        </h2>
-        <span className="text-sm font-medium text-gray-600">
-          {values.length} {values.length === 1 ? 'value' : 'values'}
-        </span>
-      </div>
-
       <SortableContext
         id="inbox"
         items={values.map(v => v.id)}
         strategy={verticalListSortingStrategy}
       >
-        {/* First value - prominent */}
-        <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl p-4 border-2 border-emerald-200">
-          <div className="text-xs font-semibold text-emerald-700 mb-2 uppercase tracking-wide">
-            Next Value
+        {/* First value with surrounding targets frame */}
+        <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
+          {/* Top: Swipe Up target */}
+          <div className="bg-blue-50 py-3 px-4 text-center border-b-2 border-blue-200">
+            <div className="text-2xl mb-1">⭐</div>
+            <div className="text-xs font-semibold text-gray-700">Swipe Up ↑</div>
+            <div className="text-xs text-gray-600">Somewhat</div>
           </div>
-          <ValueChipMobile
-            value={firstValue}
-            onTap={onTapValue}
-            onSwipe={onSwipeValue}
-            animating={animatingValues.has(firstValue.id)}
-            containerId="inbox"
-          />
-          {firstValue.description && (
-            <div className="mt-3 text-sm text-gray-700 italic border-t border-emerald-200 pt-3">
-              {firstValue.description}
+
+          {/* Middle row: Left target | Value | Right target */}
+          <div className="flex items-stretch">
+            {/* Left: Swipe Left target */}
+            <div className="bg-gray-50 py-4 px-2 flex flex-col items-center justify-center border-r-2 border-gray-200 w-20">
+              <div className="text-2xl mb-1">○</div>
+              <div className="text-xs font-semibold text-gray-700 text-center">
+                Not
+              </div>
+              <div className="text-lg mt-1">←</div>
             </div>
-          )}
+
+            {/* Center: The value */}
+            <div className="flex-1 p-4 bg-gradient-to-br from-emerald-50 to-blue-50">
+              <div className="text-xs font-semibold text-emerald-700 mb-2 uppercase tracking-wide text-center">
+                Next Value
+              </div>
+              <ValueChipMobile
+                value={firstValue}
+                onTap={onTapValue}
+                onSwipe={onSwipeValue}
+                animating={animatingValues.has(firstValue.id)}
+                containerId="inbox"
+              />
+              {firstValue.description && (
+                <div className="mt-3 text-sm text-gray-700 italic border-t border-emerald-200 pt-3">
+                  {firstValue.description}
+                </div>
+              )}
+            </div>
+
+            {/* Right: Swipe Right target */}
+            <div className="bg-emerald-50 py-4 px-2 flex flex-col items-center justify-center border-l-2 border-emerald-200 w-20">
+              <div className="text-2xl mb-1">💎</div>
+              <div className="text-xs font-semibold text-gray-700 text-center">
+                Very
+              </div>
+              <div className="text-lg mt-1">→</div>
+            </div>
+          </div>
         </div>
 
         {/* Rest of values */}
         {restValues.length > 0 && (
           <div className="space-y-2">
-            <div className="text-xs font-semibold text-gray-500 px-1 uppercase tracking-wide">
-              Remaining
+            <div className="text-xs font-semibold text-gray-500 px-1 uppercase tracking-wide flex items-center justify-between">
+              <span>Remaining</span>
+              <span className="text-gray-400">{restValues.length}</span>
             </div>
             <div className="space-y-2">
               {restValues.map(value => (
