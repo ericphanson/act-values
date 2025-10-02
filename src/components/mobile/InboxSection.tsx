@@ -40,22 +40,22 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
         items={values.map(v => v.id)}
         strategy={verticalListSortingStrategy}
       >
-        {/* First value with surrounding targets frame */}
-        <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
-          {/* Top: Swipe Up target */}
-          <div className="bg-blue-50 py-3 px-4 text-center border-b-2 border-blue-200">
-            <div className="text-2xl mb-1">⭐</div>
+        {/* First value with surrounding targets frame - extends to screen edges */}
+        <div className="-mx-4 bg-white border-y-2 border-gray-200 overflow-hidden">
+          {/* Top: Swipe Up target - Not Important - extends to screen edges */}
+          <div className="bg-gray-50 py-3 text-center border-b-2 border-gray-200">
+            <div className="text-2xl mb-1">○</div>
             <div className="text-xs font-semibold text-gray-700">Swipe Up ↑</div>
-            <div className="text-xs text-gray-600">Somewhat</div>
+            <div className="text-xs text-gray-600">Not Important</div>
           </div>
 
           {/* Middle row: Left target | Value | Right target */}
           <div className="flex items-stretch">
-            {/* Left: Swipe Left target */}
-            <div className="bg-gray-50 py-4 px-2 flex flex-col items-center justify-center border-r-2 border-gray-200 w-20">
-              <div className="text-2xl mb-1">○</div>
+            {/* Left: Swipe Left target - Somewhat - extends to screen edge */}
+            <div className="bg-blue-50 py-4 px-3 flex flex-col items-center justify-center border-r-2 border-blue-200 w-24">
+              <div className="text-2xl mb-1">⭐</div>
               <div className="text-xs font-semibold text-gray-700 text-center">
-                Not
+                Somewhat
               </div>
               <div className="text-lg mt-1">←</div>
             </div>
@@ -79,8 +79,8 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
               )}
             </div>
 
-            {/* Right: Swipe Right target */}
-            <div className="bg-emerald-50 py-4 px-2 flex flex-col items-center justify-center border-l-2 border-emerald-200 w-20">
+            {/* Right: Swipe Right target - Very Important - extends to screen edge */}
+            <div className="bg-emerald-50 py-4 px-3 flex flex-col items-center justify-center border-l-2 border-emerald-200 w-24">
               <div className="text-2xl mb-1">💎</div>
               <div className="text-xs font-semibold text-gray-700 text-center">
                 Very
@@ -90,9 +90,9 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
           </div>
         </div>
 
-        {/* Rest of values */}
+        {/* Rest of values - with padding */}
         {restValues.length > 0 && (
-          <div className="space-y-2">
+          <div className="p-4 space-y-2">
             <div className="text-xs font-semibold text-gray-500 px-1 uppercase tracking-wide flex items-center justify-between">
               <span>Remaining</span>
               <span className="text-gray-400">{restValues.length}</span>

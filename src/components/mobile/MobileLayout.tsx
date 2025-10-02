@@ -208,16 +208,16 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="p-4 space-y-4">
-          {/* Inbox */}
-          <InboxSection
-            values={inboxValues}
-            onTapValue={handleTapValue}
-            onSwipeValue={handleSwipe}
-            animatingValues={animatingValues}
-          />
+        {/* Inbox - no padding so frame sits against progress bar and extends to edges */}
+        <InboxSection
+          values={inboxValues}
+          onTapValue={handleTapValue}
+          onSwipeValue={handleSwipe}
+          animatingValues={animatingValues}
+        />
 
-          {/* Tiers (accordion) */}
+        {/* Tiers (accordion) - with padding */}
+        <div className="p-4 space-y-4">
           {tiers.map(tier => {
             const tierValues = getValuesByTier(tier.id);
             const isOverQuota = tier.quota && tierValues.length > tier.quota;
