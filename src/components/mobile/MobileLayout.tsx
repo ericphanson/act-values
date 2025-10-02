@@ -58,7 +58,14 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   const [showUndoToast, setShowUndoToast] = useState(false);
   const [showListDropdown, setShowListDropdown] = useState(false);
   const [shareToast, setShareToast] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(true); // Default to true, detect on mount
   const undoStack = useUndoStack(10);
+
+  // Detect if this is a touch device
+  useEffect(() => {
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchDevice(hasTouch);
+  }, []);
 
   // Check if user has seen the hint
   useEffect(() => {
@@ -297,6 +304,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
           onTapValue={handleTapValue}
           onSwipeValue={handleSwipe}
           animatingValues={animatingValues}
+          isTouchDevice={isTouchDevice}
           tierCounts={{
             'very-important': getValuesByTier('very-important').length,
             'somewhat-important': getValuesByTier('somewhat-important').length,

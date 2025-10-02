@@ -9,6 +9,7 @@ interface InboxSectionProps {
   onTapValue: (value: Value) => void;
   onSwipeValue: (value: Value, direction: SwipeDirection) => void;
   animatingValues: Set<string>;
+  isTouchDevice: boolean;
   tierCounts: {
     'very-important': number;
     'somewhat-important': number;
@@ -26,6 +27,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
   onTapValue,
   onSwipeValue,
   animatingValues,
+  isTouchDevice,
   tierCounts,
   tierQuotas,
 }) => {
@@ -54,10 +56,12 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
       >
         {/* First value with surrounding targets frame - extends to screen edges */}
         <div className="-mx-4 bg-white border-y-2 border-gray-200 overflow-hidden">
-          {/* Top: Swipe Up target - Not Important - extends to screen edges */}
+          {/* Top: Swipe Up / Press 3 - Not Important - extends to screen edges */}
           <div className="bg-gray-50 py-3 text-center border-b-2 border-gray-200 relative">
             <div className="text-2xl mb-1">○</div>
-            <div className="text-xs font-semibold text-gray-700">Swipe Up ↑</div>
+            <div className="text-xs font-semibold text-gray-700">
+              {isTouchDevice ? 'Swipe Up ↑' : 'Press 3'}
+            </div>
             <div className="text-xs text-gray-600">Not Important</div>
             {/* Counter in top-right corner */}
             <div className="absolute top-2 right-3 text-xs font-bold text-gray-700 bg-white px-2 py-1 rounded">
@@ -67,13 +71,13 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
 
           {/* Middle row: Left target | Value | Right target */}
           <div className="flex items-stretch">
-            {/* Left: Swipe Left target - Somewhat - extends to screen edge */}
+            {/* Left: Swipe Left / Press 2 - Somewhat - extends to screen edge */}
             <div className="bg-blue-50 py-4 px-3 flex flex-col items-center justify-center border-r-2 border-blue-200 w-24">
               <div className="text-2xl mb-1">⭐</div>
               <div className="text-xs font-semibold text-gray-700 text-center">
                 Somewhat
               </div>
-              <div className="text-lg mt-1">←</div>
+              <div className="text-lg mt-1">{isTouchDevice ? '←' : '2'}</div>
               {/* Counter at bottom */}
               <div className="text-xs font-bold text-gray-700 mt-2 bg-white px-2 py-0.5 rounded">
                 {tierCounts['somewhat-important']} values
@@ -99,13 +103,13 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
               )}
             </div>
 
-            {/* Right: Swipe Right target - Very Important - extends to screen edge */}
+            {/* Right: Swipe Right / Press 1 - Very Important - extends to screen edge */}
             <div className="bg-emerald-50 py-4 px-3 flex flex-col items-center justify-center border-l-2 border-emerald-200 w-24">
               <div className="text-2xl mb-1">💎</div>
               <div className="text-xs font-semibold text-gray-700 text-center">
                 Very
               </div>
-              <div className="text-lg mt-1">→</div>
+              <div className="text-lg mt-1">{isTouchDevice ? '→' : '1'}</div>
               {/* Counter at bottom with quota - red if over */}
               <div className={`text-xs font-bold mt-2 px-2 py-0.5 rounded ${
                 tierQuotas['very-important'] && tierCounts['very-important'] > tierQuotas['very-important']
