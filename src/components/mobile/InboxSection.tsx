@@ -11,6 +11,9 @@ interface InboxSectionProps {
   onSwipeValue: (value: Value, direction: SwipeDirection) => void;
   animatingValues: Set<string>;
   isTouchDevice: boolean;
+  onReviewMode: () => void;
+  onShare: () => void;
+  onPrint: () => void;
   tierCounts: {
     'very-important': number;
     'somewhat-important': number;
@@ -30,6 +33,9 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
   onSwipeValue,
   animatingValues,
   isTouchDevice,
+  onReviewMode,
+  onShare,
+  onPrint,
   tierCounts,
   tierQuotas,
 }) => {
@@ -41,9 +47,30 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
         <h3 className="text-xl font-bold text-gray-800 mb-2">
           All done!
         </h3>
-        <p className="text-gray-600">
+        <p className="text-gray-600 mb-6">
           You've categorized all your values
         </p>
+
+        <div className="flex flex-col gap-3 max-w-xs mx-auto">
+          <button
+            onClick={onReviewMode}
+            className="w-full bg-white text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors border-2 border-gray-300 flex items-center justify-center gap-2"
+          >
+            👁️ Review & Reorder
+          </button>
+          <button
+            onClick={onShare}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+          >
+            🔗 Share Link
+          </button>
+          <button
+            onClick={onPrint}
+            className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+          >
+            🖨️ Print
+          </button>
+        </div>
       </div>
     );
   }

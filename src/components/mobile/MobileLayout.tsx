@@ -344,6 +344,9 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
           onSwipeValue={handleSwipe}
           animatingValues={animatingValues}
           isTouchDevice={isTouchDevice}
+          onReviewMode={() => setReviewMode(true)}
+          onShare={handleShare}
+          onPrint={onPrint}
           tierCounts={{
             'very-important': getValuesByTier('very-important').length,
             'somewhat-important': getValuesByTier('somewhat-important').length,
