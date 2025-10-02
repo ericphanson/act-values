@@ -6,6 +6,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 interface InboxSectionProps {
   values: Value[];
+  totalValues: number;
   onTapValue: (value: Value) => void;
   onSwipeValue: (value: Value, direction: SwipeDirection) => void;
   animatingValues: Set<string>;
@@ -24,6 +25,7 @@ interface InboxSectionProps {
 
 export const InboxSection: React.FC<InboxSectionProps> = ({
   values,
+  totalValues,
   onTapValue,
   onSwipeValue,
   animatingValues,
@@ -31,7 +33,8 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
   tierCounts,
   tierQuotas,
 }) => {
-  if (values.length === 0) {
+  // Only show "All done" if we have values loaded and none are in inbox
+  if (values.length === 0 && totalValues > 0) {
     return (
       <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl p-8 text-center">
         <div className="text-6xl mb-4">🎉</div>
@@ -43,6 +46,11 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
         </p>
       </div>
     );
+  }
+
+  // If no values at all (still loading), show nothing
+  if (totalValues === 0) {
+    return null;
   }
 
   const [firstValue, ...restValues] = values;

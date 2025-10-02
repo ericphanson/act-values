@@ -1,4 +1,5 @@
 import React from 'react';
+import { Eye } from 'lucide-react';
 
 interface SwipeHintProps {
   onDismiss: () => void;
@@ -54,7 +55,9 @@ export const SwipeHint: React.FC<SwipeHintProps> = ({ onDismiss }) => {
 
           <div className="border-t border-gray-200 pt-3 mt-3">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">👁️</span>
+              <div className="p-1">
+                <Eye size={20} className="text-gray-600" />
+              </div>
               <div>
                 <p className="font-medium text-gray-800">Review mode</p>
                 <p className="text-sm text-gray-600">Tap the eye icon to review and reorder your tiers</p>

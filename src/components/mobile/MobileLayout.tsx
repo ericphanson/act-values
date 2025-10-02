@@ -301,6 +301,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         {/* Inbox - no padding so frame sits against progress bar and extends to edges */}
         <InboxSection
           values={inboxValues}
+          totalValues={totalValues}
           onTapValue={handleTapValue}
           onSwipeValue={handleSwipe}
           animatingValues={animatingValues}
