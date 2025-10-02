@@ -1759,14 +1759,14 @@ const ValuesTierList = () => {
                       <div className="flex gap-3 mt-4">
                         <button
                           onClick={handleShare}
-                          className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
                         >
                           <Share2 size={18} />
                           <span>Share Link</span>
                         </button>
                         <button
                           onClick={() => window.print()}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
                         >
                           <Printer size={18} />
                           <span>Print</span>
