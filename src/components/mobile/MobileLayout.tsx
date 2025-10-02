@@ -63,7 +63,10 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   // Check if user has seen the hint
   useEffect(() => {
     const hasSeenHint = localStorage.getItem('act-values-seen-mobile-hint');
-    if (!hasSeenHint) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const forceHint = urlParams.get('hint') === 'true';
+
+    if (!hasSeenHint || forceHint) {
       setShowHint(true);
     }
   }, []);

@@ -14,16 +14,11 @@ export const SwipeHint: React.FC<SwipeHintProps> = ({ onDismiss }) => {
           <div className="flex items-start gap-3">
             <span className="text-2xl">👆</span>
             <div>
-              <p className="font-medium text-gray-800">Tap a value</p>
-              <p className="text-sm text-gray-600">Choose a tier from the menu</p>
+              <p className="font-medium text-gray-800">Swipe to categorize:</p>
             </div>
           </div>
 
-          <div className="border-t border-gray-200 pt-3 mt-3">
-            <p className="text-sm font-semibold text-gray-600 mb-2">Or swipe to categorize:</p>
-          </div>
-
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 ml-6">
             <span className="text-2xl">👉</span>
             <div>
               <p className="font-medium text-gray-800">Swipe right →</p>
@@ -31,19 +26,39 @@ export const SwipeHint: React.FC<SwipeHintProps> = ({ onDismiss }) => {
             </div>
           </div>
 
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 ml-6">
             <span className="text-2xl">👈</span>
             <div>
               <p className="font-medium text-gray-800">← Swipe left</p>
+              <p className="text-sm text-gray-600">⭐ Somewhat Important</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 ml-6">
+            <span className="text-2xl">☝️</span>
+            <div>
+              <p className="font-medium text-gray-800">Swipe up ↑</p>
               <p className="text-sm text-gray-600">○ Not Important</p>
             </div>
           </div>
 
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">☝️</span>
-            <div>
-              <p className="font-medium text-gray-800">Swipe up ↑</p>
-              <p className="text-sm text-gray-600">⭐ Somewhat Important</p>
+          <div className="border-t border-gray-200 pt-3 mt-3">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">👆</span>
+              <div>
+                <p className="font-medium text-gray-800">Or tap a value</p>
+                <p className="text-sm text-gray-600">Choose a tier from the menu</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 pt-3 mt-3">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">👁️</span>
+              <div>
+                <p className="font-medium text-gray-800">Review mode</p>
+                <p className="text-sm text-gray-600">Tap the eye icon to review and reorder your tiers</p>
+              </div>
             </div>
           </div>
         </div>
