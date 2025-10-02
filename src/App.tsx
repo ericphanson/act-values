@@ -1559,9 +1559,13 @@ const ValuesTierList = () => {
                 )}
               </h2>
               <p className="text-sm text-gray-600 print-hide mt-1">
-                {isTouchDevice
-                  ? 'Tap values to add them to the selected tier'
-                  : 'Drag values to the tiers to rank them'}
+                {(() => {
+                  const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
+                  const totalInCategories = values.filter(v => !tierOrder.includes(v.location as TierId)).length;
+                  return isTouchDevice
+                    ? `${totalInCategories} values • Tap to add to selected tier`
+                    : `${totalInCategories} values • Drag to rank them`;
+                })()}
               </p>
             </div>
 
@@ -1650,6 +1654,27 @@ const ValuesTierList = () => {
             />
             <p className="text-xs text-gray-600 mt-1 text-center">Scan to edit</p>
           </div>
+
+        {/* Footer */}
+        <div className="text-center py-3 text-xs text-gray-500 print-hide">
+          <a
+            href="https://github.com/ericphanson/act-values"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-700 hover:underline"
+          >
+            Open source
+          </a>
+          {' • Your data stays private in your browser • Share links to collaborate • '}
+          <a
+            href="https://ericphanson.com/contact"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-700 hover:underline"
+          >
+            Contact
+          </a>
+        </div>
         </div>
 
         {/* Toast notification */}
