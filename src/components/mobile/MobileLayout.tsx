@@ -173,6 +173,44 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
     }, 100);
   }, []);
 
+  // Keyboard shortcuts for non-touch devices
+  useEffect(() => {
+    if (isTouchDevice) return; // Only for non-touch devices
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Get the first inbox value
+      const tierIds: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
+      const inboxValues = values.filter(v => !tierIds.includes(v.location as TierId));
+
+      if (inboxValues.length === 0) return;
+
+      const firstValue = inboxValues[0];
+
+      // Map keys to tiers
+      const tierKeys: Record<string, TierId> = {
+        '1': 'very-important',
+        '2': 'somewhat-important',
+        '3': 'not-important'
+      };
+
+      if (tierKeys[e.key]) {
+        const targetTier = tierKeys[e.key];
+        onMoveValue(firstValue.id, firstValue.location, targetTier, firstValue.value);
+        undoStack.addAction({
+          valueId: firstValue.id,
+          valueName: firstValue.value,
+          fromLocation: firstValue.location,
+          toLocation: targetTier,
+        });
+        setShowUndoToast(true);
+        setTimeout(() => setShowUndoToast(false), 4000);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [isTouchDevice, values, onMoveValue, undoStack]);
+
   if (reviewMode) {
     return (
       <ReviewMode
