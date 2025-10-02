@@ -2,13 +2,15 @@
 
 ## TODO
 
-- [x] other values should move out of the way when dragging
-- [x] you should be able to press the number for a tier when in the same tier to send the item to the back of it
-- [x] when you press a number to add an item to a tier, it should go to the back
-- [x] should not be able to move items between categories on the sidebar, or within a category, for simplicity. You can only drag it out of a category into a tier, or from a tier back to its home category. If you drag from a tier onto a random spot on the page (not another tier), it should return to its home category.
-- [x] fixed: URL state and local storage store different things
-- [x] touch-friendlyness. I think to support touch, we could have a mode where you press on a tier, then every value you press on gets added to that tier. So you can fill it out ergonomically that way. This should only happen for touch displays, since dragging isn't ergonomic there
-- [ ] intro: when you first load it, have something show you how to use it, with an arrow showing how to drag a value into a tier
-- [x] "Drag values to rank them, or hover and press 1, 2, 3 (tiers) or 4 (categories)" text: doesn't haev enough room
-- [x] UI responsiveness
-- [ ] bug in tap mode: tapping an element in a tier which isn't the selected tier sends it back to the categories. It should send it to the selected tier. They should only go back to the categroies when you tap an element IN the tier that is selected.
+- [ ] remove touch handlers from desktop mode. if touch is detected, regardless of screen size, default to mobile layout
+- [ ] add the lucide-react icons into the text so the user knows what the share and print buttons look like. Additionally, add the icon for about itself to the top-left oft he about page, so the user makes the association when they see that button later 
+- [ ] Add ESC key handler to SwipeHint component
+- [ ] Remove localStorage storage for mobile hint in MobileLayout- hint is coupled to about
+- [ ] use different hint text for non-touch version of mobile layout (press keys instead of swiping)
+- [ ] in desktop view, the hovertext for values in categories should go on the left instead of right. They get cutoff
+- [ ] remove or minimize debug logging / console printing
+- [ ] add desktop version of swipehint? with instructions
+- [ ] order of items within tiers is somewhat non-unintuitive. I think it is row-based instead of column-based. Switch to column based, i.e. going down a column counts up, instead of down a row
+    - [ ] should we add a tiny number in the corner of each value when its in a tier to show its place within it? I think not now
+- [ ] improve "About" page, tips are slightly redundant with each other and not sure about "go with your gut"
+- [ ] add readme: concisely explain purpose and features (adapting from about page) without "selling" too much. design goals: static server, github pages hostable, don't lose users' work, all state fits in URL, printable results, ergonomic. Code written by Claude Sonnet 4.5.
