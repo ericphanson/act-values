@@ -303,10 +303,12 @@ const ValuesTierList = () => {
   const [selectedTierForTouch, setSelectedTierForTouch] = useState<TierId | null>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [showListDropdown, setShowListDropdown] = useState(false);
+  const [showRenameHint, setShowRenameHint] = useState(false);
   const lastKnownModified = useRef<number>(0);
   const currentFragmentRef = useRef<string | null>(null);
   const initializedRef = useRef<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
 
   // Simple throttling: track if update is already scheduled
@@ -918,6 +920,20 @@ const ValuesTierList = () => {
 
   const handleShare = async () => {
     try {
+      // Check if using default generated name
+      const hasDefaultName = listName.startsWith('My values - ');
+
+      if (hasDefaultName) {
+        // Show hint and focus title input
+        setShowRenameHint(true);
+        titleInputRef.current?.focus();
+        titleInputRef.current?.select();
+
+        // Auto-hide hint after 4 seconds
+        setTimeout(() => setShowRenameHint(false), 4000);
+        return;
+      }
+
       const state = serializeState();
       const dataset = preloadedDatasets[selectedDataset];
       const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
@@ -1260,18 +1276,28 @@ const ValuesTierList = () => {
 
                 {/* Screen: editable title with dropdown button */}
                 <div className="print-hide relative" ref={dropdownRef}>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={listName}
-                      onChange={(e) => {
-                        const newName = e.target.value;
-                        setListName(newName);
-                        debouncedRenameList(listId, newName);
-                      }}
-                      className="text-xl font-semibold text-gray-800 bg-transparent border-2 border-transparent hover:border-gray-300 focus:border-emerald-500 focus:outline-none rounded px-2 py-1 flex-1"
-                      placeholder="Enter list name..."
-                    />
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={titleInputRef}
+                        type="text"
+                        value={listName}
+                        onChange={(e) => {
+                          const newName = e.target.value;
+                          setListName(newName);
+                          debouncedRenameList(listId, newName);
+                          // Hide hint once user starts typing
+                          if (showRenameHint) {
+                            setShowRenameHint(false);
+                          }
+                        }}
+                        className={`text-xl font-semibold text-gray-800 bg-transparent border-2 ${
+                          showRenameHint
+                            ? 'border-blue-500 ring-2 ring-blue-200'
+                            : 'border-transparent hover:border-gray-300'
+                        } focus:border-emerald-500 focus:outline-none rounded px-2 py-1 flex-1 transition-all`}
+                        placeholder="Enter list name..."
+                      />
                     <button
                       onClick={() => setShowListDropdown(!showListDropdown)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -1279,6 +1305,14 @@ const ValuesTierList = () => {
                     >
                       <ChevronDown size={24} className={`transition-transform ${showListDropdown ? 'rotate-180' : ''}`} />
                     </button>
+                  </div>
+
+                  {/* Rename hint */}
+                  {showRenameHint && (
+                    <div className="text-sm text-blue-600 font-medium px-2 animate-fade-in-up">
+                      💡 Give your list a descriptive name before sharing!
+                    </div>
+                  )}
                   </div>
 
                   {/* Dropdown menu */}
