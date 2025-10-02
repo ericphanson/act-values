@@ -44,7 +44,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
   if (values.length === 0 && totalValues > 0) {
     return (
       <div className="p-6 max-w-md mx-auto">
-        <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl p-6 mb-4 text-center border-2 border-emerald-200">
+        <div className="text-center mb-4">
           <div className="text-5xl mb-3">🎉</div>
           <h3 className="text-xl font-bold text-gray-800 mb-1">
             All done!
