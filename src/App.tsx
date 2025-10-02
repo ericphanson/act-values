@@ -1736,71 +1736,114 @@ const ValuesTierList = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
-              <div className="space-y-2">
-                {[...categories]
-                  .sort((a, b) => {
-                    const aCount = getValuesByLocation(a).length;
-                    const bCount = getValuesByLocation(b).length;
-                    if (aCount > 0 && bCount === 0) return -1;
-                    if (aCount === 0 && bCount > 0) return 1;
-                    return categories.indexOf(a) - categories.indexOf(b);
-                  })
-                  .map(category => {
-                    const categoryValues = getValuesByLocation(category);
-                    const isCollapsed = collapsedCategories[category];
+              {(() => {
+                const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
+                const totalInCategories = values.filter(v => !tierOrder.includes(v.location as TierId)).length;
+                const totalValues = values.length;
 
-                    return (
-                      <div key={category} className="border rounded print-avoid-break">
-                        <button
-                          onClick={() => toggleCategory(category)}
-                          className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-gray-50 cursor-pointer print-hide"
-                        >
-                          <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
-                            {category}
-                            <span className="text-sm font-normal text-gray-500">
-                              ({categoryValues.length})
-                            </span>
-                          </span>
-                        </button>
-
-                        <h3 className="hidden print:block font-medium text-gray-700 px-3 pt-3 pb-1">
-                          {category} ({categoryValues.length})
-                        </h3>
-
-                        {!isCollapsed && (
-                          <SortableContext
-                            id={category}
-                            items={categoryValues.map(value => value.id)}
-                            strategy={verticalListSortingStrategy}
-                          >
-                            <ValueContainer containerId={category} className="p-2 pt-0 flex flex-wrap gap-2 print:block">
-                              {categoryValues.length === 0 && (
-                                <div className="text-sm text-gray-400 italic select-none">
-                                  No values yet
-                                </div>
-                              )}
-                              {categoryValues.map(value => (
-                                <SortableValue
-                                  key={value.id}
-                                  value={value}
-                                  hoveredValue={hoveredValue}
-                                  setHoveredValue={setHoveredValue}
-                                  animatingValues={animatingValues}
-                                  containerId={category}
-                                  activeId={activeId}
-                                  isTouchDevice={isTouchDevice}
-                                  selectedTierForTouch={selectedTierForTouch}
-                                  onTouchSelect={handleTouchSelect}
-                                />
-                              ))}
-                            </ValueContainer>
-                          </SortableContext>
-                        )}
+                // Show completion message if all values are categorized
+                if (totalInCategories === 0 && totalValues > 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                      <div className="text-5xl mb-4">🎉</div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">All done!</h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        You've categorized all {totalValues} values
+                      </p>
+                      <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 max-w-sm">
+                        <p className="text-sm font-semibold text-amber-900 mb-1">💾 Save your work!</p>
+                        <p className="text-xs text-amber-800">
+                          Your data is stored locally. <strong>Share or print</strong> to save permanently
+                        </p>
                       </div>
-                    );
-                  })}
-              </div>
+                      <div className="flex gap-3 mt-4">
+                        <button
+                          onClick={handleShare}
+                          className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                        >
+                          <Share2 size={18} />
+                          <span>Share Link</span>
+                        </button>
+                        <button
+                          onClick={() => window.print()}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        >
+                          <Printer size={18} />
+                          <span>Print</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-2">
+                    {[...categories]
+                      .sort((a, b) => {
+                        const aCount = getValuesByLocation(a).length;
+                        const bCount = getValuesByLocation(b).length;
+                        if (aCount > 0 && bCount === 0) return -1;
+                        if (aCount === 0 && bCount > 0) return 1;
+                        return categories.indexOf(a) - categories.indexOf(b);
+                      })
+                      .map(category => {
+                        const categoryValues = getValuesByLocation(category);
+                        const isCollapsed = collapsedCategories[category];
+
+                        return (
+                          <div key={category} className="border rounded print-avoid-break">
+                            <button
+                              onClick={() => toggleCategory(category)}
+                              className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-gray-50 cursor-pointer print-hide"
+                            >
+                              <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                                {category}
+                                <span className="text-sm font-normal text-gray-500">
+                                  ({categoryValues.length})
+                                </span>
+                              </span>
+                            </button>
+
+                            <h3 className="hidden print:block font-medium text-gray-700 px-3 pt-3 pb-1">
+                              {category} ({categoryValues.length})
+                            </h3>
+
+                            {!isCollapsed && (
+                              <SortableContext
+                                id={category}
+                                items={categoryValues.map(value => value.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                <ValueContainer containerId={category} className="p-2 pt-0 flex flex-wrap gap-2 print:block">
+                                  {categoryValues.length === 0 && (
+                                    <div className="text-sm text-gray-400 italic select-none">
+                                      No values left
+                                    </div>
+                                  )}
+                                  {categoryValues.map(value => (
+                                    <SortableValue
+                                      key={value.id}
+                                      value={value}
+                                      hoveredValue={hoveredValue}
+                                      setHoveredValue={setHoveredValue}
+                                      animatingValues={animatingValues}
+                                      containerId={category}
+                                      activeId={activeId}
+                                      isTouchDevice={isTouchDevice}
+                                      selectedTierForTouch={selectedTierForTouch}
+                                      onTouchSelect={handleTouchSelect}
+                                    />
+                                  ))}
+                                </ValueContainer>
+                              </SortableContext>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
