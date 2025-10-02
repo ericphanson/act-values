@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
 interface ACTIntroProps {
@@ -6,6 +6,17 @@ interface ACTIntroProps {
 }
 
 export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
+  // Handle ESC key to close
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
@@ -77,6 +88,16 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
             <h3 className="text-lg font-semibold text-blue-900 mb-2">Remember</h3>
             <p className="text-blue-800 text-sm">
               This exercise is about <strong>discovery</strong>, not judgment. There are no wrong answers. The goal is to gain clarity about what truly matters to you so you can live more intentionally.
+            </p>
+          </section>
+
+          <section className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
+            <h3 className="text-lg font-semibold text-emerald-900 mb-2">Privacy & Saving</h3>
+            <p className="text-emerald-800 text-sm mb-2">
+              Your data stays private in your browser. Your work is saved automatically but may be lost if you clear browsing data.
+            </p>
+            <p className="text-emerald-800 text-sm">
+              <strong>To save permanently:</strong> Use the Share button to get a link you can access from anywhere, or Print for a paper copy.
             </p>
           </section>
         </div>
