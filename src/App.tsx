@@ -1419,7 +1419,7 @@ const ValuesTierList = () => {
             onCreateList={() => {
               createNewList(selectedDataset);
             }}
-            onSwitchToDesktop={isMobileScreen ? () => setForceDesktopMode(true) : undefined}
+            onSwitchToDesktop={() => setForceDesktopMode(true)}
           />
         </div>
       )}
@@ -1886,17 +1886,13 @@ const ValuesTierList = () => {
           >
             Contact
           </a>
-          {isMobileScreen && (
-            <>
-              {' • '}
-              <button
-                onClick={() => setForceDesktopMode(false)}
-                className="hover:text-gray-700 hover:underline"
-              >
-                Mobile mode
-              </button>
-            </>
-          )}
+          {' • '}
+          <button
+            onClick={() => setForceDesktopMode(false)}
+            className="hover:text-gray-700 hover:underline"
+          >
+            Mobile mode
+          </button>
         </div>
         </div>
 
