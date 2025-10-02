@@ -28,6 +28,8 @@ import { loadList, saveList, loadAllLists, deleteList, renameList, getCurrentLis
 import { generateFriendlyName, generateListId } from './utils/nameGenerator';
 import { debounce } from './utils/debounce';
 import { encodeStateToUrl, getShareableUrl, decodeUrlToState } from './urlState';
+import { useMediaQuery } from './hooks/useMediaQuery';
+import { MobileLayout } from './components/mobile/MobileLayout';
 
 // Sortable value item component
 interface SortableValueProps {
@@ -310,6 +312,9 @@ const ValuesTierList = () => {
   const initializedRef = useRef<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Mobile layout detection
+  const isMobileLayout = useMediaQuery('(max-width: 767px)');
 
 
   // Simple throttling: track if update is already scheduled
@@ -1244,6 +1249,58 @@ const ValuesTierList = () => {
     return values.filter(v => v.location === location);
   };
 
+  // Helper for mobile layout to move values
+  const handleMoveValueMobile = useCallback((valueId: string, fromLocation: string, toLocation: TierId, valueName: string) => {
+    const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
+
+    setValues(prevValues => {
+      const filtered = prevValues.filter(v => v.id !== valueId);
+      const value = prevValues.find(v => v.id === valueId);
+
+      if (!value) return prevValues;
+
+      const updatedValue = { ...value, location: toLocation };
+
+      // Find insert position at the end of the target tier
+      const targetTierIndex = tierOrder.indexOf(toLocation);
+
+      if (targetTierIndex !== -1) {
+        // It's a tier - insert at the end
+        let insertIndex = 0;
+        for (let i = 0; i < targetTierIndex; i++) {
+          insertIndex += filtered.filter(v => v.location === tierOrder[i]).length;
+        }
+        insertIndex += filtered.filter(v => v.location === toLocation).length;
+
+        filtered.splice(insertIndex, 0, updatedValue);
+      } else {
+        // It's a category - insert at the end of categories
+        const tiersCount = filtered.filter(v => tierOrder.includes(v.location as TierId)).length;
+        const categoryIndex = categories.indexOf(toLocation);
+
+        let insertIndex = tiersCount;
+        for (let i = 0; i < categoryIndex; i++) {
+          insertIndex += filtered.filter(v => v.location === categories[i]).length;
+        }
+        insertIndex += filtered.filter(v => v.location === toLocation).length;
+
+        filtered.splice(insertIndex, 0, updatedValue);
+      }
+
+      return filtered;
+    });
+
+    // Trigger animation
+    setAnimatingValues(prev => new Set(prev).add(valueId));
+    setTimeout(() => {
+      setAnimatingValues(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(valueId);
+        return newSet;
+      });
+    }, 500);
+  }, [categories]);
+
   return (
     <DndContext
       sensors={sensors}
@@ -1264,12 +1321,25 @@ const ValuesTierList = () => {
         },
       }}
     >
+      {/* Mobile layout - show on mobile screens, hide on print */}
+      {isMobileLayout && (
+        <div className="print:hidden">
+          <MobileLayout
+            values={values}
+            tiers={tiers}
+            listName={listName}
+            animatingValues={animatingValues}
+            onMoveValue={handleMoveValueMobile}
+            onShare={handleShare}
+            onPrint={() => window.print()}
+          />
+        </div>
+      )}
+
+      {/* Desktop layout - show on desktop screens OR when printing from mobile */}
+      <div className={isMobileLayout ? "hidden print:block" : "block"}>
       <div className="h-screen bg-gradient-to-br from-blue-50 to-green-50 p-3 md:p-6 overflow-hidden">
       <div className="max-w-7xl mx-auto h-full flex flex-col">
-        {/* Small screen warning - show below 600px */}
-        <div className="sm:hidden bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3 text-sm text-yellow-800 print-hide">
-          ⚠️ This app is optimized for larger screens. Some features may not work well on small displays.
-        </div>
 
         <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 print-header flex-shrink-0">
           <div className="flex flex-col gap-3">
@@ -1694,6 +1764,7 @@ const ValuesTierList = () => {
             {toastMessage}
           </div>
         )}
+      </div>
       </div>
 
       <DragOverlay>
