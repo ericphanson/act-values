@@ -105,6 +105,17 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onExit]);
 
+  const handleDragStart = (event: any) => {
+    // Find which tier this value belongs to
+    for (const tier of tiers) {
+      const values = getValuesByTier(tier.id);
+      if (values.some(v => v.id === event.active.id)) {
+        setActiveTierId(tier.id);
+        break;
+      }
+    }
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -134,6 +145,7 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
