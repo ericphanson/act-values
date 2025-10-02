@@ -3,6 +3,7 @@ import { Value, TierId } from '../../types';
 import { ValueChipMobile } from './ValueChipMobile';
 import { SwipeDirection } from '../../hooks/useSwipeGesture';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { Eye, Share2, Printer } from 'lucide-react';
 
 interface InboxSectionProps {
   values: Value[];
@@ -56,19 +57,22 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
             onClick={onReviewMode}
             className="w-full bg-white text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors border-2 border-gray-300 flex items-center justify-center gap-2"
           >
-            👁️ Review & Reorder
+            <Eye size={18} />
+            Review & Reorder
           </button>
           <button
             onClick={onShare}
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
           >
-            🔗 Share Link
+            <Share2 size={18} />
+            Share Link
           </button>
           <button
             onClick={onPrint}
             className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
           >
-            🖨️ Print
+            <Printer size={18} />
+            Print
           </button>
         </div>
       </div>
