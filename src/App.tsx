@@ -1676,7 +1676,7 @@ const ValuesTierList = () => {
           >
             Open source
           </a>
-          {' • Your data stays private in your browser • Share links to collaborate • '}
+          {' • Your data stays private in your browser • Share and save links • '}
           <a
             href="https://ericphanson.com/contact"
             target="_blank"
