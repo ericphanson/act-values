@@ -1264,6 +1264,11 @@ const ValuesTierList = () => {
     >
       <div className="h-screen bg-gradient-to-br from-blue-50 to-green-50 p-3 md:p-6 overflow-hidden">
       <div className="max-w-7xl mx-auto h-full flex flex-col">
+        {/* Small screen warning - show below 600px */}
+        <div className="sm:hidden bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3 text-sm text-yellow-800 print-hide">
+          ⚠️ This app is optimized for larger screens. Some features may not work well on small displays.
+        </div>
+
         <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 print-header flex-shrink-0">
           <div className="flex flex-col gap-3">
             {/* Consolidated title with dropdown */}
@@ -1417,7 +1422,7 @@ const ValuesTierList = () => {
         </div>
 
         {/* Main content area with tiers and categories */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 print:static overflow-visible flex-1 min-h-0">
+        <div className="grid grid-cols-4 gap-4 print:static overflow-visible flex-1 min-h-0">
           {/* Three tier columns */}
           {tiers.map((tier, index) => {
             const tierValues = getValuesByLocation(tier.id);

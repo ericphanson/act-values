@@ -339,7 +339,7 @@
   }
 
   /* Ensure 4-column grid becomes single column on print */
-  .lg\:grid-cols-4 {
+  .grid-cols-4 {
     grid-template-columns: 1fr !important;
   }
 
