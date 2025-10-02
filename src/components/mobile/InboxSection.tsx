@@ -118,7 +118,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
               {isTouchDevice ? 'Swipe Up ↑' : 'Press 3'}
             </div>
             {/* Counter in bottom-right corner */}
-            <div className="absolute bottom-2 right-4 text-xs font-bold text-gray-700">
+            <div className="absolute bottom-2 right-6 text-xs font-bold text-gray-700">
               {tierCounts['not-important']} values
             </div>
           </div>
@@ -137,7 +137,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                 </div>
               </div>
               {/* Counter at bottom center */}
-              <div className="text-xs font-bold text-gray-700 absolute bottom-2 left-0 right-0 text-center">
+              <div className="text-xs font-bold text-gray-700 absolute bottom-2 left-2 right-2 text-center">
                 {tierCounts['somewhat-important']} values
               </div>
             </div>
@@ -175,7 +175,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                 </div>
               </div>
               {/* Counter at bottom center with quota - red if over */}
-              <div className={`text-xs font-bold absolute bottom-2 left-0 right-0 text-center ${
+              <div className={`text-xs font-bold absolute bottom-2 left-2 right-2 text-center ${
                 tierQuotas['very-important'] && tierCounts['very-important'] > tierQuotas['very-important']
                   ? 'text-red-700'
                   : 'text-gray-700'
