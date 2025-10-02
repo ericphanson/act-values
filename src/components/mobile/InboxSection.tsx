@@ -111,10 +111,12 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
           {/* Top: Swipe Up / Press 3 - Not Important - extends to screen edges */}
           <div className="bg-gray-50 py-3 text-center border-b-2 border-gray-200 relative">
             <div className="text-2xl mb-1">○</div>
-            <div className="text-xs font-semibold text-gray-700">
+            <div className="text-xs font-semibold text-gray-700 text-center">
+              Not Important
+            </div>
+            <div className="text-xs mt-1 font-semibold text-gray-700">
               {isTouchDevice ? 'Swipe Up ↑' : 'Press 3'}
             </div>
-            <div className="text-xs text-gray-600">Not Important</div>
             {/* Counter in top-right corner */}
             <div className="absolute top-2 right-3 text-xs font-bold text-gray-700 bg-white px-2 py-1 rounded">
               {tierCounts['not-important']} values
