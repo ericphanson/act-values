@@ -1351,6 +1351,7 @@ const ValuesTierList = () => {
   }, []);
 
   return (
+    <>
     <DndContext
       sensors={sensors}
       collisionDetection={collisionDetection}
@@ -1926,8 +1927,6 @@ const ValuesTierList = () => {
           </div>
         )}
 
-        {/* ACT Intro overlay */}
-        {showACTIntro && <ACTIntro onClose={() => setShowACTIntro(false)} />}
       </div>
       </div>
 
@@ -1945,6 +1944,10 @@ const ValuesTierList = () => {
         ) : null}
       </DragOverlay>
     </DndContext>
+
+    {/* ACT Intro overlay - outside DndContext so it works in both mobile and desktop layouts */}
+    {showACTIntro && <ACTIntro onClose={() => setShowACTIntro(false)} />}
+    </>
   );
 };
 
