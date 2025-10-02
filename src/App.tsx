@@ -315,8 +315,20 @@ const ValuesTierList = () => {
 
   // Mobile layout detection
   const isMobileScreen = useMediaQuery('(max-width: 767px)');
-  const [forcedMode, setForcedMode] = useState<'mobile' | 'desktop' | null>(null);
+  const [forcedMode, setForcedMode] = useState<'mobile' | 'desktop' | null>(() => {
+    const saved = localStorage.getItem('act-values-forced-mode');
+    return saved === 'mobile' || saved === 'desktop' ? saved : null;
+  });
   const isMobileLayout = forcedMode === 'mobile' ? true : forcedMode === 'desktop' ? false : isMobileScreen;
+
+  // Persist forced mode to localStorage
+  useEffect(() => {
+    if (forcedMode) {
+      localStorage.setItem('act-values-forced-mode', forcedMode);
+    } else {
+      localStorage.removeItem('act-values-forced-mode');
+    }
+  }, [forcedMode]);
 
 
   // Simple throttling: track if update is already scheduled
