@@ -9,7 +9,7 @@ import { ActionSheet } from './ActionSheet';
 import { ReviewMode } from './ReviewMode';
 import { UndoToast } from './UndoToast';
 import { SwipeHint } from './SwipeHint';
-import { Eye, Share2, Printer, ChevronDown, Trash2 } from 'lucide-react';
+import { Eye, Share2, Printer, ChevronDown, Trash2, Info } from 'lucide-react';
 import { SavedList } from '../../types';
 
 interface MobileLayoutProps {
@@ -34,6 +34,7 @@ interface MobileLayoutProps {
   onDeleteList: (listId: string) => void;
   onCreateList: () => void;
   onSwitchToDesktop: () => void;
+  onShowAbout: () => void;
 }
 
 export const MobileLayout: React.FC<MobileLayoutProps> = ({
@@ -52,6 +53,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   onDeleteList,
   onCreateList,
   onSwitchToDesktop,
+  onShowAbout,
 }) => {
   const [expandedTier, setExpandedTier] = useState<TierId | null>('very-important');
   const [actionSheetValue, setActionSheetValue] = useState<Value | null>(null);
@@ -254,6 +256,13 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         </div>
 
         <div className="flex gap-1 flex-shrink-0">
+          <button
+            onClick={onShowAbout}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="About"
+          >
+            <Info size={18} className="text-emerald-600" />
+          </button>
           <button
             onClick={() => setReviewMode(true)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"

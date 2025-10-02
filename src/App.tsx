@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, ChevronRight, Share2, Trash2, Printer } from 'lucide-react';
+import { ChevronDown, ChevronRight, Share2, Trash2, Printer, Info } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   DndContext,
@@ -30,6 +30,7 @@ import { debounce } from './utils/debounce';
 import { encodeStateToUrl, getShareableUrl, decodeUrlToState } from './urlState';
 import { useMediaQuery } from './hooks/useMediaQuery';
 import { MobileLayout } from './components/mobile/MobileLayout';
+import { ACTIntro } from './components/ACTIntro';
 
 // Sortable value item component
 interface SortableValueProps {
@@ -300,6 +301,7 @@ const ValuesTierList = () => {
   // Force dataset to always be act-shorter
   const selectedDataset = 'act-shorter';
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showACTIntro, setShowACTIntro] = useState(false);
   const [listId, setListId] = useState<string>('');
   const [listName, setListName] = useState<string>('');
   const [savedLists, setSavedLists] = useState<SavedList[]>([]);
@@ -1432,6 +1434,7 @@ const ValuesTierList = () => {
               createNewList(selectedDataset);
             }}
             onSwitchToDesktop={() => setForcedMode('desktop')}
+            onShowAbout={() => setShowACTIntro(true)}
           />
         </div>
       )}
@@ -1580,6 +1583,14 @@ const ValuesTierList = () => {
 
               {/* Action buttons */}
               <div className="flex gap-2 print-hide">
+                <button
+                  onClick={() => setShowACTIntro(true)}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 font-medium transition-colors"
+                  title="About this exercise"
+                >
+                  <Info size={18} />
+                  <span className="hidden md:inline">About</span>
+                </button>
                 <button
                   onClick={handleShare}
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
@@ -1914,6 +1925,9 @@ const ValuesTierList = () => {
             {toastMessage}
           </div>
         )}
+
+        {/* ACT Intro overlay */}
+        {showACTIntro && <ACTIntro onClose={() => setShowACTIntro(false)} />}
       </div>
       </div>
 
