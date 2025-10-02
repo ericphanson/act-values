@@ -295,7 +295,8 @@ const ValuesTierList = () => {
   const [hoveredValue, setHoveredValue] = useState<Value | null>(null);
   const [animatingValues, setAnimatingValues] = useState(new Set<string>());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [selectedDataset, setSelectedDataset] = useState('act-shorter');
+  // Force dataset to always be act-shorter
+  const selectedDataset = 'act-shorter';
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [listId, setListId] = useState<string>('');
   const [listName, setListName] = useState<string>('');
@@ -631,7 +632,6 @@ const ValuesTierList = () => {
     if (!preserveState) {
       setValues(importedValues);
       setCategories(uniqueCategories);
-      setSelectedDataset(datasetKey);
       setCollapsedCategories({});
     }
 
@@ -643,10 +643,10 @@ const ValuesTierList = () => {
     console.log('[App] Hydrating from persisted state:', persisted);
     const dataset = preloadedDatasets[persisted.datasetName];
 
-    // Validate dataset version exists
+    // Always use act-shorter dataset
     if (!dataset || dataset.version !== persisted.datasetVersion) {
-      console.log('[App] Dataset version mismatch, loading default');
-      loadDataset(persisted.datasetName || 'act-comprehensive');
+      console.log('[App] Dataset version mismatch, loading act-shorter');
+      loadDataset('act-shorter');
       return;
     }
 
@@ -712,7 +712,6 @@ const ValuesTierList = () => {
 
     setValues(orderedValues);
     setCategories(persisted.categoryOrder.length > 0 ? persisted.categoryOrder : uniqueCategories);
-    setSelectedDataset(persisted.datasetName);
     setCollapsedCategories(persisted.collapsedCategories);
     setListId(persisted.listId);
     setListName(persisted.listName);
@@ -720,8 +719,8 @@ const ValuesTierList = () => {
     console.log('[App] State hydrated successfully');
   }, [loadDataset]);
 
-  // Create a new list
-  const createNewList = useCallback((datasetKey: string = 'act-comprehensive') => {
+  // Create a new list - always use act-shorter
+  const createNewList = useCallback((datasetKey: string = 'act-shorter') => {
     const newId = generateListId();
     const newName = generateFriendlyName();
 
@@ -787,7 +786,7 @@ const ValuesTierList = () => {
 
       // Try URL first
       if (hash && hash.length > 1) {
-        const dataset = preloadedDatasets['act-comprehensive']; // Default for decoding
+        const dataset = preloadedDatasets['act-shorter']; // Always use act-shorter
         const canonicalOrder = getCanonicalCategoryOrder(dataset);
         const persistedFromHash = decodeUrlToState(hash, dataset.data.length, canonicalOrder);
 
@@ -801,7 +800,7 @@ const ValuesTierList = () => {
             const newList: SavedList = {
               id: persistedFromHash.listId,
               name: persistedFromHash.listName || 'Shared List',
-              datasetName: persistedFromHash.datasetName || 'act-comprehensive',
+              datasetName: 'act-shorter',
               fragment: hash,
               lastModified: Date.now(),
               createdAt: Date.now()
