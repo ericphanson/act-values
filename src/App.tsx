@@ -1301,6 +1301,39 @@ const ValuesTierList = () => {
     }, 500);
   }, [categories]);
 
+  // Helper for mobile review mode to reorder within a tier
+  const handleReorderWithinTier = useCallback((tierId: TierId, fromIndex: number, toIndex: number) => {
+    setValues(prevValues => {
+      const tierValues = prevValues.filter(v => v.location === tierId);
+
+      if (fromIndex < 0 || fromIndex >= tierValues.length || toIndex < 0 || toIndex >= tierValues.length) {
+        return prevValues;
+      }
+
+      // Remove the value from the tier list
+      const [movedValue] = tierValues.splice(fromIndex, 1);
+      // Insert it at the new position
+      tierValues.splice(toIndex, 0, movedValue);
+
+      // Reconstruct the full values array with the reordered tier
+      const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
+      const result: Value[] = [];
+
+      for (const tier of tierOrder) {
+        if (tier === tierId) {
+          result.push(...tierValues);
+        } else {
+          result.push(...prevValues.filter(v => v.location === tier));
+        }
+      }
+
+      // Add remaining values (categories)
+      result.push(...prevValues.filter(v => !tierOrder.includes(v.location as TierId)));
+
+      return result;
+    });
+  }, []);
+
   return (
     <DndContext
       sensors={sensors}
@@ -1332,6 +1365,7 @@ const ValuesTierList = () => {
             savedLists={savedLists}
             animatingValues={animatingValues}
             onMoveValue={handleMoveValueMobile}
+            onReorderWithinTier={handleReorderWithinTier}
             onShare={handleShare}
             onPrint={() => window.print()}
             onRenameList={(newName) => {

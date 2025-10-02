@@ -26,6 +26,7 @@ interface MobileLayoutProps {
   savedLists: SavedList[];
   animatingValues: Set<string>;
   onMoveValue: (valueId: string, fromLocation: string, toLocation: TierId, valueName: string) => void;
+  onReorderWithinTier: (tierId: TierId, fromIndex: number, toIndex: number) => void;
   onShare: () => void;
   onPrint: () => void;
   onRenameList: (name: string) => void;
@@ -42,6 +43,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   savedLists,
   animatingValues,
   onMoveValue,
+  onReorderWithinTier,
   onShare,
   onPrint,
   onRenameList,
@@ -168,6 +170,8 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         getValuesByTier={getValuesByTier}
         onExit={() => setReviewMode(false)}
         onJumpToTier={handleJumpToTier}
+        onMoveValue={onMoveValue}
+        onReorderWithinTier={onReorderWithinTier}
       />
     );
   }

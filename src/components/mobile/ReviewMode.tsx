@@ -1,6 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Value, TierId } from '../../types';
 import { X } from 'lucide-react';
+import { ActionSheet } from './ActionSheet';
+import {
+  DndContext,
+  DragEndEvent,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface ReviewModeProps {
   tiers: Array<{
@@ -12,15 +27,103 @@ interface ReviewModeProps {
   getValuesByTier: (tierId: TierId) => Value[];
   onExit: () => void;
   onJumpToTier?: (tierId: TierId) => void;
+  onMoveValue: (valueId: string, fromLocation: string, toLocation: TierId, valueName: string) => void;
+  onReorderWithinTier: (tierId: TierId, fromIndex: number, toIndex: number) => void;
 }
+
+// Sortable value component for drag-to-reorder
+interface SortableReviewValueProps {
+  value: Value;
+  onTap: () => void;
+}
+
+const SortableReviewValue: React.FC<SortableReviewValueProps> = ({ value, onTap }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: value.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={onTap}
+      className="px-4 py-3 bg-white border-2 border-gray-300 rounded-lg cursor-pointer active:cursor-grabbing hover:border-emerald-400 transition-all"
+    >
+      <div className="font-medium text-gray-800">{value.value}</div>
+      {value.description && (
+        <div className="text-sm text-gray-600 italic mt-1 break-words">
+          {value.description}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const ReviewMode: React.FC<ReviewModeProps> = ({
   tiers,
   getValuesByTier,
   onExit,
   onJumpToTier,
+  onMoveValue,
+  onReorderWithinTier,
 }) => {
+  const [actionSheetValue, setActionSheetValue] = useState<Value | null>(null);
+  const [activeTierId, setActiveTierId] = useState<TierId | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || !activeTierId) return;
+
+    if (active.id !== over.id) {
+      const values = getValuesByTier(activeTierId);
+      const oldIndex = values.findIndex(v => v.id === active.id);
+      const newIndex = values.findIndex(v => v.id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        onReorderWithinTier(activeTierId, oldIndex, newIndex);
+      }
+    }
+
+    setActiveTierId(null);
+  };
+
+  const handleSelectTier = (tierId: TierId) => {
+    if (actionSheetValue) {
+      onMoveValue(actionSheetValue.id, actionSheetValue.location, tierId, actionSheetValue.value);
+      setActionSheetValue(null);
+    }
+  };
+
   return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       {/* Sticky header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
@@ -83,27 +186,29 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
               </div>
 
               {/* Tier values */}
-              <div className="p-4 space-y-2">
-                {values.length === 0 ? (
-                  <div className="text-center py-4 text-gray-500 italic text-sm">
-                    No values in this tier
-                  </div>
-                ) : (
-                  values.map(value => (
-                    <div
-                      key={value.id}
-                      className="px-4 py-3 bg-white border border-gray-300 rounded-lg"
-                    >
-                      <div className="font-medium text-gray-800">{value.value}</div>
-                      {value.description && (
-                        <div className="text-sm text-gray-600 italic mt-1">
-                          {value.description}
-                        </div>
-                      )}
+              <SortableContext
+                items={values.map(v => v.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="p-4 space-y-2">
+                  {values.length === 0 ? (
+                    <div className="text-center py-4 text-gray-500 italic text-sm">
+                      No values in this tier
                     </div>
-                  ))
-                )}
-              </div>
+                  ) : (
+                    values.map(value => (
+                      <SortableReviewValue
+                        key={value.id}
+                        value={value}
+                        onTap={() => {
+                          setActionSheetValue(value);
+                          setActiveTierId(tier.id);
+                        }}
+                      />
+                    ))
+                  )}
+                </div>
+              </SortableContext>
             </div>
           );
         })}
@@ -111,6 +216,16 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
 
       {/* Bottom padding for safe scrolling */}
       <div className="h-20" />
+
+      {/* Action sheet for recategorizing */}
+      {actionSheetValue && (
+        <ActionSheet
+          valueName={actionSheetValue.value}
+          onSelectTier={handleSelectTier}
+          onDismiss={() => setActionSheetValue(null)}
+        />
+      )}
     </div>
+    </DndContext>
   );
 };
