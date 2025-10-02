@@ -314,7 +314,9 @@ const ValuesTierList = () => {
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   // Mobile layout detection
-  const isMobileLayout = useMediaQuery('(max-width: 767px)');
+  const isMobileScreen = useMediaQuery('(max-width: 767px)');
+  const [forceDesktopMode, setForceDesktopMode] = useState(false);
+  const isMobileLayout = isMobileScreen && !forceDesktopMode;
 
 
   // Simple throttling: track if update is already scheduled
@@ -1417,6 +1419,7 @@ const ValuesTierList = () => {
             onCreateList={() => {
               createNewList(selectedDataset);
             }}
+            onSwitchToDesktop={isMobileScreen ? () => setForceDesktopMode(true) : undefined}
           />
         </div>
       )}
@@ -1883,6 +1886,17 @@ const ValuesTierList = () => {
           >
             Contact
           </a>
+          {isMobileScreen && (
+            <>
+              {' • '}
+              <button
+                onClick={() => setForceDesktopMode(false)}
+                className="hover:text-gray-700 hover:underline"
+              >
+                Mobile mode
+              </button>
+            </>
+          )}
         </div>
         </div>
 

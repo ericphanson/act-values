@@ -33,6 +33,7 @@ interface MobileLayoutProps {
   onSwitchList: (listId: string) => void;
   onDeleteList: (listId: string) => void;
   onCreateList: () => void;
+  onSwitchToDesktop?: () => void;
 }
 
 export const MobileLayout: React.FC<MobileLayoutProps> = ({
@@ -50,6 +51,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   onSwitchList,
   onDeleteList,
   onCreateList,
+  onSwitchToDesktop,
 }) => {
   const [expandedTier, setExpandedTier] = useState<TierId | null>('very-important');
   const [actionSheetValue, setActionSheetValue] = useState<Value | null>(null);
@@ -405,6 +407,17 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
           >
             Contact
           </a>
+          {onSwitchToDesktop && (
+            <>
+              {' • '}
+              <button
+                onClick={onSwitchToDesktop}
+                className="hover:text-gray-700 hover:underline"
+              >
+                Desktop mode
+              </button>
+            </>
+          )}
         </div>
       </div>
 
