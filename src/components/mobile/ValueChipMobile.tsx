@@ -14,6 +14,7 @@ interface ValueChipMobileProps {
   containerId: string;
   disableSwipe?: boolean;
   preventScroll?: boolean;
+  disableDrag?: boolean;
 }
 
 export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
@@ -26,6 +27,7 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
   containerId,
   disableSwipe = false,
   preventScroll = false,
+  disableDrag = false,
 }) => {
   const [swipeProgress, setSwipeProgress] = useState({ dx: 0, dy: 0, direction: null as SwipeDirection });
 
@@ -102,12 +104,12 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
+      {...(disableDrag ? {} : listeners)}
       {...swipeHandlers}
       onClick={handleClick}
-      className={`relative px-4 py-3 border-2 rounded-lg cursor-pointer transition-all select-none ${getBackgroundColor()} ${
+      className={`relative px-4 py-3 border-2 rounded-lg transition-all select-none ${getBackgroundColor()} ${
         animating ? 'animate-pulse' : ''
-      }`}
+      } ${disableDrag ? 'cursor-default' : 'cursor-pointer'}`}
     >
       <span className="font-medium text-gray-800 break-words">
         {value.value}

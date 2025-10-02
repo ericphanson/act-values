@@ -205,6 +205,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                   animating={animatingValues.has(value.id)}
                   containerId="inbox"
                   disableSwipe={true}
+                  disableDrag={true}
                 />
               ))}
             </div>
