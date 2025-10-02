@@ -60,7 +60,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
             Save for later
           </p>
           <p className="text-xs text-amber-800 leading-relaxed">
-            <strong>Share the link</strong> to access from another device, or <strong>print</strong> for a paper copy.
+            Your work is saved in this browser, but may be lost if you clear browsing data. <strong>Share the link</strong> to access from anywhere, or <strong>print</strong> for a paper copy.
           </p>
         </div>
 

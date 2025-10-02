@@ -1753,7 +1753,7 @@ const ValuesTierList = () => {
                       <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 max-w-sm">
                         <p className="text-sm font-semibold text-amber-900 mb-1">💾 Save for later</p>
                         <p className="text-xs text-amber-800">
-                          <strong>Share the link</strong> to access from another device, or <strong>print</strong> for a paper copy.
+                          Your work is saved in this browser, but may be lost if you clear browsing data. <strong>Share the link</strong> to access from anywhere, or <strong>print</strong> for a paper copy.
                         </p>
                       </div>
                       <div className="flex gap-3 mt-4">
