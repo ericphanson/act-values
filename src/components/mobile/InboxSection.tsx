@@ -139,7 +139,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
             {/* Center: The value */}
             <div className="flex-1 p-4 bg-gradient-to-br from-emerald-50 to-blue-50 min-w-0">
               <div className="text-xs font-semibold text-emerald-700 mb-2 uppercase tracking-wide text-center">
-                Next Value
+                How important is...
               </div>
               <ValueChipMobile
                 value={firstValue}
