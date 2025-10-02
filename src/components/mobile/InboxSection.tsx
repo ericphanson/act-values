@@ -43,36 +43,45 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
   // Only show "All done" if we have values loaded and none are in inbox
   if (values.length === 0 && totalValues > 0) {
     return (
-      <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl p-8 text-center">
+      <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl p-6 text-center">
         <div className="text-6xl mb-4">🎉</div>
         <h3 className="text-xl font-bold text-gray-800 mb-2">
           All done!
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 mb-2">
           You've categorized all your values
         </p>
 
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4 mb-6 text-left">
+          <p className="text-sm font-semibold text-amber-900 mb-2">
+            💾 Save your work!
+          </p>
+          <p className="text-xs text-amber-800">
+            Your data is stored locally in your browser. <strong>Share or print</strong> to save your results permanently, or bookmark the page URL to return later.
+          </p>
+        </div>
+
         <div className="flex flex-col gap-3 max-w-xs mx-auto">
           <button
-            onClick={onReviewMode}
-            className="w-full bg-white text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors border-2 border-gray-300 flex items-center justify-center gap-2"
-          >
-            <Eye size={18} />
-            Review & Reorder
-          </button>
-          <button
             onClick={onShare}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-md"
           >
             <Share2 size={18} />
             Share Link
           </button>
           <button
             onClick={onPrint}
-            className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-gray-700 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
           >
             <Printer size={18} />
             Print
+          </button>
+          <button
+            onClick={onReviewMode}
+            className="w-full bg-white text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors border-2 border-gray-300 flex items-center justify-center gap-2"
+          >
+            <Eye size={18} />
+            Review & Reorder
           </button>
         </div>
       </div>
