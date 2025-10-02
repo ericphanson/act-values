@@ -147,6 +147,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                 onSwipe={onSwipeValue}
                 animating={animatingValues.has(firstValue.id)}
                 containerId="inbox"
+                preventScroll={true}
               />
               {firstValue.description && (
                 <div className="mt-3 text-sm text-gray-700 italic border-t border-emerald-200 pt-3 break-words">
@@ -203,6 +204,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                   onSwipe={onSwipeValue}
                   animating={animatingValues.has(value.id)}
                   containerId="inbox"
+                  disableSwipe={true}
                 />
               ))}
             </div>

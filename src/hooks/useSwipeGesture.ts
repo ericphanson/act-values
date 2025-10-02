@@ -14,6 +14,8 @@ interface SwipeConfig {
   onSwipeProgress?: (dx: number, dy: number, direction: SwipeDirection) => void;
   minSwipeDistance?: number;
   minSwipeVelocity?: number;
+  disabled?: boolean;
+  preventScroll?: boolean;
 }
 
 /**
@@ -26,6 +28,8 @@ export function useSwipeGesture(config: SwipeConfig): SwipeHandlers {
     onSwipeProgress,
     minSwipeDistance = 80, // Minimum distance in px
     minSwipeVelocity = 0.3, // Minimum velocity in px/ms
+    disabled = false,
+    preventScroll = false,
   } = config;
 
   const touchStartX = useRef<number>(0);
@@ -34,15 +38,17 @@ export function useSwipeGesture(config: SwipeConfig): SwipeHandlers {
   const isSwiping = useRef<boolean>(false);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (disabled) return;
+
     const touch = e.touches[0];
     touchStartX.current = touch.clientX;
     touchStartY.current = touch.clientY;
     touchStartTime.current = Date.now();
     isSwiping.current = false;
-  }, []);
+  }, [disabled]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!onSwipeProgress) return;
+    if (disabled || !onSwipeProgress) return;
 
     const touch = e.touches[0];
     const dx = touch.clientX - touchStartX.current;
@@ -56,18 +62,26 @@ export function useSwipeGesture(config: SwipeConfig): SwipeHandlers {
     if (absDx > absDy && absDx > 20) {
       direction = dx > 0 ? 'right' : 'left';
       isSwiping.current = true;
+      // Prevent horizontal scroll when swiping horizontally
+      if (preventScroll) {
+        e.preventDefault();
+      }
     } else if (absDy > absDx && absDy > 20) {
       direction = dy > 0 ? 'down' : 'up';
       isSwiping.current = true;
+      // Prevent vertical scroll when swiping up/down
+      if (preventScroll) {
+        e.preventDefault();
+      }
     }
 
     if (direction) {
       onSwipeProgress(dx, dy, direction);
     }
-  }, [onSwipeProgress]);
+  }, [disabled, onSwipeProgress, preventScroll]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!onSwipe || !isSwiping.current) {
+    if (disabled || !onSwipe || !isSwiping.current) {
       isSwiping.current = false;
       return;
     }
@@ -102,7 +116,7 @@ export function useSwipeGesture(config: SwipeConfig): SwipeHandlers {
     }
 
     isSwiping.current = false;
-  }, [onSwipe, minSwipeDistance, minSwipeVelocity]);
+  }, [disabled, onSwipe, minSwipeDistance, minSwipeVelocity]);
 
   const handleTouchCancel = useCallback(() => {
     isSwiping.current = false;

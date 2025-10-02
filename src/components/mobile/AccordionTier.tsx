@@ -118,6 +118,7 @@ export const AccordionTier: React.FC<AccordionTierProps> = ({
                   showRemove
                   onRemove={onRemoveValue}
                   containerId={tier.id}
+                  disableSwipe={true}
                 />
               ))}
             </SortableContext>

@@ -12,6 +12,8 @@ interface ValueChipMobileProps {
   showRemove?: boolean;
   onRemove?: (value: Value) => void;
   containerId: string;
+  disableSwipe?: boolean;
+  preventScroll?: boolean;
 }
 
 export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
@@ -22,6 +24,8 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
   showRemove = false,
   onRemove,
   containerId,
+  disableSwipe = false,
+  preventScroll = false,
 }) => {
   const [swipeProgress, setSwipeProgress] = useState({ dx: 0, dy: 0, direction: null as SwipeDirection });
 
@@ -50,6 +54,8 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
       setSwipeProgress({ dx, dy, direction });
     },
     minSwipeDistance: 80,
+    disabled: disableSwipe,
+    preventScroll: preventScroll,
   });
 
   const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
