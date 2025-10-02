@@ -357,7 +357,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
 
       {/* Share toast */}
       {shareToast && (
-        <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl animate-fade-in-up z-50">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl z-50 animate-fade-in">
           ✓ Link copied to clipboard!
         </div>
       )}
