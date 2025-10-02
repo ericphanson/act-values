@@ -115,23 +115,6 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
         {value.value}
       </span>
 
-      {/* Show hint arrows during swipe */}
-      {swipeProgress.direction === 'right' && Math.abs(swipeProgress.dx) > 40 && (
-        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-600 font-bold">
-          💎 →
-        </span>
-      )}
-      {swipeProgress.direction === 'left' && Math.abs(swipeProgress.dx) > 40 && (
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 font-bold">
-          ← ○
-        </span>
-      )}
-      {swipeProgress.direction === 'up' && Math.abs(swipeProgress.dy) > 40 && (
-        <span className="absolute top-2 left-1/2 -translate-x-1/2 text-blue-600 font-bold">
-          ⭐ ↑
-        </span>
-      )}
-
       {/* Remove button for items in tiers */}
       {showRemove && (
         <button
