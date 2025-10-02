@@ -225,7 +225,7 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
           onDismiss={() => setActionSheetValue(null)}
         />
       )}
-    </div>
+      </div>
     </DndContext>
   );
 };
