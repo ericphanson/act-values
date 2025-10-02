@@ -103,7 +103,7 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
         animating ? 'animate-pulse' : ''
       }`}
     >
-      <span className="font-medium text-gray-800">
+      <span className="font-medium text-gray-800 break-words">
         {value.value}
       </span>
 

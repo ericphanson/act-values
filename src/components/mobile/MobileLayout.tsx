@@ -158,7 +158,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 to-green-50">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 to-green-50 overflow-x-hidden">
       {/* Compact header */}
       <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <h1 className="text-lg font-bold text-gray-800 truncate flex-1">
@@ -207,7 +207,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         {/* Inbox - no padding so frame sits against progress bar and extends to edges */}
         <InboxSection
           values={inboxValues}

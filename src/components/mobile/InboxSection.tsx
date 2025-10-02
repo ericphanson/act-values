@@ -61,7 +61,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
             </div>
 
             {/* Center: The value */}
-            <div className="flex-1 p-4 bg-gradient-to-br from-emerald-50 to-blue-50">
+            <div className="flex-1 p-4 bg-gradient-to-br from-emerald-50 to-blue-50 min-w-0">
               <div className="text-xs font-semibold text-emerald-700 mb-2 uppercase tracking-wide text-center">
                 Next Value
               </div>
@@ -73,7 +73,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                 containerId="inbox"
               />
               {firstValue.description && (
-                <div className="mt-3 text-sm text-gray-700 italic border-t border-emerald-200 pt-3">
+                <div className="mt-3 text-sm text-gray-700 italic border-t border-emerald-200 pt-3 break-words">
                   {firstValue.description}
                 </div>
               )}
