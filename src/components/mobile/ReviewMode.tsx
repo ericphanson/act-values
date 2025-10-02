@@ -93,6 +93,18 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
     })
   );
 
+  // Handle escape key to exit review mode
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onExit();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onExit]);
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
