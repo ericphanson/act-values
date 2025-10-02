@@ -107,7 +107,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
         strategy={verticalListSortingStrategy}
       >
         {/* First value with surrounding targets frame - extends to screen edges */}
-        <div className="-mx-4 bg-white border-y-2 border-gray-200 overflow-hidden">
+        <div className="-mx-4 bg-white border-y-2 border-gray-200 overflow-hidden" style={{ touchAction: 'none' }}>
           {/* Top: Swipe Up / Press 3 - Not Important - extends to screen edges */}
           <div className="bg-gray-50 py-3 text-center border-b-2 border-gray-200 relative">
             <div className="text-2xl mb-1">○</div>

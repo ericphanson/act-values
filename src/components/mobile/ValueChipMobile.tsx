@@ -102,7 +102,10 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={{
+        ...style,
+        touchAction: preventScroll ? 'none' : 'auto',
+      }}
       {...attributes}
       {...(disableDrag ? {} : listeners)}
       {...swipeHandlers}
