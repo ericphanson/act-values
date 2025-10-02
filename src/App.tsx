@@ -1328,10 +1328,61 @@ const ValuesTierList = () => {
             values={values}
             tiers={tiers}
             listName={listName}
+            listId={listId}
+            savedLists={savedLists}
             animatingValues={animatingValues}
             onMoveValue={handleMoveValueMobile}
             onShare={handleShare}
             onPrint={() => window.print()}
+            onRenameList={(newName) => {
+              setListName(newName);
+              debouncedRenameList(listId, newName);
+            }}
+            onSwitchList={(switchToListId) => {
+              const list = loadList(switchToListId);
+              if (list) {
+                const dataset = preloadedDatasets[list.datasetName];
+                if (dataset) {
+                  const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                  const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
+                  if (persisted) {
+                    const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${list.fragment}`;
+                    window.history.replaceState(null, '', nextUrl);
+                    currentFragmentRef.current = list.fragment;
+                    hydrateState(persisted as PersistedState);
+                    setCurrentListId(switchToListId);
+                    lastKnownModified.current = list.lastModified;
+                  }
+                }
+              }
+            }}
+            onDeleteList={(deleteListId) => {
+              deleteList(deleteListId);
+              refreshSavedLists();
+
+              const remainingLists = loadAllLists();
+              if (remainingLists.length > 0) {
+                const nextList = remainingLists[0];
+                const dataset = preloadedDatasets[nextList.datasetName];
+                if (dataset) {
+                  const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                  const persisted = decodeUrlToState(nextList.fragment, dataset.data.length, canonicalOrder);
+                  if (persisted) {
+                    const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${nextList.fragment}`;
+                    window.history.replaceState(null, '', nextUrl);
+                    currentFragmentRef.current = nextList.fragment;
+                    hydrateState(persisted as PersistedState);
+                    setCurrentListId(nextList.id);
+                    lastKnownModified.current = nextList.lastModified;
+                  }
+                }
+              } else {
+                createNewList(selectedDataset);
+              }
+            }}
+            onCreateList={() => {
+              createNewList(selectedDataset);
+            }}
           />
         </div>
       )}

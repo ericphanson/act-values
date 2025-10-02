@@ -9,7 +9,8 @@ import { ActionSheet } from './ActionSheet';
 import { ReviewMode } from './ReviewMode';
 import { UndoToast } from './UndoToast';
 import { SwipeHint } from './SwipeHint';
-import { Eye, Share2, Printer } from 'lucide-react';
+import { Eye, Share2, Printer, ChevronDown, Trash2 } from 'lucide-react';
+import { SavedList } from '../../types';
 
 interface MobileLayoutProps {
   values: Value[];
@@ -21,26 +22,40 @@ interface MobileLayoutProps {
     quota: number | null;
   }>;
   listName: string;
+  listId: string;
+  savedLists: SavedList[];
   animatingValues: Set<string>;
   onMoveValue: (valueId: string, fromLocation: string, toLocation: TierId, valueName: string) => void;
   onShare: () => void;
   onPrint: () => void;
+  onRenameList: (name: string) => void;
+  onSwitchList: (listId: string) => void;
+  onDeleteList: (listId: string) => void;
+  onCreateList: () => void;
 }
 
 export const MobileLayout: React.FC<MobileLayoutProps> = ({
   values,
   tiers,
   listName,
+  listId,
+  savedLists,
   animatingValues,
   onMoveValue,
   onShare,
   onPrint,
+  onRenameList,
+  onSwitchList,
+  onDeleteList,
+  onCreateList,
 }) => {
   const [expandedTier, setExpandedTier] = useState<TierId | null>('very-important');
   const [actionSheetValue, setActionSheetValue] = useState<Value | null>(null);
   const [reviewMode, setReviewMode] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [showUndoToast, setShowUndoToast] = useState(false);
+  const [showListDropdown, setShowListDropdown] = useState(false);
+  const [shareToast, setShareToast] = useState(false);
   const undoStack = useUndoStack(10);
 
   // Check if user has seen the hint
@@ -157,36 +172,104 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
     );
   }
 
+  const handleShare = () => {
+    onShare();
+    setShareToast(true);
+    setTimeout(() => setShareToast(false), 3000);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 to-green-50 overflow-x-hidden">
       {/* Compact header */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-gray-800 truncate flex-1">
-          {listName}
-        </h1>
-        <div className="flex gap-2">
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between gap-2 relative">
+        <div className="flex-1 min-w-0 flex items-center gap-2">
+          <input
+            type="text"
+            value={listName}
+            onChange={(e) => onRenameList(e.target.value)}
+            className="text-lg font-bold text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-emerald-500 focus:outline-none px-1 flex-1 min-w-0"
+            placeholder="List name..."
+          />
+          <button
+            onClick={() => setShowListDropdown(!showListDropdown)}
+            className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+            title="Switch list"
+          >
+            <ChevronDown size={20} className={`text-gray-600 transition-transform ${showListDropdown ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
+
+        <div className="flex gap-1 flex-shrink-0">
           <button
             onClick={() => setReviewMode(true)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Review all"
           >
-            <Eye size={20} className="text-gray-600" />
+            <Eye size={18} className="text-gray-600" />
           </button>
           <button
-            onClick={onShare}
+            onClick={handleShare}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Share"
           >
-            <Share2 size={20} className="text-blue-600" />
+            <Share2 size={18} className="text-blue-600" />
           </button>
           <button
             onClick={onPrint}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Print"
           >
-            <Printer size={20} className="text-gray-600" />
+            <Printer size={18} className="text-gray-600" />
           </button>
         </div>
+
+        {/* List dropdown */}
+        {showListDropdown && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-300 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+            <div className="p-2">
+              {savedLists.map((list) => (
+                <button
+                  key={list.id}
+                  onClick={() => {
+                    if (list.id !== listId) {
+                      onSwitchList(list.id);
+                    }
+                    setShowListDropdown(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-between ${
+                    list.id === listId ? 'bg-emerald-50 font-medium' : ''
+                  }`}
+                >
+                  <span className="truncate">{list.name}</span>
+                  {list.id === listId && savedLists.length > 1 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`Delete "${list.name}"?`)) {
+                          onDeleteList(list.id);
+                          setShowListDropdown(false);
+                        }
+                      }}
+                      className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
+                      title="Delete"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </button>
+              ))}
+              <button
+                onClick={() => {
+                  onCreateList();
+                  setShowListDropdown(false);
+                }}
+                className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-emerald-600 font-medium"
+              >
+                + New List
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Progress bar only - targets are now framing the value */}
@@ -197,13 +280,6 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
             style={{ width: `${totalValues > 0 ? (categorizedCount / totalValues) * 100 : 0}%` }}
           />
         </div>
-        {totalValues > 0 && (
-          <div className="px-4 py-2 text-center">
-            <span className="text-xs text-gray-600 font-medium">
-              {totalValues - categorizedCount} values remaining
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Scrollable content */}
@@ -274,6 +350,13 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
 
       {/* Swipe hint */}
       {showHint && <SwipeHint onDismiss={handleDismissHint} />}
+
+      {/* Share toast */}
+      {shareToast && (
+        <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl animate-fade-in-up z-50">
+          ✓ Link copied to clipboard!
+        </div>
+      )}
     </div>
   );
 };
