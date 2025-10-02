@@ -334,7 +334,28 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         </div>
 
         {/* Bottom padding for safe scrolling */}
-        <div className="h-20" />
+        <div className="h-4" />
+
+        {/* Footer */}
+        <div className="text-center py-4 px-4 text-xs text-gray-500 border-t border-gray-200 bg-white">
+          <a
+            href="https://github.com/ericphanson/act-values"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-700 hover:underline"
+          >
+            Open source
+          </a>
+          {' • Your data stays private in your browser • Share and save links • '}
+          <a
+            href="https://ericphanson.com/contact"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-700 hover:underline"
+          >
+            Contact
+          </a>
+        </div>
       </div>
 
       {/* Action sheet */}
