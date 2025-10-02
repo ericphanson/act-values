@@ -112,7 +112,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
           <div className="bg-gray-50 py-3 text-center border-b-2 border-gray-200 relative">
             <div className="text-2xl mb-1">○</div>
             <div className="text-xs font-semibold text-gray-700 text-center">
-              Not Important
+              Not
             </div>
             <div className="text-xs mt-1 font-semibold text-gray-700">
               {isTouchDevice ? 'Swipe Up ↑' : 'Press 3'}
