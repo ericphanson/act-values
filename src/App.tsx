@@ -1820,7 +1820,7 @@ const ValuesTierList = () => {
                         You've categorized all {totalValues} values
                       </p>
                       <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 max-w-sm mb-4">
-                        <p className="text-sm font-semibold text-emerald-900 mb-1">✨ Next Steps</p>
+                        <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs">✨</span> Next Steps</p>
                         <p className="text-xs text-emerald-800 text-left">
                           {COMPLETION_NEXT_STEPS}
                         </p>

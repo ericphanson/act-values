@@ -54,7 +54,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
             You've categorized all your values
           </p>
           <div className="bg-emerald-50 border-2 border-emerald-200 rounded-lg p-3 text-left">
-            <p className="text-sm font-semibold text-emerald-900 mb-1">✨ Next Steps</p>
+            <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs">✨</span> Next Steps</p>
             <p className="text-xs text-emerald-800 leading-relaxed">
               {COMPLETION_NEXT_STEPS}
             </p>
