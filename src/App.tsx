@@ -133,14 +133,16 @@ const SortableValue: React.FC<SortableValueProps> = ({
     if (valueRef.current && hoveredValue?.id === value.id) {
       const rect = valueRef.current.getBoundingClientRect();
       if (isInTier) {
+        // Values in tier columns: tooltip above
         setTooltipPosition({
           top: rect.top - 8, // 8px margin above
           left: rect.left,
         });
       } else {
+        // Values in categories (far right): tooltip to the left to avoid cutoff
         setTooltipPosition({
           top: rect.top,
-          left: rect.right + 8, // 8px margin to the right
+          left: rect.left - 8, // 8px margin to the left, will use transform to shift left
         });
       }
     } else {
@@ -208,9 +210,9 @@ const SortableValue: React.FC<SortableValueProps> = ({
         <div
           className="fixed z-[100] p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96 pointer-events-none print-hide"
           style={{
-            top: isInTier ? `${tooltipPosition.top}px` : `${tooltipPosition.top}px`,
+            top: `${tooltipPosition.top}px`,
             left: `${tooltipPosition.left}px`,
-            transform: isInTier ? 'translateY(-100%)' : 'translateY(0)',
+            transform: isInTier ? 'translateY(-100%)' : 'translateX(-100%)',
           }}
         >
           {!isTouchDevice && (
