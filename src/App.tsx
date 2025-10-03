@@ -1814,8 +1814,7 @@ const ValuesTierList = () => {
                 if (totalInCategories === 0 && totalValues > 0) {
                   return (
                     <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                      <div className="text-5xl mb-4">🎉</div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">All done!</h3>
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">All done! 🎉</h3>
                       <p className="text-sm text-gray-600 mb-4">
                         You've categorized all {totalValues} values
                       </p>
