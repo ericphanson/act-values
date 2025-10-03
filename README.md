@@ -2,9 +2,15 @@
 
 A web app for identifying and prioritizing personal values using Acceptance and Commitment Therapy (ACT) principles. Sort values into three tiers (Very Important, Somewhat Important, Not Important) to clarify what matters most to you.
 
-## Features
+## How it works
 
-Desktop: drag-and-drop or keyboard shortcuts (1/2/3). Mobile: swipe gestures. Your state encodes in the URL for sharing. Changes save automatically to localStorage. Print-friendly layout. Create multiple lists. No server, no tracking—everything stays in your browser.
+Create, rename, and share multiple tier lists of values. Each list is just a (long) URL, so if you send it to a friend, they can view it, and edit a separate copy of it. There is no automatic synchronization, because no data leaves your browser; only by sharing a link with someone do you a share the current state of your list.
+
+Your lists are saved in your browser ("local storage"), but we recommend saving the link or printing a PDF version to save them for later, since your lists will be lost if you clear your browsing data. When you print a PDF, we include a QR code at the bottom with the share link for your list, so you can edit your list further later if you want.
+
+To create your list, the website supports both a "desktop mode" and a "mobile mode". In desktop mode, you can drag-and-drop values or use keyboard shortcuts (the numbers 1, 2, and 3). In mobile mode, you use swipe gestures, and there is a separate "review" screen to support viewing all your tiers. Either way, you can categorize and identify your values, then save the link or print a PDF.
+
+Go to https://ericphanson.github.io/act-values/ to use the app.
 
 ## Design goals
 
@@ -20,12 +26,10 @@ React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
 
 ## TODO
 
-- [x] add user-facing description of features in README for discoverability purposes. The key thing here is to not be annoying.
 - [ ] remove or minimize debug logging / console printing
     - **Partially done**: storage.ts cleaned up. urlState.ts and App.tsx have extensive debug logging that needs review.
 - [ ] add desktop version of swipehint? with instructions
     - **Skipped**: Would require new component, too complex for this session
-- [x] order of items within tiers is somewhat non-unintuitive. I think it is row-based instead of column-based. Switch to column based, i.e. going down a column counts up, instead of down a row
-    - [ ] should we add a tiny number in the corner of each value when its in a tier to show its place within it? I think not now
+- [ ] should we add a tiny number in the corner of each value when its in a tier to show its place within it? I think not now
 - [ ] rename "not important"? ("low priority"?). not sure- think it's valuable to let users express what they don't care about, but don't want to cause self-judgement
     - **Needs decision**: Ambiguous, requires user input on naming philosophy
