@@ -314,6 +314,7 @@ const ValuesTierList = () => {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [showListDropdown, setShowListDropdown] = useState(false);
   const [showRenameHint, setShowRenameHint] = useState(false);
+  const [showMobileSuggestion, setShowMobileSuggestion] = useState(false);
   const lastKnownModified = useRef<number>(0);
   const currentFragmentRef = useRef<string | null>(null);
   const initializedRef = useRef<boolean>(false);
@@ -345,6 +346,17 @@ const ValuesTierList = () => {
     }
   }, [forcedMode]);
 
+  // Show mobile mode suggestion for touch devices in desktop mode
+  useEffect(() => {
+    const dismissed = localStorage.getItem('act-values-dismissed-mobile-suggestion');
+    if (hasTouchCapability && !isMobileLayout && !dismissed) {
+      // Small delay so it doesn't appear immediately on load
+      const timer = setTimeout(() => {
+        setShowMobileSuggestion(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasTouchCapability, isMobileLayout]);
 
   // Simple throttling: track if update is already scheduled
   const updateScheduled = useRef(false);
@@ -1944,6 +1956,51 @@ const ValuesTierList = () => {
         {toastMessage && (
           <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg animate-fade-in-up z-50 print-hide">
             {toastMessage}
+          </div>
+        )}
+
+        {/* Mobile mode suggestion for touch devices */}
+        {showMobileSuggestion && (
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 print-hide max-w-md">
+            <div className="flex items-start gap-3">
+              <div className="flex-1">
+                <p className="font-semibold mb-1">Touch device detected</p>
+                <p className="text-sm text-emerald-50">
+                  This app has a mobile-optimized layout with swipe gestures. Switch to mobile mode?
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowMobileSuggestion(false);
+                  localStorage.setItem('act-values-dismissed-mobile-suggestion', 'true');
+                }}
+                className="text-emerald-100 hover:text-white transition-colors"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={() => {
+                  setForcedMode('mobile');
+                  setShowMobileSuggestion(false);
+                  localStorage.setItem('act-values-dismissed-mobile-suggestion', 'true');
+                }}
+                className="bg-white text-emerald-600 px-4 py-2 rounded font-semibold hover:bg-emerald-50 transition-colors"
+              >
+                Switch to Mobile
+              </button>
+              <button
+                onClick={() => {
+                  setShowMobileSuggestion(false);
+                  localStorage.setItem('act-values-dismissed-mobile-suggestion', 'true');
+                }}
+                className="text-emerald-100 px-4 py-2 rounded hover:text-white transition-colors"
+              >
+                Stay in Desktop
+              </button>
+            </div>
           </div>
         )}
 
