@@ -1,4 +1,35 @@
-# act-values
+# ACT Values Clarification Tool
+
+A web app for identifying and prioritizing your personal values using Acceptance and Commitment Therapy (ACT) principles.
+
+## About
+
+This tool helps you clarify what truly matters to you by categorizing values into three tiers: Very Important, Somewhat Important, and Not Important. Based on ACT therapy principles, this exercise helps you:
+
+- Identify your core values across different life domains
+- Prioritize what matters most to you
+- Create awareness for living more intentionally
+- Make decisions aligned with your values
+
+## Features
+
+- **Privacy-First**: All data stays in your browser—no server, no tracking
+- **Shareable Links**: Your entire state fits in the URL for easy saving and sharing
+- **Printable Results**: Generate a clean printout of your categorized values
+- **Mobile & Desktop**: Optimized interfaces for both touch and non-touch devices
+- **Multiple Lists**: Create and manage separate values lists
+- **Offline-Ready**: Works without an internet connection after initial load
+
+## Design Goals
+
+- **Static hosting**: Deployable to GitHub Pages or any static file server
+- **Zero data loss**: URL contains complete state—no localStorage required for persistence
+- **Ergonomic UX**: Keyboard shortcuts, swipe gestures, drag-and-drop
+- **Printable**: Clean print layout for offline reference
+
+## Technical
+
+Built with React, TypeScript, and Tailwind CSS. Powered by Claude Sonnet 4.5.
 
 ## TODO
 
