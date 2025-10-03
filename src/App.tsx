@@ -625,7 +625,11 @@ const ValuesTierList = () => {
 
   // Refresh saved lists
   const refreshSavedLists = useCallback(() => {
-    setSavedLists(loadAllLists());
+    const result = loadAllLists();
+    setSavedLists(result.lists);
+    if (result.error) {
+      showToast(result.error, 5000);
+    }
   }, []);
 
   // Detect if this is a touch device
@@ -665,11 +669,18 @@ const ValuesTierList = () => {
       debounce((id: string, newName: string) => {
         renameList(id, newName);
         // Update lastKnownModified to prevent conflict detection
-        const updated = loadList(id);
-        if (updated) {
-          lastKnownModified.current = updated.lastModified;
+        const result = loadList(id);
+        if (result.list) {
+          lastKnownModified.current = result.list.lastModified;
         }
-        setSavedLists(loadAllLists());
+        if (result.error) {
+          showToast(result.error, 5000);
+        }
+        const allListsResult = loadAllLists();
+        setSavedLists(allListsResult.lists);
+        if (allListsResult.error) {
+          showToast(allListsResult.error, 5000);
+        }
       }, 300),
     []
   );
@@ -834,8 +845,14 @@ const ValuesTierList = () => {
           currentFragmentRef.current = hash;
 
           // Save this list to storage if it's new
-          const existingList = loadList(persistedFromHash.listId);
-          if (!existingList) {
+          const result = loadList(persistedFromHash.listId);
+          if (result.error) {
+            showToast(result.error, 5000);
+            createNewList();
+            return;
+          }
+
+          if (!result.list) {
             const newList: SavedList = {
               id: persistedFromHash.listId,
               name: persistedFromHash.listName || 'Shared List',
@@ -852,27 +869,38 @@ const ValuesTierList = () => {
           lastKnownModified.current = Date.now();
           refreshSavedLists();
           return;
+        } else {
+          // Failed to decode URL state
+          showToast('Failed to load data from URL. Starting with a new list.', 5000);
         }
       }
 
       // Try loading current list
       const currentId = getCurrentListId();
       if (currentId) {
-        const list = loadList(currentId);
-        if (list) {
-          const dataset = preloadedDatasets[list.datasetName];
+        const result = loadList(currentId);
+        if (result.error) {
+          showToast(result.error, 5000);
+          createNewList();
+          return;
+        }
+
+        if (result.list) {
+          const dataset = preloadedDatasets[result.list.datasetName];
           if (dataset) {
             const canonicalOrder = getCanonicalCategoryOrder(dataset);
-            const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
+            const persisted = decodeUrlToState(result.list.fragment, dataset.data.length, canonicalOrder);
             if (persisted) {
-              currentFragmentRef.current = list.fragment;
+              currentFragmentRef.current = result.list.fragment;
               // Update URL with the loaded fragment
-              const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${list.fragment}`;
+              const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${result.list.fragment}`;
               window.history.replaceState(null, '', nextUrl);
               hydrateState(persisted as PersistedState);
-              lastKnownModified.current = list.lastModified;
+              lastKnownModified.current = result.list.lastModified;
               refreshSavedLists();
               return;
+            } else {
+              showToast('Failed to decode list data. Starting with a new list.', 5000);
             }
           }
         }
@@ -913,7 +941,7 @@ const ValuesTierList = () => {
           datasetName: selectedDataset,
           fragment: newHash,
           lastModified: Date.now(),
-          createdAt: loadList(listId)?.createdAt || Date.now()
+          createdAt: loadList(listId).list?.createdAt || Date.now()
         };
         debouncedSaveList(listToSave);
       }
@@ -927,16 +955,21 @@ const ValuesTierList = () => {
       if (e.key !== 'act-values-saved-lists' || !e.newValue) return;
 
       // Reload the current list from storage
-      const list = loadList(listId);
-      if (list) {
-        const dataset = preloadedDatasets[list.datasetName];
+      const result = loadList(listId);
+      if (result.error) {
+        showToast(result.error, 5000);
+        return;
+      }
+
+      if (result.list) {
+        const dataset = preloadedDatasets[result.list.datasetName];
         if (dataset) {
           const canonicalOrder = getCanonicalCategoryOrder(dataset);
-          const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
+          const persisted = decodeUrlToState(result.list.fragment, dataset.data.length, canonicalOrder);
           if (persisted) {
             hydrateState(persisted as PersistedState);
-            lastKnownModified.current = list.lastModified;
-            currentFragmentRef.current = list.fragment;
+            lastKnownModified.current = result.list.lastModified;
+            currentFragmentRef.current = result.list.fragment;
           }
         }
       }
@@ -1403,19 +1436,24 @@ const ValuesTierList = () => {
               debouncedRenameList(listId, newName);
             }}
             onSwitchList={(switchToListId) => {
-              const list = loadList(switchToListId);
-              if (list) {
-                const dataset = preloadedDatasets[list.datasetName];
+              const result = loadList(switchToListId);
+              if (result.error) {
+                showToast(result.error, 5000);
+                return;
+              }
+
+              if (result.list) {
+                const dataset = preloadedDatasets[result.list.datasetName];
                 if (dataset) {
                   const canonicalOrder = getCanonicalCategoryOrder(dataset);
-                  const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
+                  const persisted = decodeUrlToState(result.list.fragment, dataset.data.length, canonicalOrder);
                   if (persisted) {
-                    const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${list.fragment}`;
+                    const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${result.list.fragment}`;
                     window.history.replaceState(null, '', nextUrl);
-                    currentFragmentRef.current = list.fragment;
+                    currentFragmentRef.current = result.list.fragment;
                     hydrateState(persisted as PersistedState);
                     setCurrentListId(switchToListId);
-                    lastKnownModified.current = list.lastModified;
+                    lastKnownModified.current = result.list.lastModified;
                   }
                 }
               }
@@ -1424,9 +1462,15 @@ const ValuesTierList = () => {
               deleteList(deleteListId);
               refreshSavedLists();
 
-              const remainingLists = loadAllLists();
-              if (remainingLists.length > 0) {
-                const nextList = remainingLists[0];
+              const remainingListsResult = loadAllLists();
+              if (remainingListsResult.error) {
+                showToast(remainingListsResult.error, 5000);
+                createNewList(selectedDataset);
+                return;
+              }
+
+              if (remainingListsResult.lists.length > 0) {
+                const nextList = remainingListsResult.lists[0];
                 const dataset = preloadedDatasets[nextList.datasetName];
                 if (dataset) {
                   const canonicalOrder = getCanonicalCategoryOrder(dataset);
@@ -1550,9 +1594,16 @@ const ValuesTierList = () => {
                                     refreshSavedLists();
 
                                     // Load another list or create new one
-                                    const remainingLists = loadAllLists();
-                                    if (remainingLists.length > 0) {
-                                      const nextList = remainingLists[0];
+                                    const remainingListsResult = loadAllLists();
+                                    if (remainingListsResult.error) {
+                                      showToast(remainingListsResult.error, 5000);
+                                      createNewList(selectedDataset);
+                                      setShowListDropdown(false);
+                                      return;
+                                    }
+
+                                    if (remainingListsResult.lists.length > 0) {
+                                      const nextList = remainingListsResult.lists[0];
                                       const dataset = preloadedDatasets[nextList.datasetName];
                                       if (dataset) {
                                         const canonicalOrder = getCanonicalCategoryOrder(dataset);

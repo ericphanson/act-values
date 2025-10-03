@@ -5,33 +5,48 @@ const CURRENT_LIST_ID_KEY = 'act-values-current-list-id';
 
 /**
  * Load all saved lists from localStorage
+ * Returns { lists, error } where error is set if data was corrupted and cleared
  */
-export function loadAllLists(): SavedList[] {
+export function loadAllLists(): { lists: SavedList[], error?: string } {
   try {
     const stored = localStorage.getItem(SAVED_LISTS_KEY);
-    if (!stored) return [];
+    if (!stored) return { lists: [] };
 
     const listsMap: Record<string, SavedList> = JSON.parse(stored);
-    return Object.values(listsMap).sort((a, b) => b.lastModified - a.lastModified);
+    const lists = Object.values(listsMap).sort((a, b) => b.lastModified - a.lastModified);
+    return { lists };
   } catch (error) {
-    console.error('[Storage] Error loading lists:', error);
-    return [];
+    console.error('[Storage] Error loading lists, clearing corrupted data:', error);
+    // Clear corrupted data
+    localStorage.removeItem(SAVED_LISTS_KEY);
+    localStorage.removeItem(CURRENT_LIST_ID_KEY);
+    return {
+      lists: [],
+      error: 'Failed to load saved lists. The data was corrupted and has been cleared.'
+    };
   }
 }
 
 /**
  * Load a specific list by ID
+ * Returns { list, error } where error is set if data was corrupted and cleared
  */
-export function loadList(id: string): SavedList | null {
+export function loadList(id: string): { list: SavedList | null, error?: string } {
   try {
     const stored = localStorage.getItem(SAVED_LISTS_KEY);
-    if (!stored) return null;
+    if (!stored) return { list: null };
 
     const listsMap: Record<string, SavedList> = JSON.parse(stored);
-    return listsMap[id] || null;
+    return { list: listsMap[id] || null };
   } catch (error) {
-    console.error('[Storage] Error loading list:', error);
-    return null;
+    console.error('[Storage] Error loading list, clearing corrupted data:', error);
+    // Clear corrupted data
+    localStorage.removeItem(SAVED_LISTS_KEY);
+    localStorage.removeItem(CURRENT_LIST_ID_KEY);
+    return {
+      list: null,
+      error: 'Failed to load the list. The data was corrupted and has been cleared.'
+    };
   }
 }
 
