@@ -337,6 +337,20 @@ const ValuesTierList = () => {
                          hasTouchCapability ? true :
                          isMobileScreen;
 
+  // Determine the natural mode (what mode would be without forcing)
+  const naturalMode = hasTouchCapability || isMobileScreen ? 'mobile' : 'desktop';
+
+  // Helper to switch modes - only force if switching away from natural mode
+  const switchToMode = (targetMode: 'mobile' | 'desktop') => {
+    if (targetMode === naturalMode) {
+      // Switching to natural mode - clear any forcing
+      setForcedMode(null);
+    } else {
+      // Switching away from natural mode - force the target mode
+      setForcedMode(targetMode);
+    }
+  };
+
   // Persist forced mode to localStorage
   useEffect(() => {
     if (forcedMode) {
@@ -1459,7 +1473,7 @@ const ValuesTierList = () => {
             onCreateList={() => {
               createNewList(selectedDataset);
             }}
-            onSwitchToDesktop={() => setForcedMode('desktop')}
+            onSwitchToDesktop={() => switchToMode('desktop')}
             onShowAbout={() => setShowACTIntro(true)}
             showingACTIntro={showACTIntro}
           />
@@ -1944,7 +1958,7 @@ const ValuesTierList = () => {
           </a>
           {' • '}
           <button
-            onClick={() => setForcedMode('mobile')}
+            onClick={() => switchToMode('mobile')}
             className="hover:text-gray-700 hover:underline"
           >
             Mobile mode
@@ -1983,7 +1997,7 @@ const ValuesTierList = () => {
             <div className="flex gap-2 mt-3">
               <button
                 onClick={() => {
-                  setForcedMode('mobile');
+                  switchToMode('mobile');
                   setShowMobileSuggestion(false);
                   localStorage.setItem('act-values-dismissed-mobile-suggestion', 'true');
                 }}
