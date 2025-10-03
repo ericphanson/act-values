@@ -12,6 +12,8 @@ To create your list, the website supports both a "desktop mode" and a "mobile mo
 
 Go to https://ericphanson.github.io/act-values/ to use the app.
 
+If you have problems, you can [file an issue](https://github.com/ericphanson/act-values/issues/new), which needs a free GitHub account. You can also contact me [here](https://ericphanson.com/contact), though I am not always responsive. 
+
 ## Design goals
 
 - Statically hostable (maintainable and sustainable long-term)
@@ -23,12 +25,3 @@ Go to https://ericphanson.github.io/act-values/ to use the app.
 ## Current architecture
 
 React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
-
-## TODO
-
-- [x] remove or minimize debug logging / console printing
-- [ ] add desktop version of swipehint? with instructions
-    - **Skipped**: Would require new component, too complex for this session
-- [ ] should we add a tiny number in the corner of each value when its in a tier to show its place within it? I think not now
-- [ ] rename "not important"? ("low priority"?). not sure- think it's valuable to let users express what they don't care about, but don't want to cause self-judgement
-    - **Needs decision**: Ambiguous, requires user input on naming philosophy
