@@ -79,11 +79,10 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
           <section>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Tips for Success</h3>
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>Trust your gut reaction—your first instinct is often most accurate</li>
-              <li>Focus on what matters to <em>you</em>, not what you think should matter</li>
-              <li>It's okay if your values differ from others' expectations</li>
-              <li>You can limit "Very Important" values to focus on what matters most</li>
-              <li>Your values may change over time—that's natural</li>
+              <li>Focus on what matters to <em>you</em>, not what others expect or what you think you "should" value</li>
+              <li>Work quickly and intuitively—spend just a few seconds on each value</li>
+              <li>Limit "Very Important" to truly essential values (quality over quantity)</li>
+              <li>Your values may change over time—revisit this exercise as you grow</li>
             </ul>
           </section>
 

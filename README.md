@@ -3,13 +3,14 @@
 ## TODO
 
 - [x] on mobile, I think the swipe directions may be bugged; swipe up is supposed to be "not", but registers as "somewhat". Mobile non-touch mode with keypresses seems to work correctly.
-- [ ] remove touch handlers from desktop mode. if touch is detected, regardless of screen size, default to mobile layout
-- [ ] add the lucide-react icons into the text so the user knows what the share and print buttons look like. Additionally, add the icon for about itself to the top-left oft he about page, so the user makes the association when they see that button later 
+- [x] remove touch handlers from desktop mode. if touch is detected, regardless of screen size, default to mobile layout
+- [x] add the lucide-react icons into the text so the user knows what the share and print buttons look like. Additionally, add the icon for about itself to the top-left oft he about page, so the user makes the association when they see that button later
 - [x] Add ESC key handler to SwipeHint component
 - [x] Remove localStorage storage for mobile hint in MobileLayout- hint is coupled to about
-- [ ] use different hint text for non-touch version of mobile layout (press keys instead of swiping)
-- [ ] in desktop view, the hovertext for values in categories should go on the left instead of right. They get cutoff
+- [x] use different hint text for non-touch version of mobile layout (press keys instead of swiping)
+- [x] in desktop view, the hovertext for values in categories should go on the left instead of right. They get cutoff
 - [ ] remove or minimize debug logging / console printing
+    - Partially done: storage.ts cleaned up. urlState.ts and App.tsx have extensive debug logging that needs review.
 - [ ] add desktop version of swipehint? with instructions
 - [ ] order of items within tiers is somewhat non-unintuitive. I think it is row-based instead of column-based. Switch to column based, i.e. going down a column counts up, instead of down a row
     - [ ] should we add a tiny number in the corner of each value when its in a tier to show its place within it? I think not now
