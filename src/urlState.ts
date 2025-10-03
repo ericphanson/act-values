@@ -127,10 +127,6 @@ export function decodeUrlToState(
   if (!hash || hash === '#') return null;
 
   try {
-    console.log('[URL Decode] Input hash:', hash);
-    console.log('[URL Decode] Dataset size:', datasetSize);
-    console.log('[URL Decode] Canonical categories:', canonicalCategoryOrder);
-
     // Decompress the hash using LZ-string
     const hashContent = hash.startsWith('#') ? hash.slice(1) : hash;
     const decompressed = LZString.decompressFromEncodedURIComponent(hashContent);
@@ -139,8 +135,6 @@ export function decodeUrlToState(
       console.error('[URL] Failed to decompress hash');
       return null;
     }
-
-    console.log('[URL Decode] Decompressed:', decompressed);
 
     // Split on first '&' to separate lehmer fragment from params
     const firstAmpersand = decompressed.indexOf('&');
@@ -157,20 +151,13 @@ export function decodeUrlToState(
       paramsString = decompressed.slice(firstAmpersand + 1);
     }
 
-    console.log('[URL Decode] Fragments part:', fragmentsPart);
-    console.log('[URL Decode] Params:', paramsString);
-
     // Split fragments on '.' to separate value tiers from category ordering
     const fragments = fragmentsPart.split('.');
     const lehmerFragment = fragments[0];
     const categoryFragment = fragments[1] || '';
 
-    console.log('[URL Decode] Lehmer fragment:', lehmerFragment);
-    console.log('[URL Decode] Category fragment:', categoryFragment);
-
     // Decode lehmer fragment for value tiers
     const lehmerState = decodeFragmentToTierState(lehmerFragment, datasetSize);
-    console.log('[URL Decode] Decoded lehmer state:', lehmerState);
 
     // Parse URL params
     const params = new URLSearchParams(paramsString);

@@ -600,8 +600,6 @@ const ValuesTierList = () => {
       'uncategorized': [],
     };
 
-    console.log('[Serialize] Processing values count:', values.length);
-
     for (const tier of tierOrder) {
       const tierValues = values.filter(value => value.location === tier);
       tiers[tier] = tierValues.map(value => parseInt(value.id.replace('value-', ''), 10));
@@ -612,8 +610,6 @@ const ValuesTierList = () => {
       value => !tierOrder.includes(value.location as TierId)
     );
     tiers['uncategorized'] = uncategorizedValues.map(value => parseInt(value.id.replace('value-', ''), 10));
-
-    console.log('[Serialize] Tiers being saved:', tiers);
 
     return {
       listId,
@@ -705,12 +701,10 @@ const ValuesTierList = () => {
 
   // Hydrate state from persisted data
   const hydrateState = useCallback((persisted: PersistedState) => {
-    console.log('[App] Hydrating from persisted state:', persisted);
     const dataset = preloadedDatasets[persisted.datasetName];
 
     // Always use act-shorter dataset
     if (!dataset || dataset.version !== persisted.datasetVersion) {
-      console.log('[App] Dataset version mismatch, loading act-shorter');
       loadDataset('act-shorter');
       return;
     }
@@ -724,9 +718,6 @@ const ValuesTierList = () => {
       category: item.category,
       location: item.category // default to category, will be overridden if in a tier
     }));
-
-    console.log('[App] Created values:', importedValues.length);
-    console.log('[App] Persisted tiers data:', persisted.tiers);
 
     const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
 
@@ -763,16 +754,6 @@ const ValuesTierList = () => {
       usedIds.add(value.id);
     }
 
-    const sampleLocations = orderedValues.slice(0, 5).map(v => `${v.id}: location="${v.location}", category="${v.category}"`);
-    console.log('[App] Sample locations after tier assignment:', sampleLocations);
-
-    // Count values by location
-    const locationCounts: Record<string, number> = {};
-    orderedValues.forEach(v => {
-      locationCounts[v.location] = (locationCounts[v.location] || 0) + 1;
-    });
-    console.log('[App] Values by location:', locationCounts);
-
     const uniqueCategories = [...new Set(importedValues.map(v => v.category))];
 
     setValues(orderedValues);
@@ -780,8 +761,6 @@ const ValuesTierList = () => {
     setCollapsedCategories(persisted.collapsedCategories);
     setListId(persisted.listId);
     setListName(persisted.listName);
-
-    console.log('[App] State hydrated successfully');
   }, [loadDataset]);
 
   // Create a new list - always use act-shorter
@@ -827,19 +806,15 @@ const ValuesTierList = () => {
 
     saveList(newList);
     refreshSavedLists();
-
-    console.log(`[App] Created new list: ${newName} (${newId})`);
   }, [loadDataset, refreshSavedLists]);
 
   // Load state on mount - check URL first, then current list, then create new
   useEffect(() => {
     // Prevent duplicate initialization (React StrictMode, hot reload)
     if (initializedRef.current) {
-      console.log('[App] Already initialized, skipping');
       return;
     }
 
-    console.log('[App] Initializing app...');
     initializedRef.current = true;
 
     let mounted = true;
@@ -856,7 +831,6 @@ const ValuesTierList = () => {
         const persistedFromHash = decodeUrlToState(hash, dataset.data.length, canonicalOrder);
 
         if (persistedFromHash && persistedFromHash.listId) {
-          console.log('[App] Loading state from URL fragment');
           currentFragmentRef.current = hash;
 
           // Save this list to storage if it's new
@@ -871,7 +845,6 @@ const ValuesTierList = () => {
               createdAt: Date.now()
             };
             saveList(newList);
-            console.log('[App] Saved shared list from URL');
           }
 
           hydrateState(persistedFromHash as PersistedState);
@@ -887,7 +860,6 @@ const ValuesTierList = () => {
       if (currentId) {
         const list = loadList(currentId);
         if (list) {
-          console.log('[App] Loading current list:', list.name);
           const dataset = preloadedDatasets[list.datasetName];
           if (dataset) {
             const canonicalOrder = getCanonicalCategoryOrder(dataset);
@@ -907,7 +879,6 @@ const ValuesTierList = () => {
       }
 
       // No URL state and no current list - create new
-      console.log('[App] No existing state, creating new list');
       createNewList();
     };
 
@@ -954,8 +925,6 @@ const ValuesTierList = () => {
     const handleStorageChange = (e: StorageEvent) => {
       // Only handle changes to our saved lists
       if (e.key !== 'act-values-saved-lists' || !e.newValue) return;
-
-      console.log('[App] Storage changed in another tab, reloading current list');
 
       // Reload the current list from storage
       const list = loadList(listId);
