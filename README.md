@@ -16,6 +16,7 @@ React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
 
 ## TODO
 
+- [ ] add user-facing description of features in README for discoverability purposes. The key thing here is to not be annoying.
 - [ ] remove or minimize debug logging / console printing
     - **Partially done**: storage.ts cleaned up. urlState.ts and App.tsx have extensive debug logging that needs review.
 - [ ] add desktop version of swipehint? with instructions

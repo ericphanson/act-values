@@ -258,6 +258,7 @@ interface ValueContainerProps {
   className?: string;
   children: React.ReactNode;
   highlightRingClass?: string;
+  style?: React.CSSProperties;
 }
 
 const ValueContainer: React.FC<ValueContainerProps> = ({
@@ -266,6 +267,7 @@ const ValueContainer: React.FC<ValueContainerProps> = ({
   className = '',
   children,
   highlightRingClass,
+  style,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: containerId,
@@ -287,6 +289,7 @@ const ValueContainer: React.FC<ValueContainerProps> = ({
       ref={setNodeRef}
       className={[baseClass, sizeClass, className, highlightClass].filter(Boolean).join(' ')}
       data-container-id={containerId}
+      style={style}
     >
       {children}
     </div>
@@ -1749,8 +1752,11 @@ const ValuesTierList = () => {
                     <ValueContainer
                       containerId={tier.id}
                       isTier
-                      className="p-4 grid grid-cols-1 md:grid-cols-2 gap-2 print-value-list"
+                      className="p-4 grid grid-cols-1 md:grid-cols-2 gap-2 grid-flow-col print-value-list"
                       highlightRingClass={tierHighlightClass[tier.id]}
+                      style={{
+                        gridTemplateRows: tierValues.length > 0 ? `repeat(${Math.ceil(tierValues.length / 2)}, auto)` : undefined,
+                      }}
                     >
                       {tierValues.length === 0 && (
                         <div className="text-sm text-gray-500 italic select-none print-hide text-center py-8">
