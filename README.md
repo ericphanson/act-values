@@ -26,8 +26,7 @@ React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
 
 ## TODO
 
-- [ ] remove or minimize debug logging / console printing
-    - **Partially done**: storage.ts cleaned up. urlState.ts and App.tsx have extensive debug logging that needs review.
+- [x] remove or minimize debug logging / console printing
 - [ ] add desktop version of swipehint? with instructions
     - **Skipped**: Would require new component, too complex for this session
 - [ ] should we add a tiny number in the corner of each value when its in a tier to show its place within it? I think not now
