@@ -46,7 +46,7 @@ export function saveList(list: SavedList): void {
     listsMap[list.id] = list;
     localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(listsMap));
 
-    console.log(`[Storage] Saved list '${list.name}' (${list.id})`);
+    // console.log(`[Storage] Saved list '${list.name}' (${list.id})`);
   } catch (error) {
     console.error('[Storage] Error saving list:', error);
   }
@@ -69,7 +69,7 @@ export function deleteList(id: string): void {
       setCurrentListId(null);
     }
 
-    console.log(`[Storage] Deleted list ${id}`);
+    // console.log(`[Storage] Deleted list ${id}`);
   } catch (error) {
     console.error('[Storage] Error deleting list:', error);
   }
@@ -88,7 +88,7 @@ export function renameList(id: string, newName: string): void {
       listsMap[id].name = newName;
       listsMap[id].lastModified = Date.now();
       localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(listsMap));
-      console.log(`[Storage] Renamed list ${id} to '${newName}'`);
+      // console.log(`[Storage] Renamed list ${id} to '${newName}'`);
     }
   } catch (error) {
     console.error('[Storage] Error renaming list:', error);
