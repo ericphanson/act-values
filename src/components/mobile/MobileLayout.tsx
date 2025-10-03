@@ -282,14 +282,38 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
           >
             <Eye size={18} className="text-gray-600" aria-hidden="true" />
           </button>
-          <button
-            type="button"
-            onClick={handleShare}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Share"
-          >
-            <Share2 size={18} className="text-blue-600" aria-hidden="true" />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Share"
+            >
+              <Share2 size={18} className="text-blue-600" aria-hidden="true" />
+            </button>
+
+            {/* Share explanation popover */}
+            {showShareExplanation && (
+              <div
+                className="absolute top-full mt-2 right-0 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-40 animate-fade-in-up"
+                role="status"
+                aria-live="polite"
+              >
+                <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45" />
+                <button
+                  type="button"
+                  onClick={onDismissShareExplanation}
+                  className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">✕</span>
+                </button>
+                <p className="text-sm text-gray-700 leading-relaxed pr-4">
+                  Your data is safely encoded in this link. Keep it to access your values anywhere, or share it with others.
+                </p>
+              </div>
+            )}
+          </div>
           <button
             type="button"
             onClick={onPrint}
