@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X, Info, Share2, Printer } from 'lucide-react';
 
 interface ACTIntroProps {
@@ -6,38 +6,112 @@ interface ACTIntroProps {
 }
 
 export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
-  // Handle ESC key to close
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedElement = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
+    // Store previously focused element
+    previouslyFocusedElement.current = document.activeElement as HTMLElement;
+
+    // Prevent body scroll
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // Focus the first focusable element in the dialog
+    const focusableElements = dialogRef.current?.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstFocusable = focusableElements?.[0];
+    firstFocusable?.focus();
+
+    // Handle ESC key to close
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
       }
     };
+
+    // Handle focus trap
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+
+      const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstFocusable = focusableElements[0];
+      const lastFocusable = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        // Shift + Tab
+        if (document.activeElement === firstFocusable) {
+          e.preventDefault();
+          lastFocusable?.focus();
+        }
+      } else {
+        // Tab
+        if (document.activeElement === lastFocusable) {
+          e.preventDefault();
+          firstFocusable?.focus();
+        }
+      }
+    };
+
     document.addEventListener('keydown', handleEsc);
-    return () => document.removeEventListener('keydown', handleEsc);
+    document.addEventListener('keydown', handleTab);
+
+    return () => {
+      // Restore body scroll
+      document.body.style.overflow = originalOverflow;
+
+      // Restore focus to previously focused element
+      previouslyFocusedElement.current?.focus();
+
+      document.removeEventListener('keydown', handleEsc);
+      document.removeEventListener('keydown', handleTab);
+    };
   }, [onClose]);
 
+  // Handle click outside to close
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={handleBackdropClick}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+        aria-describedby="dialog-description"
+        tabIndex={-1}
+        className="bg-white rounded-xl max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Info size={24} className="text-emerald-600 flex-shrink-0" />
-            <h2 className="text-2xl font-bold text-gray-900">About This Exercise</h2>
+            <Info size={24} className="text-emerald-600 flex-shrink-0" aria-hidden="true" />
+            <h2 id="dialog-title" className="text-2xl font-bold text-gray-900">About This Exercise</h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Close"
           >
-            <X size={24} />
+            <X size={24} aria-hidden="true" />
           </button>
         </div>
 
         <div className="px-6 py-6 space-y-6">
           <section>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">What is ACT?</h3>
-            <p className="text-gray-700 leading-relaxed">
+            <p id="dialog-description" className="text-gray-700 leading-relaxed">
               Acceptance and Commitment Therapy (ACT) is an evidence-based form of psychotherapy that helps people create a rich, meaningful life while accepting the pain that inevitably comes with it. Rather than fighting difficult thoughts and feelings, ACT teaches you to accept them and move forward guided by your values.
             </p>
           </section>
@@ -99,13 +173,14 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
               Your data stays private in your browser. Your work is saved automatically but may be lost if you clear browsing data.
             </p>
             <p className="text-emerald-800 text-sm">
-              <strong>To save permanently:</strong> Use the <Share2 size={14} className="inline text-blue-600" /> Share button to get a link you can access from anywhere, or <Printer size={14} className="inline text-gray-600" /> Print for a paper copy.
+              <strong>To save permanently:</strong> Use the <Share2 size={14} className="inline text-blue-600" aria-hidden="true" /> Share button to get a link you can access from anywhere, or <Printer size={14} className="inline text-gray-600" aria-hidden="true" /> Print for a paper copy.
             </p>
           </section>
         </div>
 
         <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4">
           <button
+            type="button"
             onClick={onClose}
             className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
           >

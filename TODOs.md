@@ -1,6 +1,7 @@
 # TODOs
 
 - [ ] think harder about the text, instructions, naming, etc...
+- [ ] accessibility improvements
 
 ## Needs design
 
@@ -11,6 +12,7 @@ These need some design thought to make sure it works well and doesn't add too mu
 - [ ] "domains of life" organization: https://stevenchayes.com/wp-content/uploads/2023/01/The-Valued-Living-Questionnaire.pdf
     - [ ] questionnaires? probably not
 - https://thehappinesstrap.com/upimages/Long_Bull's_Eye_Worksheet.pdf
+- [ ] localization
 
 
 ## Not sure
