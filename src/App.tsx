@@ -1961,7 +1961,7 @@ const ValuesTierList = () => {
 
         {/* Mobile mode suggestion for touch devices */}
         {showMobileSuggestion && (
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 print-hide max-w-md">
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 print-hide max-w-md">
             <div className="flex items-start gap-3">
               <div className="flex-1">
                 <p className="font-semibold mb-1">Touch device detected</p>
