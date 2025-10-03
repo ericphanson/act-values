@@ -2,6 +2,10 @@
 
 A web app for identifying and prioritizing personal values using Acceptance and Commitment Therapy (ACT) principles. Sort values into three tiers (Very Important, Somewhat Important, Not Important) to clarify what matters most to you.
 
+## Features
+
+Desktop: drag-and-drop or keyboard shortcuts (1/2/3). Mobile: swipe gestures. Your state encodes in the URL for sharing. Changes save automatically to localStorage. Print-friendly layout. Create multiple lists. No server, no tracking—everything stays in your browser.
+
 ## Design goals
 
 - Statically hostable (maintainable and sustainable long-term)
@@ -16,7 +20,7 @@ React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
 
 ## TODO
 
-- [ ] add user-facing description of features in README for discoverability purposes. The key thing here is to not be annoying.
+- [x] add user-facing description of features in README for discoverability purposes. The key thing here is to not be annoying.
 - [ ] remove or minimize debug logging / console printing
     - **Partially done**: storage.ts cleaned up. urlState.ts and App.tsx have extensive debug logging that needs review.
 - [ ] add desktop version of swipehint? with instructions
