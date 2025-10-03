@@ -970,6 +970,8 @@ const ValuesTierList = () => {
             hydrateState(persisted as PersistedState);
             lastKnownModified.current = result.list.lastModified;
             currentFragmentRef.current = result.list.fragment;
+          } else {
+            showToast('Failed to decode list data from another tab.', 5000);
           }
         }
       }
@@ -1454,6 +1456,8 @@ const ValuesTierList = () => {
                     hydrateState(persisted as PersistedState);
                     setCurrentListId(switchToListId);
                     lastKnownModified.current = result.list.lastModified;
+                  } else {
+                    showToast('Failed to decode the selected list.', 5000);
                   }
                 }
               }
@@ -1482,6 +1486,9 @@ const ValuesTierList = () => {
                     hydrateState(persisted as PersistedState);
                     setCurrentListId(nextList.id);
                     lastKnownModified.current = nextList.lastModified;
+                  } else {
+                    showToast('Failed to decode list data. Creating a new list.', 5000);
+                    createNewList(selectedDataset);
                   }
                 }
               } else {
@@ -1575,6 +1582,8 @@ const ValuesTierList = () => {
                                     hydrateState(persisted as PersistedState);
                                     setCurrentListId(list.id);
                                     lastKnownModified.current = list.lastModified;
+                                  } else {
+                                    showToast('Failed to decode the selected list.', 5000);
                                   }
                                 }
                               }
@@ -1616,6 +1625,9 @@ const ValuesTierList = () => {
                                           hydrateState(persisted as PersistedState);
                                           setCurrentListId(nextList.id);
                                           lastKnownModified.current = nextList.lastModified;
+                                        } else {
+                                          showToast('Failed to decode list data. Creating a new list.', 5000);
+                                          createNewList(selectedDataset);
                                         }
                                       }
                                     } else {
