@@ -2,8 +2,6 @@
 
 ## TODO
 
-For each TODO, 
-
 - [ ] on mobile, I think the swipe directions may be bugged; swipe up is supposed to be "not", but registers as "somewhat". Mobile non-touch mode with keypresses seems to work correctly.
 - [ ] remove touch handlers from desktop mode. if touch is detected, regardless of screen size, default to mobile layout
 - [ ] add the lucide-react icons into the text so the user knows what the share and print buttons look like. Additionally, add the icon for about itself to the top-left oft he about page, so the user makes the association when they see that button later 

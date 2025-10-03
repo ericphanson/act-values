@@ -111,10 +111,10 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         targetTier = 'very-important';
         break;
       case 'left':
-        targetTier = 'not-important';
+        targetTier = 'somewhat-important';
         break;
       case 'up':
-        targetTier = 'somewhat-important';
+        targetTier = 'not-important';
         break;
       default:
         return;
