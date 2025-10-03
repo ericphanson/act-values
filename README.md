@@ -12,7 +12,8 @@ To create your list, the website supports both a "desktop mode" and a "mobile mo
 
 Go to https://ericphanson.github.io/act-values/ to use the app.
 
-If you have problems, you can [file an issue](https://github.com/ericphanson/act-values/issues/new), which needs a free GitHub account. You can also contact me [here](https://ericphanson.com/contact), though I am not always responsive. 
+If you have problems, you can [file an issue](https://github.com/ericphanson/act-values/issues/new), which needs a free GitHub account. You can also contact me [here](https://ericphanson.com/contact), though I am not always responsive.
+
 
 ## Design goals
 
@@ -25,3 +26,11 @@ If you have problems, you can [file an issue](https://github.com/ericphanson/act
 ## Current architecture
 
 React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
+
+## Developer notes
+
+### Clear local storage
+
+You clear local storage by adding `?clear=1` to the URL. For example: `https://ericphanson.github.io/act-values/?clear=1`. This is usually only needed by developers, as the UI provides a mechanism to delete lists. If the UI isn't loading though, clearing local storage could help.
+
+Note: This will delete all your saved lists, so make sure you have exported any important lists first!

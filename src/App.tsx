@@ -33,6 +33,21 @@ import { MobileLayout } from './components/mobile/MobileLayout';
 import { ACTIntro } from './components/ACTIntro';
 import { COMPLETION_NEXT_STEPS, COMPLETION_SAVE_TEXT } from './constants/completionText';
 
+// Check for reset/clear parameter BEFORE any localStorage access
+const urlParams = new URLSearchParams(window.location.search);
+const shouldClearCache = urlParams.has('clear');
+if (shouldClearCache) {
+  // Clear all localStorage immediately
+  localStorage.clear();
+
+  // Remove the query parameter from URL
+  const newUrl = window.location.pathname + window.location.hash;
+  window.history.replaceState(null, '', newUrl);
+
+  // Store a flag so we can show a toast after the app loads
+  sessionStorage.setItem('cache-just-cleared', 'true');
+}
+
 // Sortable value item component
 interface SortableValueProps {
   value: Value;
@@ -832,6 +847,16 @@ const ValuesTierList = () => {
 
     const initializeApp = () => {
       if (!mounted) return;
+
+      // Check if cache was just cleared (set at module level)
+      const cacheCleared = sessionStorage.getItem('cache-just-cleared');
+      if (cacheCleared) {
+        sessionStorage.removeItem('cache-just-cleared');
+        showToast('✓ Cache cleared! App reset successfully.', 4000);
+        // Create a new list after clearing
+        createNewList();
+        return;
+      }
 
       const hash = window.location.hash;
 
