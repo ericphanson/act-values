@@ -26,6 +26,8 @@ interface InboxSectionProps {
     'somewhat-important': number | null;
     'not-important': number | null;
   };
+  showShareExplanation: boolean;
+  onDismissShareExplanation: () => void;
 }
 
 export const InboxSection: React.FC<InboxSectionProps> = ({
@@ -40,6 +42,8 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
   onPrint,
   tierCounts,
   tierQuotas,
+  showShareExplanation,
+  onDismissShareExplanation,
 }) => {
   // Only show "All done" if we have values loaded and none are in inbox
   if (values.length === 0 && totalValues > 0) {
@@ -72,14 +76,38 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-3">
-          <button
-            type="button"
-            onClick={onShare}
-            className="bg-blue-600 text-white py-3 px-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex flex-col items-center justify-center gap-1 shadow-md"
-          >
-            <Share2 size={20} aria-hidden="true" />
-            <span className="text-xs">Share Link</span>
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={onShare}
+              className="w-full bg-blue-600 text-white py-3 px-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex flex-col items-center justify-center gap-1 shadow-md"
+            >
+              <Share2 size={20} aria-hidden="true" />
+              <span className="text-xs">Share Link</span>
+            </button>
+
+            {/* Share explanation popover */}
+            {showShareExplanation && (
+              <div
+                className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-40 animate-fade-in-up"
+                role="status"
+                aria-live="polite"
+              >
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-r border-b border-gray-200 transform rotate-45" />
+                <button
+                  type="button"
+                  onClick={onDismissShareExplanation}
+                  className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">✕</span>
+                </button>
+                <p className="text-sm text-gray-700 leading-relaxed pr-4">
+                  Your data is safely encoded in this link. Keep it to access your values anywhere, or share it with others.
+                </p>
+              </div>
+            )}
+          </div>
           <button
             type="button"
             onClick={onPrint}

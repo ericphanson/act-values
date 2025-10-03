@@ -335,6 +335,7 @@ const ValuesTierList = () => {
   const [showListDropdown, setShowListDropdown] = useState(false);
   const [showRenameHint, setShowRenameHint] = useState(false);
   const [showMobileSuggestion, setShowMobileSuggestion] = useState(false);
+  const [showShareExplanation, setShowShareExplanation] = useState(false);
   const lastKnownModified = useRef<number>(0);
   const currentFragmentRef = useRef<string | null>(null);
   const initializedRef = useRef<boolean>(false);
@@ -1038,6 +1039,15 @@ const ValuesTierList = () => {
         // Fallback for older browsers
         prompt('Copy this URL to share:', shareUrl);
       }
+
+      // Show explanation popover on first share
+      const hasSeenExplanation = localStorage.getItem('act-values-share-explained');
+      if (!hasSeenExplanation) {
+        setShowShareExplanation(true);
+        localStorage.setItem('act-values-share-explained', 'true');
+        // Auto-hide after 8 seconds
+        setTimeout(() => setShowShareExplanation(false), 8000);
+      }
     } catch (error) {
       showToast('✗ Failed to copy link');
     }
@@ -1458,6 +1468,8 @@ const ValuesTierList = () => {
               setListName(newName);
               debouncedRenameList(listId, newName);
             }}
+            showShareExplanation={showShareExplanation}
+            onDismissShareExplanation={() => setShowShareExplanation(false)}
             onSwitchList={(switchToListId) => {
               const result = loadList(switchToListId);
               if (result.error) {
@@ -1687,15 +1699,39 @@ const ValuesTierList = () => {
                   <Info size={18} aria-hidden="true" />
                   <span className="hidden md:inline">About</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
-                  title="Share"
-                >
-                  <Share2 size={18} aria-hidden="true" />
-                  <span className="hidden md:inline">Share</span>
-                </button>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                    title="Share"
+                  >
+                    <Share2 size={18} aria-hidden="true" />
+                    <span className="hidden md:inline">Share</span>
+                  </button>
+
+                  {/* Share explanation popover */}
+                  {showShareExplanation && (
+                    <div
+                      className="absolute top-full mt-2 right-0 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-40 animate-fade-in-up"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45" />
+                      <button
+                        type="button"
+                        onClick={() => setShowShareExplanation(false)}
+                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+                        aria-label="Close"
+                      >
+                        <span aria-hidden="true">✕</span>
+                      </button>
+                      <p className="text-sm text-gray-700 leading-relaxed pr-4">
+                        Your data is safely encoded in this link. Keep it to access your values anywhere, or share it with others.
+                      </p>
+                    </div>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => window.print()}
@@ -1889,14 +1925,38 @@ const ValuesTierList = () => {
                         </p>
                       </div>
                       <div className="flex gap-3 mt-4">
-                        <button
-                          type="button"
-                          onClick={handleShare}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
-                        >
-                          <Share2 size={18} aria-hidden="true" />
-                          <span>Share Link</span>
-                        </button>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={handleShare}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                          >
+                            <Share2 size={18} aria-hidden="true" />
+                            <span>Share Link</span>
+                          </button>
+
+                          {/* Share explanation popover */}
+                          {showShareExplanation && (
+                            <div
+                              className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-40 animate-fade-in-up"
+                              role="status"
+                              aria-live="polite"
+                            >
+                              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-r border-b border-gray-200 transform rotate-45" />
+                              <button
+                                type="button"
+                                onClick={() => setShowShareExplanation(false)}
+                                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+                                aria-label="Close"
+                              >
+                                <span aria-hidden="true">✕</span>
+                              </button>
+                              <p className="text-sm text-gray-700 leading-relaxed pr-4">
+                                Your data is safely encoded in this link. Keep it to access your values anywhere, or share it with others.
+                              </p>
+                            </div>
+                          )}
+                        </div>
                         <button
                           type="button"
                           onClick={() => window.print()}

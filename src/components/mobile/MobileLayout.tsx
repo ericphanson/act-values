@@ -36,6 +36,8 @@ interface MobileLayoutProps {
   onSwitchToDesktop: () => void;
   onShowAbout: () => void;
   showingACTIntro: boolean;
+  showShareExplanation: boolean;
+  onDismissShareExplanation: () => void;
 }
 
 export const MobileLayout: React.FC<MobileLayoutProps> = ({
@@ -56,6 +58,8 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   onSwitchToDesktop,
   onShowAbout,
   showingACTIntro,
+  showShareExplanation,
+  onDismissShareExplanation,
 }) => {
   const [expandedTier, setExpandedTier] = useState<TierId | null>('very-important');
   const [actionSheetValue, setActionSheetValue] = useState<Value | null>(null);
@@ -381,6 +385,8 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
             'somewhat-important': tiers.find(t => t.id === 'somewhat-important')?.quota ?? null,
             'not-important': tiers.find(t => t.id === 'not-important')?.quota ?? null,
           }}
+          showShareExplanation={showShareExplanation}
+          onDismissShareExplanation={onDismissShareExplanation}
         />
 
         {/* Tiers (accordion) - with padding */}
