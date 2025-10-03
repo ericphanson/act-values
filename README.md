@@ -1,35 +1,18 @@
 # ACT Values Clarification Tool
 
-A web app for identifying and prioritizing your personal values using Acceptance and Commitment Therapy (ACT) principles.
-
-## About
-
-This tool helps you clarify what truly matters to you by categorizing values into three tiers: Very Important, Somewhat Important, and Not Important. Based on ACT therapy principles, this exercise helps you:
-
-- Identify your core values across different life domains
-- Prioritize what matters most to you
-- Create awareness for living more intentionally
-- Make decisions aligned with your values
+A web app for identifying and prioritizing personal values using Acceptance and Commitment Therapy (ACT) principles. Sort values into three tiers (Very Important, Somewhat Important, Not Important) to clarify what matters most to you.
 
 ## Features
 
-- **Privacy-First**: All data stays in your browser—no server, no tracking
-- **Shareable Links**: Your entire state fits in the URL for easy saving and sharing
-- **Printable Results**: Generate a clean printout of your categorized values
-- **Mobile & Desktop**: Optimized interfaces for both touch and non-touch devices
-- **Multiple Lists**: Create and manage separate values lists
-- **Offline-Ready**: Works without an internet connection after initial load
+All data stays in your browser (no server, no tracking). Your entire state is encoded in the URL for easy saving and sharing. Works offline after initial load. Optimized for both mobile (swipe gestures) and desktop (drag-and-drop, keyboard shortcuts). Print-friendly layout. Create and manage multiple lists.
 
-## Design Goals
+## Design
 
-- **Static hosting**: Deployable to GitHub Pages or any static file server
-- **Zero data loss**: URL contains complete state—no localStorage required for persistence
-- **Ergonomic UX**: Keyboard shortcuts, swipe gestures, drag-and-drop
-- **Printable**: Clean print layout for offline reference
+Built for static hosting (GitHub Pages compatible). Complete state fits in URL—no localStorage required for persistence. Ergonomic UX with keyboard shortcuts (1/2/3), swipe gestures, and drag-and-drop. Clean print layout.
 
 ## Technical
 
-Built with React, TypeScript, and Tailwind CSS. Powered by Claude Sonnet 4.5.
+React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
 
 ## TODO
 
