@@ -6,13 +6,17 @@ A web app for identifying and prioritizing personal values using Acceptance and 
 
 All data stays in your browser (no server, no tracking). Your entire state is encoded in the URL for easy saving and sharing. Works offline after initial load. Optimized for both mobile (swipe gestures) and desktop (drag-and-drop, keyboard shortcuts). Print-friendly layout. Create and manage multiple lists.
 
-## Design
-
-Built for static hosting (GitHub Pages compatible). Complete state fits in URL—no localStorage required for persistence. Ergonomic UX with keyboard shortcuts (1/2/3), swipe gestures, and drag-and-drop. Clean print layout.
-
 ## Technical
 
 React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
+
+### Design goals
+
+- Static hosting only (maintainable and sustainable long-term)
+- Complete state in URL (shareability and user control over their data)
+- localStorage for working state (don't lose work on accidental tab close)
+- Ergonomic interactions (make it actually usable: keyboard shortcuts, swipe gestures, drag-and-drop)
+- Print-friendly layout (archiving and offline sharing)
 
 ## TODO
 
