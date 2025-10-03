@@ -325,7 +325,15 @@ const ValuesTierList = () => {
     const saved = localStorage.getItem('act-values-forced-mode');
     return saved === 'mobile' || saved === 'desktop' ? saved : null;
   });
-  const isMobileLayout = forcedMode === 'mobile' ? true : forcedMode === 'desktop' ? false : isMobileScreen;
+
+  // Detect touch capability
+  const hasTouchCapability = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  // If touch is detected, default to mobile layout (unless explicitly forced to desktop)
+  const isMobileLayout = forcedMode === 'desktop' ? false :
+                         forcedMode === 'mobile' ? true :
+                         hasTouchCapability ? true :
+                         isMobileScreen;
 
   // Persist forced mode to localStorage
   useEffect(() => {
