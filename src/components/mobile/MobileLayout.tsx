@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Value, TierId } from '../../types';
 import { SwipeDirection } from '../../hooks/useSwipeGesture';
 import { useUndoStack } from '../../hooks/useUndoStack';
@@ -66,6 +66,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   const [shareToast, setShareToast] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(true); // Default to true, detect on mount
   const undoStack = useUndoStack(10);
+  const prevShowingIntroRef = useRef(showingACTIntro);
 
   // Detect if this is a touch device
   useEffect(() => {
@@ -73,26 +74,22 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
     setIsTouchDevice(hasTouch);
   }, []);
 
-  // Check if user has seen the hint - show after ACT intro is dismissed
+  // Show hint after ACT intro is dismissed - coupled to About button
   useEffect(() => {
-    // Don't show hint if ACT intro is showing
-    if (showingACTIntro) {
-      setShowHint(false);
-      return;
-    }
-
-    const hasSeenHint = localStorage.getItem('act-values-seen-mobile-hint');
-    const urlParams = new URLSearchParams(window.location.search);
-    const forceHint = urlParams.get('hint') === 'true';
-
-    if (!hasSeenHint || forceHint) {
+    if (prevShowingIntroRef.current && !showingACTIntro) {
+      // ACT intro just closed, show the hint
       setShowHint(true);
+    } else if (showingACTIntro) {
+      // Don't show hint while ACT intro is showing
+      setShowHint(false);
     }
+
+    prevShowingIntroRef.current = showingACTIntro;
   }, [showingACTIntro]);
 
   const handleDismissHint = () => {
     setShowHint(false);
-    localStorage.setItem('act-values-seen-mobile-hint', 'true');
+    // No longer storing in localStorage - hint is coupled to About button
   };
 
   // Get inbox values (not in any tier)

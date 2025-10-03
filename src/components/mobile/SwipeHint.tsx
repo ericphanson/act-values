@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Eye } from 'lucide-react';
 
 interface SwipeHintProps {
@@ -6,6 +6,17 @@ interface SwipeHintProps {
 }
 
 export const SwipeHint: React.FC<SwipeHintProps> = ({ onDismiss }) => {
+  // Handle ESC key to close
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onDismiss();
+      }
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [onDismiss]);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-6 max-w-sm shadow-2xl animate-fade-in-up">
