@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Info, Share2, Printer } from 'lucide-react';
 
 interface ACTIntroProps {
   onClose: () => void;
@@ -21,7 +21,10 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">About This Exercise</h2>
+          <div className="flex items-center gap-3">
+            <Info size={24} className="text-emerald-600 flex-shrink-0" />
+            <h2 className="text-2xl font-bold text-gray-900">About This Exercise</h2>
+          </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -97,7 +100,7 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
               Your data stays private in your browser. Your work is saved automatically but may be lost if you clear browsing data.
             </p>
             <p className="text-emerald-800 text-sm">
-              <strong>To save permanently:</strong> Use the Share button to get a link you can access from anywhere, or Print for a paper copy.
+              <strong>To save permanently:</strong> Use the <Share2 size={14} className="inline text-blue-600" /> Share button to get a link you can access from anywhere, or <Printer size={14} className="inline text-gray-600" /> Print for a paper copy.
             </p>
           </section>
         </div>
