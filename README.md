@@ -41,7 +41,7 @@ Built with React, TypeScript, and Tailwind CSS. Powered by Claude Sonnet 4.5.
 - [x] use different hint text for non-touch version of mobile layout (press keys instead of swiping)
 - [x] in desktop view, the hovertext for values in categories should go on the left instead of right. They get cutoff
 - [ ] remove or minimize debug logging / console printing
-    - Partially done: storage.ts cleaned up. urlState.ts and App.tsx have extensive debug logging that needs review.
+    - **Partially done**: storage.ts cleaned up. urlState.ts and App.tsx have extensive debug logging that needs review.
 - [ ] add desktop version of swipehint? with instructions
     - **Skipped**: Would require new component, too complex for this session
 - [ ] order of items within tiers is somewhat non-unintuitive. I think it is row-based instead of column-based. Switch to column based, i.e. going down a column counts up, instead of down a row
