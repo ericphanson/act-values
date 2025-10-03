@@ -1821,7 +1821,7 @@ const ValuesTierList = () => {
                       <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 max-w-sm mb-4">
                         <p className="text-sm font-semibold text-emerald-900 mb-1">✨ Next Steps</p>
                         <p className="text-xs text-emerald-800 text-left">
-                          Now that you've identified your values, consider: What small actions could you take this week to move toward your "Very Important" values? ACT is about <strong>committed action</strong>—living in alignment with what matters most.
+                          Consider: What small actions could you take this week to move toward your "Very Important" values? ACT is about <strong>committed action</strong>—living in alignment with what matters most.
                         </p>
                       </div>
                       <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 max-w-sm">

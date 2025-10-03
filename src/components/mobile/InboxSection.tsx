@@ -55,7 +55,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
           <div className="bg-emerald-50 border-2 border-emerald-200 rounded-lg p-3 text-left">
             <p className="text-sm font-semibold text-emerald-900 mb-1">✨ Next Steps</p>
             <p className="text-xs text-emerald-800 leading-relaxed">
-              Now that you've identified your values, consider: What small actions could you take this week to move toward your "Very Important" values? ACT is about <strong>committed action</strong>—living in alignment with what matters most.
+              Consider: What small actions could you take this week to move toward your "Very Important" values? ACT is about <strong>committed action</strong>—living in alignment with what matters most.
             </p>
           </div>
         </div>
