@@ -52,3 +52,6 @@ Built with React, TypeScript, and Tailwind CSS. Powered by Claude Sonnet 4.5.
 - [ ] rename "not important"? ("low priority"?). not sure- think it's valuable to let users express what they don't care about, but don't want to cause self-judgement
     - **Needs decision**: Ambiguous, requires user input on naming philosophy
 - [x] in "all done" text, maybe talk about next steps in terms of ACT. Moving towards values / committed actions etc
+- [ ] try to reduce redundance between mobile and desktop completion screens
+- [ ] replace "Now that you've identified your values, consider:" with "Consider:" in completion screen (reduce scrolling on completion screens)
+
