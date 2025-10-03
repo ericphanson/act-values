@@ -2,21 +2,17 @@
 
 A web app for identifying and prioritizing personal values using Acceptance and Commitment Therapy (ACT) principles. Sort values into three tiers (Very Important, Somewhat Important, Not Important) to clarify what matters most to you.
 
-## Features
+## Design goals
 
-All data stays in your browser (no server, no tracking). Your entire state is encoded in the URL for easy saving and sharing. Works offline after initial load. Optimized for both mobile (swipe gestures) and desktop (drag-and-drop, keyboard shortcuts). Print-friendly layout. Create and manage multiple lists.
-
-## Technical
-
-React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
-
-### Design goals
-
-- Static hosting only (maintainable and sustainable long-term)
-- Complete state in URL (shareability and user control over their data)
-- localStorage for working state (don't lose work on accidental tab close)
+- Statically hostable (maintainable and sustainable long-term)
+- Keep tier state in URL (shareability / legibility)
+- "Back up" URL state to localStorage (don't lose work on accidental tab close)
 - Ergonomic interactions (make it actually usable: keyboard shortcuts, swipe gestures, drag-and-drop)
 - Print-friendly layout (archiving and offline sharing)
+
+## Current architecture
+
+React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
 
 ## TODO
 
@@ -41,4 +37,3 @@ React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
 - [x] in "all done" text, maybe talk about next steps in terms of ACT. Moving towards values / committed actions etc
 - [ ] try to reduce redundance between mobile and desktop completion screens
 - [ ] replace "Now that you've identified your values, consider:" with "Consider:" in completion screen (reduce scrolling on completion screens)
-
