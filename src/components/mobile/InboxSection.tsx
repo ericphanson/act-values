@@ -4,6 +4,7 @@ import { ValueChipMobile } from './ValueChipMobile';
 import { SwipeDirection } from '../../hooks/useSwipeGesture';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Eye, Share2, Printer } from 'lucide-react';
+import { COMPLETION_NEXT_STEPS, COMPLETION_SAVE_TEXT } from '../../constants/completionText';
 
 interface InboxSectionProps {
   values: Value[];
@@ -55,7 +56,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
           <div className="bg-emerald-50 border-2 border-emerald-200 rounded-lg p-3 text-left">
             <p className="text-sm font-semibold text-emerald-900 mb-1">✨ Next Steps</p>
             <p className="text-xs text-emerald-800 leading-relaxed">
-              Consider: What small actions could you take this week to move toward your "Very Important" values? ACT is about <strong>committed action</strong>—living in alignment with what matters most.
+              {COMPLETION_NEXT_STEPS}
             </p>
           </div>
         </div>
@@ -66,7 +67,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
             Save for later
           </p>
           <p className="text-xs text-amber-800 leading-relaxed">
-            Your work is saved in this browser, but may be lost if you clear browsing data. <strong>Share the link</strong> to access from anywhere, or <strong>print</strong> for a paper copy.
+            {COMPLETION_SAVE_TEXT}
           </p>
         </div>
 
