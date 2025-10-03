@@ -154,7 +154,7 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Tips for Success</h3>
             <ul className="list-disc list-inside space-y-2 text-gray-700">
               <li>Focus on what matters to <em>you</em>, not what others expect or what you think you "should" value</li>
-              <li>Work quickly and intuitively—spend just a few seconds on each value</li>
+              <li>Do a quick first pass, then audit for "shoulds"</li>
               <li>Limit "Very Important" to truly essential values (quality over quantity)</li>
               <li>Your values may change over time—revisit this exercise as you grow</li>
             </ul>
