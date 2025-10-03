@@ -1,6 +1,6 @@
 # ACT Values Clarification Tool
 
-A web app for identifying and prioritizing personal values using Acceptance and Commitment Therapy (ACT) principles. Sort values into three tiers (Very Important, Somewhat Important, Not Important) to clarify what matters most to you.
+A web app for identifying and prioritizing personal values using [Acceptance and Commitment Therapy (ACT)](https://en.wikipedia.org/wiki/Acceptance_and_commitment_therapy) principles. Sort values into three tiers (Very Important, Somewhat Important, Not Important) to clarify what matters most to you.
 
 ## How it works
 
