@@ -241,7 +241,7 @@ const SortableValue: React.FC<SortableValueProps> = ({
             className={`absolute w-0 h-0 print-hide ${
               isInTier
                 ? 'top-full left-4 border-l-8 border-r-8 border-t-8 border-transparent border-t-gray-900'
-                : 'right-full top-4 border-t-8 border-b-8 border-r-8 border-transparent border-r-gray-900'
+                : 'left-full top-4 border-t-8 border-b-8 border-l-8 border-transparent border-l-gray-900'
             }`}
           />
         </div>,
