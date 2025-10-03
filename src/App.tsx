@@ -322,25 +322,18 @@ const ValuesTierList = () => {
 
   // Mobile layout detection
   const isMobileScreen = useMediaQuery('(max-width: 767px)');
+  const [forcedMode, setForcedMode] = useState<'mobile' | 'desktop' | null>(() => {
+    const saved = localStorage.getItem('act-values-forced-mode');
+    return saved === 'mobile' || saved === 'desktop' ? saved : null;
+  });
 
   // Detect touch capability
   const hasTouchCapability = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-  const [forcedMode, setForcedMode] = useState<'mobile' | 'desktop' | null>(() => {
-    const saved = localStorage.getItem('act-values-forced-mode');
-    // If touch is detected, ignore and clear any forced desktop mode from localStorage
-    if (hasTouchCapability && saved === 'desktop') {
-      localStorage.removeItem('act-values-forced-mode');
-      return null;
-    }
-    return saved === 'mobile' || saved === 'desktop' ? saved : null;
-  });
-
-  // If touch is detected, always use mobile layout
-  // Otherwise respect forced mode, then fall back to screen size
-  const isMobileLayout = hasTouchCapability ? true :
-                         forcedMode === 'desktop' ? false :
+  // If touch is detected, default to mobile layout (unless explicitly forced to desktop)
+  const isMobileLayout = forcedMode === 'desktop' ? false :
                          forcedMode === 'mobile' ? true :
+                         hasTouchCapability ? true :
                          isMobileScreen;
 
   // Persist forced mode to localStorage
