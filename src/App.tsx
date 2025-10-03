@@ -1570,18 +1570,19 @@ const ValuesTierList = () => {
                         placeholder="Enter list name..."
                       />
                     <button
+                      type="button"
                       onClick={() => setShowListDropdown(!showListDropdown)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Switch list"
                     >
-                      <ChevronDown size={24} className={`transition-transform ${showListDropdown ? 'rotate-180' : ''}`} />
+                      <ChevronDown size={24} className={`transition-transform ${showListDropdown ? 'rotate-180' : ''}`} aria-hidden="true" />
                     </button>
                   </div>
 
                   {/* Rename hint */}
                   {showRenameHint && (
                     <div className="text-sm text-blue-600 font-medium px-2 animate-fade-in-up">
-                      💡 Give your list a descriptive name before sharing!
+                      <span aria-hidden="true">💡</span> Give your list a descriptive name before sharing!
                     </div>
                   )}
                   </div>
@@ -1592,6 +1593,7 @@ const ValuesTierList = () => {
                       <div className="p-2">
                         {savedLists.map((list) => (
                           <button
+                            type="button"
                             key={list.id}
                             onClick={() => {
                               if (list.id !== listId) {
@@ -1621,6 +1623,7 @@ const ValuesTierList = () => {
                             <span>{list.name}</span>
                             {list.id === listId && savedLists.length > 1 && (
                               <button
+                                type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (confirm(`Delete "${list.name}"? This cannot be undone.`)) {
@@ -1664,12 +1667,13 @@ const ValuesTierList = () => {
                                 className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
                                 title="Delete this list"
                               >
-                                <Trash2 size={16} />
+                                <Trash2 size={16} aria-hidden="true" />
                               </button>
                             )}
                           </button>
                         ))}
                         <button
+                          type="button"
                           onClick={() => {
                             createNewList(selectedDataset);
                             setShowListDropdown(false);
@@ -1687,27 +1691,30 @@ const ValuesTierList = () => {
               {/* Action buttons */}
               <div className="flex gap-2 print-hide">
                 <button
+                  type="button"
                   onClick={() => setShowACTIntro(true)}
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 font-medium transition-colors"
                   title="About this exercise"
                 >
-                  <Info size={18} />
+                  <Info size={18} aria-hidden="true" />
                   <span className="hidden md:inline">About</span>
                 </button>
                 <button
+                  type="button"
                   onClick={handleShare}
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
                   title="Share"
                 >
-                  <Share2 size={18} />
+                  <Share2 size={18} aria-hidden="true" />
                   <span className="hidden md:inline">Share</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => window.print()}
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
                   title="Print"
                 >
-                  <Printer size={18} />
+                  <Printer size={18} aria-hidden="true" />
                   <span className="hidden md:inline">Print</span>
                 </button>
               </div>
@@ -1877,35 +1884,37 @@ const ValuesTierList = () => {
                 if (totalInCategories === 0 && totalValues > 0) {
                   return (
                     <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">All done! 🎉</h3>
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">All done! <span aria-hidden="true">🎉</span></h3>
                       <p className="text-sm text-gray-600 mb-4">
                         You've categorized all {totalValues} values
                       </p>
                       <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 max-w-sm mb-4">
-                        <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs">✨</span> Next Steps</p>
+                        <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs" aria-hidden="true">✨</span> Next Steps</p>
                         <p className="text-xs text-emerald-800 text-left">
                           {COMPLETION_NEXT_STEPS}
                         </p>
                       </div>
                       <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 max-w-sm">
-                        <p className="text-sm font-semibold text-amber-900 mb-1">💾 Save for later</p>
+                        <p className="text-sm font-semibold text-amber-900 mb-1"><span aria-hidden="true">💾</span> Save for later</p>
                         <p className="text-xs text-amber-800">
                           {COMPLETION_SAVE_TEXT}
                         </p>
                       </div>
                       <div className="flex gap-3 mt-4">
                         <button
+                          type="button"
                           onClick={handleShare}
                           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
                         >
-                          <Share2 size={18} />
+                          <Share2 size={18} aria-hidden="true" />
                           <span>Share Link</span>
                         </button>
                         <button
+                          type="button"
                           onClick={() => window.print()}
                           className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
                         >
-                          <Printer size={18} />
+                          <Printer size={18} aria-hidden="true" />
                           <span>Print</span>
                         </button>
                       </div>
@@ -1930,11 +1939,12 @@ const ValuesTierList = () => {
                         return (
                           <div key={category} className="border rounded print-avoid-break">
                             <button
+                              type="button"
                               onClick={() => toggleCategory(category)}
                               className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-gray-50 cursor-pointer print-hide"
                             >
                               <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                                {isCollapsed ? <ChevronRight size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
                                 {category}
                                 <span className="text-sm font-normal text-gray-500">
                                   ({categoryValues.length})
@@ -2022,6 +2032,7 @@ const ValuesTierList = () => {
           </a>
           {' • '}
           <button
+            type="button"
             onClick={() => switchToMode('mobile')}
             className="hover:text-gray-700 hover:underline"
           >
@@ -2052,6 +2063,7 @@ const ValuesTierList = () => {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => {
                   setShowMobileSuggestion(false);
                   localStorage.setItem('act-values-dismissed-mobile-suggestion', 'true');
@@ -2059,11 +2071,12 @@ const ValuesTierList = () => {
                 className="text-emerald-100 hover:text-white transition-colors"
                 aria-label="Dismiss"
               >
-                ✕
+                <span aria-hidden="true">✕</span>
               </button>
             </div>
             <div className="flex gap-2 mt-3">
               <button
+                type="button"
                 onClick={() => {
                   switchToMode('mobile');
                   setShowMobileSuggestion(false);
@@ -2074,6 +2087,7 @@ const ValuesTierList = () => {
                 Switch to Mobile
               </button>
               <button
+                type="button"
                 onClick={() => {
                   setShowMobileSuggestion(false);
                   localStorage.setItem('act-values-dismissed-mobile-suggestion', 'true');

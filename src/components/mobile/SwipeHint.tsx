@@ -27,39 +27,39 @@ export const SwipeHint: React.FC<SwipeHintProps> = ({ onDismiss, isTouchDevice }
           {isTouchDevice ? (
             <>
               <div className="flex items-start gap-3">
-                <span className="text-2xl">👆</span>
+                <span className="text-2xl" aria-hidden="true">👆</span>
                 <div>
                   <p className="font-medium text-gray-800">Swipe to categorize:</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3 ml-6">
-                <span className="text-2xl">👉</span>
+                <span className="text-2xl" aria-hidden="true">👉</span>
                 <div>
                   <p className="font-medium text-gray-800">Swipe right →</p>
-                  <p className="text-sm text-gray-600">💎 Very Important</p>
+                  <p className="text-sm text-gray-600"><span aria-hidden="true">💎</span> Very Important</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3 ml-6">
-                <span className="text-2xl">👈</span>
+                <span className="text-2xl" aria-hidden="true">👈</span>
                 <div>
                   <p className="font-medium text-gray-800">← Swipe left</p>
-                  <p className="text-sm text-gray-600">⭐ Somewhat Important</p>
+                  <p className="text-sm text-gray-600"><span aria-hidden="true">⭐</span> Somewhat Important</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3 ml-6">
-                <span className="text-2xl">☝️</span>
+                <span className="text-2xl" aria-hidden="true">☝️</span>
                 <div>
                   <p className="font-medium text-gray-800">Swipe up ↑</p>
-                  <p className="text-sm text-gray-600">○ Not Important</p>
+                  <p className="text-sm text-gray-600"><span aria-hidden="true">○</span> Not Important</p>
                 </div>
               </div>
 
               <div className="border-t border-gray-200 pt-3 mt-3">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">👆</span>
+                  <span className="text-2xl" aria-hidden="true">👆</span>
                   <div>
                     <p className="font-medium text-gray-800">Or tap a value</p>
                     <p className="text-sm text-gray-600">Choose a tier from the menu</p>
@@ -70,39 +70,39 @@ export const SwipeHint: React.FC<SwipeHintProps> = ({ onDismiss, isTouchDevice }
           ) : (
             <>
               <div className="flex items-start gap-3">
-                <span className="text-2xl">⌨️</span>
+                <span className="text-2xl" aria-hidden="true">⌨️</span>
                 <div>
                   <p className="font-medium text-gray-800">Press keys to categorize:</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3 ml-6">
-                <span className="text-xl font-bold">1</span>
+                <span className="text-xl font-bold" aria-hidden="true">1</span>
                 <div>
                   <p className="font-medium text-gray-800">Press 1</p>
-                  <p className="text-sm text-gray-600">💎 Very Important</p>
+                  <p className="text-sm text-gray-600"><span aria-hidden="true">💎</span> Very Important</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3 ml-6">
-                <span className="text-xl font-bold">2</span>
+                <span className="text-xl font-bold" aria-hidden="true">2</span>
                 <div>
                   <p className="font-medium text-gray-800">Press 2</p>
-                  <p className="text-sm text-gray-600">⭐ Somewhat Important</p>
+                  <p className="text-sm text-gray-600"><span aria-hidden="true">⭐</span> Somewhat Important</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3 ml-6">
-                <span className="text-xl font-bold">3</span>
+                <span className="text-xl font-bold" aria-hidden="true">3</span>
                 <div>
                   <p className="font-medium text-gray-800">Press 3</p>
-                  <p className="text-sm text-gray-600">○ Not Important</p>
+                  <p className="text-sm text-gray-600"><span aria-hidden="true">○</span> Not Important</p>
                 </div>
               </div>
 
               <div className="border-t border-gray-200 pt-3 mt-3">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">👆</span>
+                  <span className="text-2xl" aria-hidden="true">👆</span>
                   <div>
                     <p className="font-medium text-gray-800">Or click a value</p>
                     <p className="text-sm text-gray-600">Choose a tier from the menu</p>
@@ -115,7 +115,7 @@ export const SwipeHint: React.FC<SwipeHintProps> = ({ onDismiss, isTouchDevice }
           <div className="border-t border-gray-200 pt-3 mt-3">
             <div className="flex items-start gap-3">
               <div className="p-1">
-                <Eye size={20} className="text-gray-600" />
+                <Eye size={20} className="text-gray-600" aria-hidden="true" />
               </div>
               <div>
                 <p className="font-medium text-gray-800">Review mode</p>
@@ -126,6 +126,7 @@ export const SwipeHint: React.FC<SwipeHintProps> = ({ onDismiss, isTouchDevice }
         </div>
 
         <button
+          type="button"
           onClick={onDismiss}
           className="w-full bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700 transition-colors"
         >

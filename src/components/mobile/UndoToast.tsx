@@ -28,9 +28,10 @@ export const UndoToast: React.FC<UndoToastProps> = ({ action, onUndo, onDismiss 
     <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in-up">
       <div className="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 max-w-sm">
         <span className="text-sm flex-1">
-          ✓ "{action.valueName}" is {tierLabel}
+          <span aria-hidden="true">✓</span> "{action.valueName}" is {tierLabel}
         </span>
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onUndo();
@@ -40,13 +41,15 @@ export const UndoToast: React.FC<UndoToastProps> = ({ action, onUndo, onDismiss 
           Undo
         </button>
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onDismiss();
           }}
           className="text-gray-400 hover:text-gray-200 transition-colors"
+          aria-label="Dismiss"
         >
-          ✕
+          <span aria-hidden="true">✕</span>
         </button>
       </div>
     </div>

@@ -154,11 +154,12 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
         <div className="flex items-center justify-between p-4">
           <h2 className="text-lg font-bold text-gray-800">Review All Tiers</h2>
           <button
+            type="button"
             onClick={onExit}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Exit review mode"
           >
-            <X size={24} className="text-gray-600" />
+            <X size={24} className="text-gray-600" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -181,7 +182,7 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">{tier.icon}</span>
+                    <span className="text-2xl" aria-hidden="true">{tier.icon}</span>
                     <h3 className="text-base font-bold text-gray-800">
                       {tier.label}
                     </h3>

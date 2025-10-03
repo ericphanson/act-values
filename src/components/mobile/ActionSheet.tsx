@@ -48,30 +48,33 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
 
           <div className="space-y-2">
             <button
+              type="button"
               onClick={() => onSelectTier('very-important')}
               className="w-full flex items-center gap-3 px-4 py-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl hover:bg-emerald-100 transition-colors"
             >
-              <span className="text-2xl">💎</span>
+              <span className="text-2xl" aria-hidden="true">💎</span>
               <span className="font-semibold text-gray-800 flex-1 text-left">
                 Very Important to Me
               </span>
             </button>
 
             <button
+              type="button"
               onClick={() => onSelectTier('somewhat-important')}
               className="w-full flex items-center gap-3 px-4 py-4 bg-blue-50 border-2 border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
             >
-              <span className="text-2xl">⭐</span>
+              <span className="text-2xl" aria-hidden="true">⭐</span>
               <span className="font-semibold text-gray-800 flex-1 text-left">
                 Somewhat Important to Me
               </span>
             </button>
 
             <button
+              type="button"
               onClick={() => onSelectTier('not-important')}
               className="w-full flex items-center gap-3 px-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl hover:bg-gray-100 transition-colors"
             >
-              <span className="text-2xl">○</span>
+              <span className="text-2xl" aria-hidden="true">○</span>
               <span className="font-semibold text-gray-800 flex-1 text-left">
                 Not Important to Me
               </span>
@@ -79,6 +82,7 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={onDismiss}
             className="w-full mt-4 py-3 text-gray-600 font-medium hover:text-gray-800 transition-colors"
           >

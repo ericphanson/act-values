@@ -46,7 +46,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
     return (
       <div className="p-6 max-w-md mx-auto">
         <div className="text-center mb-4">
-          <div className="text-5xl mb-3">🎉</div>
+          <div className="text-5xl mb-3" aria-hidden="true">🎉</div>
           <h3 className="text-xl font-bold text-gray-800 mb-1">
             All done!
           </h3>
@@ -54,7 +54,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
             You've categorized all your values
           </p>
           <div className="bg-emerald-50 border-2 border-emerald-200 rounded-lg p-3 text-left">
-            <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs">✨</span> Next Steps</p>
+            <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs" aria-hidden="true">✨</span> Next Steps</p>
             <p className="text-xs text-emerald-800 leading-relaxed">
               {COMPLETION_NEXT_STEPS}
             </p>
@@ -63,7 +63,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
 
         <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 mb-4">
           <p className="text-sm font-semibold text-amber-900 mb-1.5 flex items-center gap-2">
-            <span className="text-base">💾</span>
+            <span className="text-base" aria-hidden="true">💾</span>
             Save for later
           </p>
           <p className="text-xs text-amber-800 leading-relaxed">
@@ -73,26 +73,29 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           <button
+            type="button"
             onClick={onShare}
             className="bg-blue-600 text-white py-3 px-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex flex-col items-center justify-center gap-1 shadow-md"
           >
-            <Share2 size={20} />
+            <Share2 size={20} aria-hidden="true" />
             <span className="text-xs">Share Link</span>
           </button>
           <button
+            type="button"
             onClick={onPrint}
             className="bg-gray-700 text-white py-3 px-3 rounded-xl font-medium hover:bg-gray-800 transition-colors flex flex-col items-center justify-center gap-1"
           >
-            <Printer size={20} />
+            <Printer size={20} aria-hidden="true" />
             <span className="text-xs">Print</span>
           </button>
         </div>
 
         <button
+          type="button"
           onClick={onReviewMode}
           className="w-full bg-white text-gray-700 py-2.5 px-4 rounded-xl font-medium hover:bg-gray-50 transition-colors border-2 border-gray-300 flex items-center justify-center gap-2"
         >
-          <Eye size={16} />
+          <Eye size={16} aria-hidden="true" />
           <span className="text-sm">Review & Reorder</span>
         </button>
       </div>
@@ -117,7 +120,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
         <div className="-mx-4 bg-white border-y-2 border-gray-200 overflow-hidden" style={{ touchAction: 'none' }}>
           {/* Top: Swipe Up / Press 3 - Not Important - extends to screen edges */}
           <div className="bg-gray-50 py-3 text-center border-b-2 border-gray-200 relative">
-            <div className="text-2xl mb-1">○</div>
+            <div className="text-2xl mb-1" aria-hidden="true">○</div>
             <div className="text-xs font-semibold text-gray-700 text-center">
               Not
             </div>
@@ -135,7 +138,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
             {/* Left: Swipe Left / Press 2 - Somewhat - extends to screen edge */}
             <div className="bg-blue-50 py-4 px-3 flex flex-col items-center border-r-2 border-blue-200 w-24 relative">
               <div className="flex-1 flex flex-col items-center justify-center">
-                <div className="text-2xl mb-1">⭐</div>
+                <div className="text-2xl mb-1" aria-hidden="true">⭐</div>
                 <div className="text-xs font-semibold text-gray-700 text-center">
                   Somewhat
                 </div>
@@ -173,7 +176,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
             {/* Right: Swipe Right / Press 1 - Very Important - extends to screen edge */}
             <div className="bg-emerald-50 py-4 px-3 flex flex-col items-center border-l-2 border-emerald-200 w-24 relative">
               <div className="flex-1 flex flex-col items-center justify-center">
-                <div className="text-2xl mb-1">💎</div>
+                <div className="text-2xl mb-1" aria-hidden="true">💎</div>
                 <div className="text-xs font-semibold text-gray-700 text-center">
                   Very
                 </div>

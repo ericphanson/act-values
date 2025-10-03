@@ -252,42 +252,47 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
             placeholder="List name..."
           />
           <button
+            type="button"
             onClick={() => setShowListDropdown(!showListDropdown)}
             className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
             title="Switch list"
           >
-            <ChevronDown size={20} className={`text-gray-600 transition-transform ${showListDropdown ? 'rotate-180' : ''}`} />
+            <ChevronDown size={20} className={`text-gray-600 transition-transform ${showListDropdown ? 'rotate-180' : ''}`} aria-hidden="true" />
           </button>
         </div>
 
         <div className="flex gap-1 flex-shrink-0">
           <button
+            type="button"
             onClick={onShowAbout}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="About"
           >
-            <Info size={18} className="text-emerald-600" />
+            <Info size={18} className="text-emerald-600" aria-hidden="true" />
           </button>
           <button
+            type="button"
             onClick={() => setReviewMode(true)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Review all"
           >
-            <Eye size={18} className="text-gray-600" />
+            <Eye size={18} className="text-gray-600" aria-hidden="true" />
           </button>
           <button
+            type="button"
             onClick={handleShare}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Share"
           >
-            <Share2 size={18} className="text-blue-600" />
+            <Share2 size={18} className="text-blue-600" aria-hidden="true" />
           </button>
           <button
+            type="button"
             onClick={onPrint}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Print"
           >
-            <Printer size={18} className="text-gray-600" />
+            <Printer size={18} className="text-gray-600" aria-hidden="true" />
           </button>
         </div>
 
@@ -297,6 +302,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
             <div className="p-2">
               {savedLists.map((list) => (
                 <button
+                  type="button"
                   key={list.id}
                   onClick={() => {
                     if (list.id !== listId) {
@@ -311,6 +317,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                   <span className="truncate">{list.name}</span>
                   {list.id === listId && savedLists.length > 1 && (
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         if (confirm(`Delete "${list.name}"?`)) {
@@ -321,12 +328,13 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                       className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
                       title="Delete"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={14} aria-hidden="true" />
                     </button>
                   )}
                 </button>
               ))}
               <button
+                type="button"
                 onClick={() => {
                   onCreateList();
                   setShowListDropdown(false);
@@ -423,6 +431,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
           </a>
           {' • '}
           <button
+            type="button"
             onClick={onSwitchToDesktop}
             className="hover:text-gray-700 hover:underline"
           >
