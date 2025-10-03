@@ -49,9 +49,15 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
           <h3 className="text-xl font-bold text-gray-800 mb-1">
             All done!
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 mb-3">
             You've categorized all your values
           </p>
+          <div className="bg-emerald-50 border-2 border-emerald-200 rounded-lg p-3 text-left">
+            <p className="text-sm font-semibold text-emerald-900 mb-1">✨ Next Steps</p>
+            <p className="text-xs text-emerald-800 leading-relaxed">
+              Now that you've identified your values, consider: What small actions could you take this week to move toward your "Very Important" values? ACT is about <strong>committed action</strong>—living in alignment with what matters most.
+            </p>
+          </div>
         </div>
 
         <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 mb-4">
