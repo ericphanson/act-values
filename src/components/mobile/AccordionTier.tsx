@@ -40,28 +40,36 @@ export const AccordionTier: React.FC<AccordionTierProps> = ({
   });
 
   const quotaPercentage = tier.quota ? Math.min((values.length / tier.quota) * 100, 100) : 0;
+  const contentId = `accordion-content-${tier.id}`;
 
   return (
     <div className="border-2 border-gray-200 rounded-xl overflow-hidden bg-white">
       {/* Header - always visible, full-width drop target */}
       <div
         ref={setNodeRef}
-        onClick={onToggle}
-        className={`p-4 cursor-pointer transition-all ${isOver ? 'ring-4 ring-emerald-300' : ''} ${
-          isExpanded ? 'bg-gray-50' : 'hover:bg-gray-50'
-        }`}
+        className={`transition-all ${isOver ? 'ring-4 ring-emerald-300' : ''}`}
       >
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2 flex-1">
-            <span className="text-2xl">{tier.icon}</span>
-            <h3 className="text-base font-bold text-gray-800">
-              {tier.label}
-            </h3>
-            <ChevronDown
-              size={20}
-              className={`text-gray-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            />
-          </div>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={isExpanded}
+          aria-controls={contentId}
+          className={`w-full p-4 cursor-pointer transition-all text-left ${
+            isExpanded ? 'bg-gray-50' : 'hover:bg-gray-50'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 flex-1">
+              <span className="text-2xl" aria-hidden="true">{tier.icon}</span>
+              <h3 className="text-base font-bold text-gray-800">
+                {tier.label}
+              </h3>
+              <ChevronDown
+                size={20}
+                className={`text-gray-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                aria-hidden="true"
+              />
+            </div>
 
           <div className="flex items-center gap-2">
             {tier.quota && isOverQuota && (
@@ -88,16 +96,17 @@ export const AccordionTier: React.FC<AccordionTierProps> = ({
           </div>
         )}
 
-        {!tier.quota && !isExpanded && values.length > 0 && (
-          <div className="text-xs text-gray-500 mt-1">
-            Tap to expand
-          </div>
-        )}
+          {!tier.quota && !isExpanded && values.length > 0 && (
+            <div className="text-xs text-gray-500 mt-1">
+              Tap to expand
+            </div>
+          )}
+        </button>
       </div>
 
       {/* Content - expanded state */}
       {isExpanded && (
-        <div className="p-4 pt-0 space-y-2 bg-gray-50">
+        <div id={contentId} className="p-4 pt-0 space-y-2 bg-gray-50">
           {values.length === 0 ? (
             <div className="text-center py-8 text-gray-500 italic text-sm">
               No values yet

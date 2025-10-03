@@ -26,7 +26,12 @@ export const UndoToast: React.FC<UndoToastProps> = ({ action, onUndo, onDismiss 
 
   return (
     <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in-up">
-      <div className="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 max-w-sm">
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 max-w-sm"
+      >
         <span className="text-sm flex-1">
           <span aria-hidden="true">✓</span> "{action.valueName}" is {tierLabel}
         </span>

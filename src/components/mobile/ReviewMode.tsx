@@ -93,8 +93,11 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
     })
   );
 
-  // Handle escape key to exit review mode
+  // Handle escape key to exit review mode and focus restoration
   React.useEffect(() => {
+    // Store previously focused element
+    const previouslyFocusedElement = document.activeElement as HTMLElement;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onExit();
@@ -102,7 +105,13 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+
+      // Restore focus to previously focused element
+      previouslyFocusedElement?.focus();
+    };
   }, [onExit]);
 
   const handleDragStart = (event: any) => {
@@ -148,11 +157,11 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-    <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
+    <div className="fixed inset-0 bg-white z-50 overflow-y-auto" role="region" aria-labelledby="review-mode-title">
       {/* Sticky header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between p-4">
-          <h2 className="text-lg font-bold text-gray-800">Review All Tiers</h2>
+          <h2 id="review-mode-title" className="text-lg font-bold text-gray-800">Review All Tiers</h2>
           <button
             type="button"
             onClick={onExit}
