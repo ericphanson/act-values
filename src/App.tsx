@@ -860,7 +860,7 @@ const ValuesTierList = () => {
 
       const hash = window.location.hash;
 
-      // Try URL first
+      // Try URL first (for shared links)
       if (hash && hash.length > 1) {
         const dataset = preloadedDatasets['act-shorter']; // Always use act-shorter
         const canonicalOrder = getCanonicalCategoryOrder(dataset);
@@ -893,6 +893,11 @@ const ValuesTierList = () => {
           setCurrentListId(persistedFromHash.listId);
           lastKnownModified.current = Date.now();
           refreshSavedLists();
+
+          // Clear the URL hash after loading to prevent accidental sharing
+          const cleanUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+          window.history.replaceState(null, '', cleanUrl);
+
           return;
         } else {
           // Failed to decode URL state
@@ -917,9 +922,6 @@ const ValuesTierList = () => {
             const persisted = decodeUrlToState(result.list.fragment, dataset.data.length, canonicalOrder);
             if (persisted) {
               currentFragmentRef.current = result.list.fragment;
-              // Update URL with the loaded fragment
-              const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${result.list.fragment}`;
-              window.history.replaceState(null, '', nextUrl);
               hydrateState(persisted as PersistedState);
               lastKnownModified.current = result.list.lastModified;
               refreshSavedLists();
@@ -943,19 +945,13 @@ const ValuesTierList = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run once on mount
 
-  // Save state when it changes (both to storage and URL)
+  // Save state when it changes (to localStorage only, not URL)
   useEffect(() => {
     if (values.length > 0 && listId) {
       const state = serializeState();
       const dataset = preloadedDatasets[selectedDataset];
       const canonicalCategoryOrder = getCanonicalCategoryOrder(dataset);
       const newHash = encodeStateToUrl(state, dataset.data.length, canonicalCategoryOrder);
-
-      // Update URL
-      if (currentFragmentRef.current !== newHash && window.location.hash !== newHash) {
-        const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${newHash}`;
-        window.history.replaceState(null, '', nextUrl);
-      }
 
       // Save to localStorage
       if (currentFragmentRef.current !== newHash) {
@@ -1475,8 +1471,6 @@ const ValuesTierList = () => {
                   const canonicalOrder = getCanonicalCategoryOrder(dataset);
                   const persisted = decodeUrlToState(result.list.fragment, dataset.data.length, canonicalOrder);
                   if (persisted) {
-                    const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${result.list.fragment}`;
-                    window.history.replaceState(null, '', nextUrl);
                     currentFragmentRef.current = result.list.fragment;
                     hydrateState(persisted as PersistedState);
                     setCurrentListId(switchToListId);
@@ -1602,9 +1596,6 @@ const ValuesTierList = () => {
                                   const canonicalOrder = getCanonicalCategoryOrder(dataset);
                                   const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
                                   if (persisted) {
-                                    // Update URL with the loaded fragment
-                                    const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${list.fragment}`;
-                                    window.history.replaceState(null, '', nextUrl);
                                     currentFragmentRef.current = list.fragment;
                                     hydrateState(persisted as PersistedState);
                                     setCurrentListId(list.id);
@@ -1646,9 +1637,6 @@ const ValuesTierList = () => {
                                         const canonicalOrder = getCanonicalCategoryOrder(dataset);
                                         const persisted = decodeUrlToState(nextList.fragment, dataset.data.length, canonicalOrder);
                                         if (persisted) {
-                                          // Update URL with the loaded fragment
-                                          const nextUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${nextList.fragment}`;
-                                          window.history.replaceState(null, '', nextUrl);
                                           currentFragmentRef.current = nextList.fragment;
                                           hydrateState(persisted as PersistedState);
                                           setCurrentListId(nextList.id);
