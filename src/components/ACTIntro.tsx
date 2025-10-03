@@ -155,7 +155,7 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
             <ul className="list-disc list-inside space-y-2 text-gray-700">
               <li>Focus on what matters to <em>you</em>, not what others expect or what you think you "should" value</li>
               <li>Do a quick first pass, then audit for "shoulds"</li>
-              <li>Limit "Very Important" to truly essential values (quality over quantity)</li>
+              <li>Limit "Very Important" to truly essential values, so you can use your top values to give direction.</li>
               <li>Your values may change over time—revisit this exercise as you grow</li>
             </ul>
           </section>
