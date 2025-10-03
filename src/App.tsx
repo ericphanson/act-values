@@ -2002,6 +2002,10 @@ const ValuesTierList = () => {
           >
             Mobile mode
           </button>
+          {' • '}
+          <span className="text-gray-400" title="Git commit hash">
+            {__GIT_HASH__}
+          </span>
         </div>
         </div>
 
