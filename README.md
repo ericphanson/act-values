@@ -21,8 +21,7 @@ React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
     - **Partially done**: storage.ts cleaned up. urlState.ts and App.tsx have extensive debug logging that needs review.
 - [ ] add desktop version of swipehint? with instructions
     - **Skipped**: Would require new component, too complex for this session
-- [ ] order of items within tiers is somewhat non-unintuitive. I think it is row-based instead of column-based. Switch to column based, i.e. going down a column counts up, instead of down a row
-    - **Skipped**: Requires refactoring tier value ordering logic, too complex
+- [x] order of items within tiers is somewhat non-unintuitive. I think it is row-based instead of column-based. Switch to column based, i.e. going down a column counts up, instead of down a row
     - [ ] should we add a tiny number in the corner of each value when its in a tier to show its place within it? I think not now
 - [ ] rename "not important"? ("low priority"?). not sure- think it's valuable to let users express what they don't care about, but don't want to cause self-judgement
     - **Needs decision**: Ambiguous, requires user input on naming philosophy
