@@ -450,7 +450,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
       )}
 
       {/* Swipe hint */}
-      {showHint && <SwipeHint onDismiss={handleDismissHint} />}
+      {showHint && <SwipeHint onDismiss={handleDismissHint} isTouchDevice={isTouchDevice} />}
 
       {/* Share toast */}
       {shareToast && (
