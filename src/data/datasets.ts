@@ -1,105 +1,36 @@
 import { Dataset } from "../types";
 
 export const preloadedDatasets: Record<string, Dataset> = {
-    "act-50": {
+  "act-50": {
     "name": "Small",
     "description": "Core personal virtues",
     "version": 1,
-    data: [
+    "data": [
       { "name": "Compassion", "description": "Actively caring about others’ suffering and taking steps to relieve it.", "category": "Compassion & Care" },
       { "name": "Empathy", "description": "Understanding and sharing another person’s feelings and perspectives.", "category": "Compassion & Care" },
       { "name": "Kindness", "description": "Choosing to be helpful, gentle, and considerate in everyday interactions.", "category": "Compassion & Care" },
-      { "name": "Generosity", "description": "Freely giving time, resources, or attention to benefit others.", "category": "Compassion & Care" },
       { "name": "Forgiveness", "description": "Letting go of resentment and the desire for retaliation.", "category": "Compassion & Care" },
       { "name": "Nonviolence", "description": "Refusing to use harm to resolve conflicts.", "category": "Compassion & Care" },
       { "name": "Service (seva)", "description": "Selfless work done for the benefit of others.", "category": "Compassion & Care" },
-
-      { "name": "Honesty", "description": "Telling the truth and avoiding deception in word and deed.", "category": "Integrity & Character" },
-      { "name": "Integrity", "description": "Aligning actions with moral principles consistently, even when hard.", "category": "Integrity & Character" },
-      { "name": "Responsibility", "description": "Owning the consequences of one’s choices and duties.", "category": "Integrity & Character" },
-      { "name": "Courage", "description": "Acting rightly despite fear, risk, or social pressure.", "category": "Integrity & Character" },
-      { "name": "Loyalty", "description": "Standing by people, causes, or communities with fidelity.", "category": "Integrity & Character" },
-      { "name": "Respect", "description": "Treating people and norms with consideration and regard.", "category": "Integrity & Character" },
-
-      { "name": "Wisdom", "description": "Judging well about what matters and how to live.", "category": "Wisdom, Truth & Learning" },
-      { "name": "Curiosity", "description": "Seeking to understand, explore, and learn continuously.", "category": "Wisdom, Truth & Learning" },
-      { "name": "Open-mindedness", "description": "Willingness to consider new evidence, ideas, and perspectives.", "category": "Wisdom, Truth & Learning" },
-      { "name": "Critical thinking", "description": "Applying reason and evidence to evaluate claims and decisions.", "category": "Wisdom, Truth & Learning" },
-      { "name": "Dialogue", "description": "Engaging others in good-faith exchange to understand and improve.", "category": "Wisdom, Truth & Learning" },
-
-      { "name": "Mastery", "description": "Pursuing excellence and deep competence in a craft or field.", "category": "Excellence, Work & Creativity" },
-      { "name": "Diligence", "description": "Working carefully, consistently, and thoroughly.", "category": "Excellence, Work & Creativity" },
-      { "name": "Initiative", "description": "Taking action without being prompted to improve situations.", "category": "Excellence, Work & Creativity" },
-      { "name": "Resourcefulness", "description": "Finding clever, practical solutions with available means.", "category": "Excellence, Work & Creativity" },
-      { "name": "Creativity", "description": "Producing original, useful ideas or expressions.", "category": "Excellence, Work & Creativity" },
-      { "name": "Mentorship", "description": "Guiding others’ growth with wisdom and care.", "category": "Excellence, Work & Creativity" },
-
-      { "name": "Patience", "description": "Tolerating delay or difficulty without frustration or complaint.", "category": "Temperance, Balance & Well-being" },
-      { "name": "Self-discipline", "description": "Regulating impulses to pursue long-term, meaningful aims.", "category": "Temperance, Balance & Well-being" },
-      { "name": "Balance", "description": "Integrating competing priorities to sustain health and purpose.", "category": "Temperance, Balance & Well-being" },
-      { "name": "Health", "description": "Prioritizing physical, mental, and social well-being.", "category": "Temperance, Balance & Well-being" },
-      { "name": "Joy", "description": "Embracing delight, play, and positive affect in life.", "category": "Temperance, Balance & Well-being" },
-      { "name": "Humor", "description": "Lightening burdens with wit and shared laughter.", "category": "Temperance, Balance & Well-being" },
-
-      { "name": "Justice", "description": "Giving each their due and rectifying wrongs.", "category": "Justice, Rights & Fairness" },
-      { "name": "Fairness", "description": "Applying impartial and consistent standards to all.", "category": "Justice, Rights & Fairness" },
-      { "name": "Dignity", "description": "Respecting the inherent worth of every person.", "category": "Justice, Rights & Fairness" },
-
-      { "name": "Autonomy", "description": "Making self-directed choices aligned with one’s values.", "category": "Autonomy & Freedom" },
-      { "name": "Privacy", "description": "Protecting personal information and boundaries from intrusion.", "category": "Autonomy & Freedom" },
-      { "name": "Consent", "description": "Ensuring voluntary, informed agreement in interactions and relationships.", "category": "Autonomy & Freedom" },
-      { "name": "Free expression", "description": "Protecting the right to speak, create, and dissent.", "category": "Autonomy & Freedom" },
-
-      { "name": "Solidarity", "description": "Standing with others, especially the vulnerable, in mutual support.", "category": "Community & Belonging" },
-      { "name": "Community", "description": "Building shared identity, mutual aid, and common goods.", "category": "Community & Belonging" },
-      { "name": "Inclusivity", "description": "Proactively welcoming and enabling diverse participation.", "category": "Community & Belonging" },
-      { "name": "Friendship", "description": "Investing in mutual care, trust, and shared growth.", "category": "Community & Belonging" },
-
-      { "name": "Sustainability", "description": "Meeting needs today without harming future generations.", "category": "Environment & Stewardship" },
-      { "name": "Environmental stewardship", "description": "Caring for ecosystems, species, and natural resources.", "category": "Environment & Stewardship" },
-      { "name": "Animal welfare", "description": "Valuing humane treatment and protection of animals.", "category": "Environment & Stewardship" },
-
-      { "name": "Spirituality", "description": "Seeking meaning, connection, and transcendence beyond the self.", "category": "Tradition, Spirituality & Reverence" },
-      { "name": "Awe", "description": "Allowing vastness to reshape perception and values.", "category": "Tradition, Spirituality & Reverence" },
-      { "name": "Harmony (he)", "description": "Seeking balanced, peaceful relations among people and nature.", "category": "Tradition, Spirituality & Reverence" },
-      { "name": "Filial piety (xiao)", "description": "Honoring, supporting, and respecting parents and ancestors.", "category": "Tradition, Spirituality & Reverence" },
-      { "name": "Duty/rightness (dharma)", "description": "Fulfilling moral order and one’s rightful responsibilities.", "category": "Tradition, Spirituality & Reverence" },
-      { "name": "Cultural preservation", "description": "Respecting and sustaining languages, arts, and traditions.", "category": "Tradition, Spirituality & Reverence" }
-    ]
-  },
-    "act-75": {
-    "name": "Medium",
-    "description": "Adds civic, cultural & planetary values",
-    "version": 1,
-    data: [
-      { "name": "Compassion", "description": "Actively caring about others’ suffering and taking steps to relieve it.", "category": "Compassion & Care" },
-      { "name": "Empathy", "description": "Understanding and sharing another person’s feelings and perspectives.", "category": "Compassion & Care" },
-      { "name": "Kindness", "description": "Choosing to be helpful, gentle, and considerate in everyday interactions.", "category": "Compassion & Care" },
       { "name": "Generosity", "description": "Freely giving time, resources, or attention to benefit others.", "category": "Compassion & Care" },
-      { "name": "Forgiveness", "description": "Letting go of resentment and the desire for retaliation.", "category": "Compassion & Care" },
-      { "name": "Nonviolence", "description": "Refusing to use harm to resolve conflicts.", "category": "Compassion & Care" },
-      { "name": "Service (seva)", "description": "Selfless work done for the benefit of others.", "category": "Compassion & Care" },
-      { "name": "Hospitality (omotenashi)", "description": "Anticipating guests’ needs with gracious, wholehearted care.", "category": "Compassion & Care" },
 
       { "name": "Honesty", "description": "Telling the truth and avoiding deception in word and deed.", "category": "Integrity & Character" },
       { "name": "Integrity", "description": "Aligning actions with moral principles consistently, even when hard.", "category": "Integrity & Character" },
       { "name": "Trustworthiness", "description": "Being reliable so others can depend on your word and actions.", "category": "Integrity & Character" },
       { "name": "Responsibility", "description": "Owning the consequences of one’s choices and duties.", "category": "Integrity & Character" },
       { "name": "Courage", "description": "Acting rightly despite fear, risk, or social pressure.", "category": "Integrity & Character" },
-      { "name": "Loyalty", "description": "Standing by people, causes, or communities with fidelity.", "category": "Integrity & Character" },
       { "name": "Respect", "description": "Treating people and norms with consideration and regard.", "category": "Integrity & Character" },
+      { "name": "Sisu", "description": "Sustained, stoic determination in the face of adversity.", "category": "Integrity & Character" },
 
       { "name": "Wisdom", "description": "Judging well about what matters and how to live.", "category": "Wisdom, Truth & Learning" },
       { "name": "Curiosity", "description": "Seeking to understand, explore, and learn continuously.", "category": "Wisdom, Truth & Learning" },
       { "name": "Open-mindedness", "description": "Willingness to consider new evidence, ideas, and perspectives.", "category": "Wisdom, Truth & Learning" },
       { "name": "Critical thinking", "description": "Applying reason and evidence to evaluate claims and decisions.", "category": "Wisdom, Truth & Learning" },
-      { "name": "Education", "description": "Valuing broad learning and cultivation of the mind.", "category": "Wisdom, Truth & Learning" },
+      { "name": "Rationality", "description": "Using logic and proportionate evidence to guide beliefs and actions.", "category": "Wisdom, Truth & Learning" },
       { "name": "Dialogue", "description": "Engaging others in good-faith exchange to understand and improve.", "category": "Wisdom, Truth & Learning" },
 
       { "name": "Mastery", "description": "Pursuing excellence and deep competence in a craft or field.", "category": "Excellence, Work & Creativity" },
       { "name": "Diligence", "description": "Working carefully, consistently, and thoroughly.", "category": "Excellence, Work & Creativity" },
-      { "name": "Craftsmanship", "description": "Taking pride in quality, detail, and durability of work.", "category": "Excellence, Work & Creativity" },
-      { "name": "Professionalism", "description": "Upholding standards, ethics, and competence in one’s role.", "category": "Excellence, Work & Creativity" },
       { "name": "Initiative", "description": "Taking action without being prompted to improve situations.", "category": "Excellence, Work & Creativity" },
       { "name": "Resourcefulness", "description": "Finding clever, practical solutions with available means.", "category": "Excellence, Work & Creativity" },
       { "name": "Creativity", "description": "Producing original, useful ideas or expressions.", "category": "Excellence, Work & Creativity" },
@@ -112,22 +43,89 @@ export const preloadedDatasets: Record<string, Dataset> = {
       { "name": "Health", "description": "Prioritizing physical, mental, and social well-being.", "category": "Temperance, Balance & Well-being" },
       { "name": "Serenity", "description": "Cultivating calm, equanimity, and inner peace.", "category": "Temperance, Balance & Well-being" },
       { "name": "Joy", "description": "Embracing delight, play, and positive affect in life.", "category": "Temperance, Balance & Well-being" },
-      { "name": "Humor", "description": "Lightening burdens with wit and shared laughter.", "category": "Temperance, Balance & Well-being" },
       { "name": "Ikigai", "description": "Finding a personally meaningful reason to get up each day.", "category": "Temperance, Balance & Well-being" },
+      { "name": "Humor", "description": "Lightening burdens with wit and shared laughter.", "category": "Temperance, Balance & Well-being" },
+
+      { "name": "Autonomy", "description": "Making self-directed choices aligned with one’s values.", "category": "Autonomy & Freedom" },
+      { "name": "Privacy", "description": "Protecting personal information and boundaries from intrusion.", "category": "Autonomy & Freedom" },
+      { "name": "Consent", "description": "Ensuring voluntary, informed agreement in interactions and relationships.", "category": "Autonomy & Freedom" },
+      { "name": "Bodily integrity", "description": "Safeguarding individuals’ control over their own bodies.", "category": "Autonomy & Freedom" },
+
+      { "name": "Cooperation", "description": "Working together toward shared goals harmoniously.", "category": "Community & Belonging" },
+      { "name": "Inclusivity", "description": "Proactively welcoming and enabling diverse participation.", "category": "Community & Belonging" },
+      { "name": "Ubuntu", "description": "Affirming “I am because we are,” emphasizing interdependence and dignity.", "category": "Community & Belonging" },
+      { "name": "Friendship", "description": "Investing in mutual care, trust, and shared growth.", "category": "Community & Belonging" },
+
+      { "name": "Reverence", "description": "Holding sacred things with profound respect and awe.", "category": "Tradition, Spirituality & Reverence" },
+      { "name": "Spirituality", "description": "Seeking meaning, connection, and transcendence beyond the self.", "category": "Tradition, Spirituality & Reverence" },
+      { "name": "Awe", "description": "Allowing vastness to reshape perception and values.", "category": "Tradition, Spirituality & Reverence" },
+      { "name": "Ritual propriety (li)", "description": "Upholding respectful conduct and social harmony through norms.", "category": "Tradition, Spirituality & Reverence" },
+      { "name": "Harmony (he)", "description": "Seeking balanced, peaceful relations among people and nature.", "category": "Tradition, Spirituality & Reverence" },
+      { "name": "Respect for elders", "description": "Valuing the wisdom and status of older community members.", "category": "Tradition, Spirituality & Reverence" },
+      { "name": "Duty/rightness (dharma)", "description": "Fulfilling moral order and one’s rightful responsibilities.", "category": "Tradition, Spirituality & Reverence" }
+    ]
+  },
+  "act-75": {
+    "name": "Medium",
+    "description": "Adds broader civic, cultural & planetary values",
+    "version": 1,
+    "data": [
+      { "name": "Compassion", "description": "Actively caring about others’ suffering and taking steps to relieve it.", "category": "Compassion & Care" },
+      { "name": "Empathy", "description": "Understanding and sharing another person’s feelings and perspectives.", "category": "Compassion & Care" },
+      { "name": "Kindness", "description": "Choosing to be helpful, gentle, and considerate in everyday interactions.", "category": "Compassion & Care" },
+      { "name": "Forgiveness", "description": "Letting go of resentment and the desire for retaliation.", "category": "Compassion & Care" },
+      { "name": "Nonviolence", "description": "Refusing to use harm to resolve conflicts.", "category": "Compassion & Care" },
+      { "name": "Service (seva)", "description": "Selfless work done for the benefit of others.", "category": "Compassion & Care" },
+      { "name": "Care ethics", "description": "Prioritizing relationships, dependence, and responsive care.", "category": "Compassion & Care" },
+      { "name": "Generosity", "description": "Freely giving time, resources, or attention to benefit others.", "category": "Compassion & Care" },
+
+      { "name": "Honesty", "description": "Telling the truth and avoiding deception in word and deed.", "category": "Integrity & Character" },
+      { "name": "Integrity", "description": "Aligning actions with moral principles consistently, even when hard.", "category": "Integrity & Character" },
+      { "name": "Trustworthiness", "description": "Being reliable so others can depend on your word and actions.", "category": "Integrity & Character" },
+      { "name": "Responsibility", "description": "Owning the consequences of one’s choices and duties.", "category": "Integrity & Character" },
+      { "name": "Courage", "description": "Acting rightly despite fear, risk, or social pressure.", "category": "Integrity & Character" },
+      { "name": "Respect", "description": "Treating people and norms with consideration and regard.", "category": "Integrity & Character" },
+      { "name": "Sisu", "description": "Sustained, stoic determination in the face of adversity.", "category": "Integrity & Character" },
+
+      { "name": "Wisdom", "description": "Judging well about what matters and how to live.", "category": "Wisdom, Truth & Learning" },
+      { "name": "Curiosity", "description": "Seeking to understand, explore, and learn continuously.", "category": "Wisdom, Truth & Learning" },
+      { "name": "Open-mindedness", "description": "Willingness to consider new evidence, ideas, and perspectives.", "category": "Wisdom, Truth & Learning" },
+      { "name": "Critical thinking", "description": "Applying reason and evidence to evaluate claims and decisions.", "category": "Wisdom, Truth & Learning" },
+      { "name": "Rationality", "description": "Using logic and proportionate evidence to guide beliefs and actions.", "category": "Wisdom, Truth & Learning" },
+      { "name": "Scientific integrity", "description": "Practicing honesty, rigor, and reproducibility in research.", "category": "Wisdom, Truth & Learning" },
+      { "name": "Dialogue", "description": "Engaging others in good-faith exchange to understand and improve.", "category": "Wisdom, Truth & Learning" },
+      { "name": "Education", "description": "Valuing broad learning and cultivation of the mind.", "category": "Wisdom, Truth & Learning" },
+
+      { "name": "Mastery", "description": "Pursuing excellence and deep competence in a craft or field.", "category": "Excellence, Work & Creativity" },
+      { "name": "Diligence", "description": "Working carefully, consistently, and thoroughly.", "category": "Excellence, Work & Creativity" },
+      { "name": "Initiative", "description": "Taking action without being prompted to improve situations.", "category": "Excellence, Work & Creativity" },
+      { "name": "Resourcefulness", "description": "Finding clever, practical solutions with available means.", "category": "Excellence, Work & Creativity" },
+      { "name": "Creativity", "description": "Producing original, useful ideas or expressions.", "category": "Excellence, Work & Creativity" },
+      { "name": "Innovation", "description": "Implementing new ideas to create practical value.", "category": "Excellence, Work & Creativity" },
+      { "name": "Mentorship", "description": "Guiding others’ growth with wisdom and care.", "category": "Excellence, Work & Creativity" },
+
+      { "name": "Patience", "description": "Tolerating delay or difficulty without frustration or complaint.", "category": "Temperance, Balance & Well-being" },
+      { "name": "Self-discipline", "description": "Regulating impulses to pursue long-term, meaningful aims.", "category": "Temperance, Balance & Well-being" },
+      { "name": "Balance", "description": "Integrating competing priorities to sustain health and purpose.", "category": "Temperance, Balance & Well-being" },
+      { "name": "Simplicity", "description": "Favoring clarity and essentials over excess and clutter.", "category": "Temperance, Balance & Well-being" },
+      { "name": "Health", "description": "Prioritizing physical, mental, and social well-being.", "category": "Temperance, Balance & Well-being" },
+      { "name": "Serenity", "description": "Cultivating calm, equanimity, and inner peace.", "category": "Temperance, Balance & Well-being" },
+      { "name": "Joy", "description": "Embracing delight, play, and positive affect in life.", "category": "Temperance, Balance & Well-being" },
+      { "name": "Ikigai", "description": "Finding a personally meaningful reason to get up each day.", "category": "Temperance, Balance & Well-being" },
+      { "name": "Humor", "description": "Lightening burdens with wit and shared laughter.", "category": "Temperance, Balance & Well-being" },
 
       { "name": "Justice", "description": "Giving each their due and rectifying wrongs.", "category": "Justice, Rights & Fairness" },
       { "name": "Fairness", "description": "Applying impartial and consistent standards to all.", "category": "Justice, Rights & Fairness" },
-      { "name": "Equity", "description": "Striving for just outcomes that address unequal starting points.", "category": "Justice, Rights & Fairness" },
-      { "name": "Equality", "description": "Affirming equal moral worth and equal basic rights.", "category": "Justice, Rights & Fairness" },
       { "name": "Rule of law", "description": "Governing by known, impartial, and enforced rules.", "category": "Justice, Rights & Fairness" },
       { "name": "Democracy", "description": "Valuing self-government, representation, and public deliberation.", "category": "Justice, Rights & Fairness" },
       { "name": "Transparency", "description": "Making decisions and information open to scrutiny.", "category": "Justice, Rights & Fairness" },
       { "name": "Restorative justice", "description": "Repairing harms by involving all affected parties.", "category": "Justice, Rights & Fairness" },
-      { "name": "Accessibility", "description": "Designing environments so all people can participate fully.", "category": "Justice, Rights & Fairness" },
       { "name": "Dignity", "description": "Respecting the inherent worth of every person.", "category": "Justice, Rights & Fairness" },
+      { "name": "Accessibility", "description": "Designing environments so all people can participate fully.", "category": "Justice, Rights & Fairness" },
 
       { "name": "Autonomy", "description": "Making self-directed choices aligned with one’s values.", "category": "Autonomy & Freedom" },
       { "name": "Privacy", "description": "Protecting personal information and boundaries from intrusion.", "category": "Autonomy & Freedom" },
+      { "name": "Digital privacy", "description": "Protecting autonomy and rights in the information age.", "category": "Autonomy & Freedom" },
       { "name": "Consent", "description": "Ensuring voluntary, informed agreement in interactions and relationships.", "category": "Autonomy & Freedom" },
       { "name": "Bodily integrity", "description": "Safeguarding individuals’ control over their own bodies.", "category": "Autonomy & Freedom" },
       { "name": "Free expression", "description": "Protecting the right to speak, create, and dissent.", "category": "Autonomy & Freedom" },
@@ -139,7 +137,6 @@ export const preloadedDatasets: Record<string, Dataset> = {
       { "name": "Pluralism", "description": "Supporting peaceful coexistence of multiple values and traditions.", "category": "Community & Belonging" },
       { "name": "Ubuntu", "description": "Affirming “I am because we are,” emphasizing interdependence and dignity.", "category": "Community & Belonging" },
       { "name": "Friendship", "description": "Investing in mutual care, trust, and shared growth.", "category": "Community & Belonging" },
-      { "name": "Cosmopolitanism", "description": "Recognizing a shared moral community across borders.", "category": "Community & Belonging" },
 
       { "name": "Sustainability", "description": "Meeting needs today without harming future generations.", "category": "Environment & Stewardship" },
       { "name": "Environmental stewardship", "description": "Caring for ecosystems, species, and natural resources.", "category": "Environment & Stewardship" },
@@ -147,13 +144,14 @@ export const preloadedDatasets: Record<string, Dataset> = {
       { "name": "Global responsibility", "description": "Considering worldwide impacts of local choices.", "category": "Environment & Stewardship" },
       { "name": "Intergenerational equity", "description": "Ensuring future generations inherit viable options.", "category": "Environment & Stewardship" },
       { "name": "Environmental justice", "description": "Ensuring fair distribution of environmental benefits and burdens.", "category": "Environment & Stewardship" },
-      { "name": "Buen vivir (sumak kawsay)", "description": "Pursuing collective well-being in harmony with nature.", "category": "Environment & Stewardship" },
+      { "name": "Kaitiakitanga", "description": "Exercising guardianship of land, waters, and living beings.", "category": "Environment & Stewardship" },
 
       { "name": "Reverence", "description": "Holding sacred things with profound respect and awe.", "category": "Tradition, Spirituality & Reverence" },
       { "name": "Spirituality", "description": "Seeking meaning, connection, and transcendence beyond the self.", "category": "Tradition, Spirituality & Reverence" },
       { "name": "Awe", "description": "Allowing vastness to reshape perception and values.", "category": "Tradition, Spirituality & Reverence" },
+      { "name": "Ritual propriety (li)", "description": "Upholding respectful conduct and social harmony through norms.", "category": "Tradition, Spirituality & Reverence" },
       { "name": "Harmony (he)", "description": "Seeking balanced, peaceful relations among people and nature.", "category": "Tradition, Spirituality & Reverence" },
-      { "name": "Filial piety (xiao)", "description": "Honoring, supporting, and respecting parents and ancestors.", "category": "Tradition, Spirituality & Reverence" },
+      { "name": "Respect for elders", "description": "Valuing the wisdom and status of older community members.", "category": "Tradition, Spirituality & Reverence" },
       { "name": "Duty/rightness (dharma)", "description": "Fulfilling moral order and one’s rightful responsibilities.", "category": "Tradition, Spirituality & Reverence" },
       { "name": "Cultural preservation", "description": "Respecting and sustaining languages, arts, and traditions.", "category": "Tradition, Spirituality & Reverence" }
     ]
@@ -161,9 +159,9 @@ export const preloadedDatasets: Record<string, Dataset> = {
   // name here is historical (used to be even longer list). Do not change the keys, they are persisted in saved URLs and PDFs and must continue to work
   "act-shorter": {
     "name": "Large",
-    "description": "Adds detailed subtypes & cultural variants",
+    "description": "Adds finer distinctions and nuance",
     "version": 1,
-    data: [
+    "data": [
       { "name": "Compassion", "description": "Actively caring about others’ suffering and taking steps to relieve it.", "category": "Compassion & Care" },
       { "name": "Empathy", "description": "Understanding and sharing another person’s feelings and perspectives.", "category": "Compassion & Care" },
       { "name": "Kindness", "description": "Choosing to be helpful, gentle, and considerate in everyday interactions.", "category": "Compassion & Care" },
