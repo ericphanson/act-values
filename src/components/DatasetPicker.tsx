@@ -89,7 +89,7 @@ export const DatasetPicker: React.FC<DatasetPickerProps> = ({ onSelect, onCancel
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
       <div
@@ -99,26 +99,26 @@ export const DatasetPicker: React.FC<DatasetPickerProps> = ({ onSelect, onCancel
         aria-labelledby="dataset-dialog-title"
         aria-describedby="dataset-dialog-description"
         tabIndex={-1}
-        className="bg-white rounded-xl max-w-md w-full shadow-2xl"
+        className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between rounded-t-xl">
           <div className="flex items-center gap-3">
-            <List size={24} className="text-emerald-600 flex-shrink-0" aria-hidden="true" />
-            <h2 id="dataset-dialog-title" className="text-xl font-bold text-gray-900">Choose Your Values List</h2>
+            <List size={24} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" aria-hidden="true" />
+            <h2 id="dataset-dialog-title" className="text-xl font-bold text-gray-900 dark:text-gray-100">Choose Your Values List</h2>
           </div>
           <button
             type="button"
             onClick={onCancel}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             aria-label="Close"
           >
-            <X size={20} aria-hidden="true" />
+            <X size={20} className="dark:text-gray-300" aria-hidden="true" />
           </button>
         </div>
 
         <div className="px-6 py-6">
-          <p id="dataset-dialog-description" className="text-sm text-gray-600 mb-4">
+          <p id="dataset-dialog-description" className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Select which set of values you'd like to work with.
           </p>
 
@@ -128,8 +128,8 @@ export const DatasetPicker: React.FC<DatasetPickerProps> = ({ onSelect, onCancel
                 key={key}
                 className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                   selectedDataset === key
-                    ? 'border-emerald-500 bg-emerald-50'
-                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                    ? 'border-emerald-500 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-900/30'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700'
                 }`}
               >
                 <input
@@ -138,11 +138,11 @@ export const DatasetPicker: React.FC<DatasetPickerProps> = ({ onSelect, onCancel
                   value={key}
                   checked={selectedDataset === key}
                   onChange={(e) => setSelectedDataset(e.target.value)}
-                  className="mt-1 w-4 h-4 text-emerald-600 focus:ring-emerald-500 focus:ring-2 focus:ring-offset-2"
+                  className="mt-1 w-4 h-4 text-emerald-600 focus:ring-emerald-500 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-gray-900">{dataset.name}</div>
-                  <div className="text-sm text-gray-600 mt-0.5">
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">{dataset.name}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
                     {dataset.data.length} values
                     {dataset.description && ` - ${dataset.description}`}
                   </div>
@@ -152,18 +152,18 @@ export const DatasetPicker: React.FC<DatasetPickerProps> = ({ onSelect, onCancel
           </div>
         </div>
 
-        <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex gap-3 rounded-b-xl">
+        <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex gap-3 rounded-b-xl">
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 md:flex-none md:px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            className="flex-1 md:flex-none md:px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleCreate}
-            className="flex-1 md:flex-none md:px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+            className="flex-1 md:flex-none md:px-6 py-2.5 bg-emerald-600 dark:bg-emerald-700 text-white rounded-lg font-semibold hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors"
           >
             Create List →
           </button>

@@ -62,11 +62,11 @@ const SortableReviewValue: React.FC<SortableReviewValueProps> = ({ value, onTap 
       {...attributes}
       {...listeners}
       onClick={onTap}
-      className="px-4 py-3 bg-white border-2 border-gray-300 rounded-lg cursor-pointer active:cursor-grabbing hover:border-emerald-400 transition-all"
+      className="px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer active:cursor-grabbing hover:border-emerald-400 dark:hover:border-emerald-600 transition-all"
     >
-      <div className="font-medium text-gray-800">{value.value}</div>
+      <div className="font-medium text-gray-800 dark:text-gray-200">{value.value}</div>
       {value.description && (
-        <div className="text-sm text-gray-600 italic mt-1 break-words">
+        <div className="text-sm text-gray-600 dark:text-gray-400 italic mt-1 break-words">
           {value.description}
         </div>
       )}
@@ -157,18 +157,18 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-    <div className="fixed inset-0 bg-white z-50 overflow-y-auto" role="region" aria-labelledby="review-mode-title">
+    <div className="fixed inset-0 bg-white dark:bg-gray-900 z-50 overflow-y-auto" role="region" aria-labelledby="review-mode-title">
       {/* Sticky header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center justify-between p-4">
-          <h2 id="review-mode-title" className="text-lg font-bold text-gray-800">Review All Tiers</h2>
+          <h2 id="review-mode-title" className="text-lg font-bold text-gray-800 dark:text-gray-200">Review All Tiers</h2>
           <button
             type="button"
             onClick={onExit}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             aria-label="Exit review mode"
           >
-            <X size={24} className="text-gray-600" aria-hidden="true" />
+            <X size={24} className="text-gray-600 dark:text-gray-400" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -180,10 +180,10 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
           const isOverQuota = tier.quota && values.length > tier.quota;
 
           return (
-            <div key={tier.id} className="border-2 border-gray-200 rounded-xl overflow-hidden">
+            <div key={tier.id} className="border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
               {/* Tier header */}
               <div
-                className="p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                className="p-4 bg-gray-50 dark:bg-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 onClick={() => {
                   onExit();
                   onJumpToTier?.(tier.id);
@@ -192,7 +192,7 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl" aria-hidden="true">{tier.icon}</span>
-                    <h3 className="text-base font-bold text-gray-800">
+                    <h3 className="text-base font-bold text-gray-800 dark:text-gray-200">
                       {tier.label}
                     </h3>
                   </div>
@@ -200,17 +200,17 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                     {tier.quota ? (
                       <>
                         {isOverQuota && (
-                          <span className="text-red-600" aria-hidden="true">⚠</span>
+                          <span className="text-red-600 dark:text-red-500" aria-hidden="true">⚠</span>
                         )}
-                        <span className={`text-sm font-semibold ${isOverQuota ? 'text-red-600' : 'text-gray-700'}`}>
+                        <span className={`text-sm font-semibold ${isOverQuota ? 'text-red-600 dark:text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>
                           {values.length}
                         </span>
-                        <span className="text-xs text-gray-500 font-medium">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                           (max {tier.quota})
                         </span>
                       </>
                     ) : (
-                      <span className="text-sm font-semibold text-gray-700">
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                         {values.length}
                       </span>
                     )}
@@ -223,9 +223,9 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                 items={values.map(v => v.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="p-4 space-y-2">
+                <div className="p-4 space-y-2 bg-white dark:bg-gray-900">
                   {values.length === 0 ? (
-                    <div className="text-center py-4 text-gray-500 italic text-sm">
+                    <div className="text-center py-4 text-gray-500 dark:text-gray-400 italic text-sm">
                       No values in this tier
                     </div>
                   ) : (

@@ -67,11 +67,11 @@ const getValueClass = (value: Value, animatingValues: Set<string>, isInTier: boo
   // Compact chip spec: text-sm (14px), 12px horizontal padding, 8px vertical padding
   // Keep min-h-[36px] for touch targets while visual is compact
   return isInTier
-    ? `relative px-3 py-2 bg-white border-2 border-gray-300 rounded-lg cursor-move hover:shadow-md hover:border-gray-400 transition-all select-none text-sm min-h-[36px] flex items-center ${
-        animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300' : ''
+    ? `relative px-3 py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg cursor-move hover:shadow-md hover:border-gray-400 dark:hover:border-gray-500 transition-all select-none text-sm min-h-[36px] flex items-center ${
+        animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300 dark:ring-emerald-700' : ''
       }`
-    : `relative px-3 py-2 bg-gray-50 border border-gray-300 rounded cursor-move hover:bg-white hover:shadow-md transition-all text-sm select-none min-h-[36px] flex items-center ${
-        animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300' : ''
+    : `relative px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded cursor-move hover:bg-white dark:hover:bg-gray-600 hover:shadow-md transition-all text-sm select-none min-h-[36px] flex items-center ${
+        animatingValues.has(value.id) ? 'animate-pulse ring-4 ring-emerald-300 dark:ring-emerald-700' : ''
       }`;
 };
 
@@ -212,7 +212,7 @@ const SortableValue: React.FC<SortableValueProps> = ({
         className={`${baseClass} ${isTouchDevice && selectedTierForTouch ? 'cursor-pointer' : ''} print-value-item`}
         data-value-id={value.id}
       >
-        <span className={`${isInTier ? 'font-medium text-gray-800 block' : 'text-gray-800 font-medium'} print-value-name`}>
+        <span className={`${isInTier ? 'font-medium text-gray-800 dark:text-gray-200 block' : 'text-gray-800 dark:text-gray-200 font-medium'} print-value-name`}>
           {value.value}
         </span>
         {value.description && (
@@ -225,7 +225,7 @@ const SortableValue: React.FC<SortableValueProps> = ({
       {/* Render tooltip via portal to avoid clipping */}
       {hoveredValue?.id === value.id && value.description && !activeId && tooltipPosition && createPortal(
         <div
-          className="fixed z-[100] p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl w-96 pointer-events-none print-hide"
+          className="fixed z-[100] p-4 bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg shadow-xl w-96 pointer-events-none print-hide"
           style={{
             top: `${tooltipPosition.top}px`,
             left: `${tooltipPosition.left}px`,
@@ -1615,10 +1615,10 @@ const ValuesTierList = () => {
 
       {/* Desktop layout - show on desktop screens OR when printing from mobile */}
       <div className={isMobileLayout ? "hidden print:block" : "block"}>
-      <div className="h-screen bg-gradient-to-br from-blue-50 to-green-50 p-3 md:p-6 overflow-hidden">
+      <div className="h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800 p-3 md:p-6 overflow-hidden">
       <div className="max-w-7xl mx-auto h-full flex flex-col">
 
-        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 print-header flex-shrink-0 relative z-50">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-4 print-header flex-shrink-0 relative z-50">
           <div className="flex flex-col gap-3">
             {/* Consolidated title with dropdown */}
             <div className="flex items-start justify-between gap-3">
@@ -1650,26 +1650,26 @@ const ValuesTierList = () => {
                             e.currentTarget.blur();
                           }
                         }}
-                        className={`text-xl font-semibold text-gray-800 bg-transparent border-2 ${
+                        className={`text-xl font-semibold text-gray-800 dark:text-gray-200 bg-transparent border-2 ${
                           showRenameHint
-                            ? 'border-blue-500 ring-2 ring-blue-200'
-                            : 'border-transparent hover:border-gray-300'
-                        } focus:border-emerald-500 focus:outline-none rounded px-2 py-1 flex-1 transition-all`}
+                            ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-200 dark:ring-blue-900'
+                            : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
+                        } focus:border-emerald-500 dark:focus:border-emerald-400 focus:outline-none rounded px-2 py-1 flex-1 transition-all`}
                         placeholder="Enter list name..."
                       />
                     <button
                       type="button"
                       onClick={() => setShowListDropdown(!showListDropdown)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                       title="Switch list"
                     >
-                      <ChevronDown size={24} className={`transition-transform ${showListDropdown ? 'rotate-180' : ''}`} aria-hidden="true" />
+                      <ChevronDown size={24} className={`dark:text-gray-300 transition-transform ${showListDropdown ? 'rotate-180' : ''}`} aria-hidden="true" />
                     </button>
                   </div>
 
                   {/* Rename hint */}
                   {showRenameHint && (
-                    <div className="text-sm text-blue-600 font-medium px-2 animate-fade-in-up">
+                    <div className="text-sm text-blue-600 dark:text-blue-400 font-medium px-2 animate-fade-in-up">
                       <span aria-hidden="true">💡</span> Give your list a descriptive name before sharing!
                     </div>
                   )}
@@ -1677,7 +1677,7 @@ const ValuesTierList = () => {
 
                   {/* Dropdown menu */}
                   {showListDropdown && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto print-hide">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto print-hide">
                       <div className="p-2">
                         {savedLists.map((list) => (
                           <div
@@ -1775,11 +1775,11 @@ const ValuesTierList = () => {
                                 setShowListDropdown(false);
                               }
                             }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-between cursor-pointer ${
-                              list.id === listId ? 'bg-emerald-50 font-medium' : ''
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between cursor-pointer ${
+                              list.id === listId ? 'bg-emerald-50 dark:bg-emerald-900/30 font-medium' : ''
                             }`}
                           >
-                            <span>{list.name}</span>
+                            <span className="dark:text-gray-200">{list.name}</span>
                             {list.id === listId && savedLists.length > 1 && (
                               <button
                                 type="button"
@@ -1820,7 +1820,7 @@ const ValuesTierList = () => {
                                     setShowListDropdown(false);
                                   }
                                 }}
-                                className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
+                                className="p-1 text-red-600 dark:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
                                 title="Delete this list"
                                 aria-label={`Delete ${list.name}`}
                               >
@@ -1835,7 +1835,7 @@ const ValuesTierList = () => {
                             setShowListDropdown(false);
                             setShowDatasetPicker(true);
                           }}
-                          className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-emerald-600 font-medium"
+                          className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-emerald-600 dark:text-emerald-400 font-medium"
                         >
                           + New List
                         </button>
@@ -1850,7 +1850,7 @@ const ValuesTierList = () => {
                 <button
                   type="button"
                   onClick={() => setShowACTIntro(true)}
-                  className="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 font-medium transition-colors"
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-900/50 font-medium transition-colors"
                   title="About this exercise"
                 >
                   <Info size={18} aria-hidden="true" />
@@ -1860,7 +1860,7 @@ const ValuesTierList = () => {
                   <button
                     type="button"
                     onClick={handleShare}
-                    className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                    className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 font-medium transition-colors"
                     title="Share"
                   >
                     <Share2 size={18} aria-hidden="true" />
@@ -1870,20 +1870,20 @@ const ValuesTierList = () => {
                   {/* Share explanation popover */}
                   {showShareExplanation && (
                     <div
-                      className="absolute top-full mt-2 right-0 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-60 animate-fade-in-up"
+                      className="absolute top-full mt-2 right-0 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 z-60 animate-fade-in-up"
                       role="status"
                       aria-live="polite"
                     >
-                      <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45" />
+                      <div className="absolute -top-2 right-4 w-4 h-4 bg-white dark:bg-gray-800 border-l border-t border-gray-200 dark:border-gray-700 transform rotate-45" />
                       <button
                         type="button"
                         onClick={() => setShowShareExplanation(false)}
-                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="absolute top-2 right-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                         aria-label="Close"
                       >
                         <span aria-hidden="true">✕</span>
                       </button>
-                      <p className="text-sm text-gray-700 leading-relaxed pr-4">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pr-4">
                         {SHARE_EXPLANATION_TEXT}
                       </p>
                     </div>
@@ -1892,7 +1892,7 @@ const ValuesTierList = () => {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
                   title="Print"
                 >
                   <Printer size={18} aria-hidden="true" />
@@ -1917,12 +1917,12 @@ const ValuesTierList = () => {
                 items={tierValues.map(value => value.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="flex flex-col border border-gray-200 rounded-xl overflow-hidden print-tier bg-white h-full">
+                <div className="flex flex-col border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden print-tier bg-white dark:bg-gray-800 h-full">
                   {/* Sticky header - droppable area */}
                   <div
-                    className={`bg-white border-b border-gray-200 sticky top-0 z-10 ${
+                    className={`bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 ${
                       isTouchDevice && selectedTierForTouch === tier.id
-                        ? 'ring-4 ring-blue-500 border-blue-500'
+                        ? 'ring-4 ring-blue-500 dark:ring-blue-600 border-blue-500 dark:border-blue-600'
                         : ''
                     } ${isTouchDevice ? 'cursor-pointer' : ''}`}
                     onClick={() => {
@@ -1940,20 +1940,20 @@ const ValuesTierList = () => {
                       <div className="w-full">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-lg print-hide">{tier.icon}</span>
-                          <h2 className="text-base font-semibold text-gray-800 print-tier-heading flex-1">
+                          <h2 className="text-base font-semibold text-gray-800 dark:text-gray-200 print-tier-heading flex-1">
                             {tier.label}
                           </h2>
                           {isTouchDevice ? (
                             <span className={`text-xs font-mono px-2 py-1 rounded border print-hide ${
                               selectedTierForTouch === tier.id
-                                ? 'bg-blue-600 text-white border-blue-600'
-                                : 'bg-white border-gray-300 text-gray-600'
+                                ? 'bg-blue-600 dark:bg-blue-700 text-white border-blue-600 dark:border-blue-700'
+                                : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300'
                             }`}>
                               {selectedTierForTouch === tier.id ? '✓' : 'Tap'}
                             </span>
                           ) : (
-                            <span className={`text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 print-hide transition-opacity ${
-                              hoveredValue ? 'text-gray-600 opacity-100' : 'text-gray-400 opacity-40'
+                            <span className={`text-xs font-mono bg-white dark:bg-gray-700 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 print-hide transition-opacity ${
+                              hoveredValue ? 'text-gray-600 dark:text-gray-300 opacity-100' : 'text-gray-400 dark:text-gray-500 opacity-40'
                             }`}>
                               {index + 1}
                             </span>
@@ -2024,19 +2024,19 @@ const ValuesTierList = () => {
 
           {/* Categories sidebar - fourth column on desktop */}
           <div className="relative flex-1 min-h-0 print-hide-sidebar">
-            <div className="bg-white border border-gray-200 rounded-xl h-full flex flex-col">
-            <div className="px-4 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-base font-semibold text-gray-800 flex items-center justify-between">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl h-full flex flex-col">
+            <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+              <h2 className="text-base font-semibold text-gray-800 dark:text-gray-200 flex items-center justify-between">
                 <span>Value Categories</span>
                 {!isTouchDevice && (
-                  <span className={`text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300 print-hide transition-opacity ${
-                    hoveredValue ? 'text-gray-600 opacity-100' : 'text-gray-400 opacity-40'
+                  <span className={`text-xs font-mono bg-white dark:bg-gray-700 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 print-hide transition-opacity ${
+                    hoveredValue ? 'text-gray-600 dark:text-gray-300 opacity-100' : 'text-gray-400 dark:text-gray-500 opacity-40'
                   }`}>
                     4
                   </span>
                 )}
               </h2>
-              <p className="text-sm text-gray-600 print-hide mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-400 print-hide mt-1">
                 {(() => {
                   const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
                   const totalInCategories = values.filter(v => !tierOrder.includes(v.location as TierId)).length;
@@ -2063,9 +2063,9 @@ const ValuesTierList = () => {
                   return (
                     <div className="flex flex-col items-center justify-center h-full text-center px-6">
                       {!isOverQuota && (
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">All done! <span aria-hidden="true">🎉</span></h3>
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">All done! <span aria-hidden="true">🎉</span></h3>
                       )}
-                      <p className="text-sm text-gray-600 mb-4">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                         {isOverQuota ? (
                           <>
                             You've categorized all {totalValues} values with {veryImportantValues.length} "very important" values. We suggest trimming to just 10.
@@ -2075,15 +2075,15 @@ const ValuesTierList = () => {
                         )}
                       </p>
 
-                      <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 max-w-sm mb-4">
-                        <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs" aria-hidden="true">✨</span> Next Steps</p>
-                        <p className="text-xs text-emerald-800 text-left">
+                      <div className="bg-emerald-50 dark:bg-emerald-900/30 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-4 max-w-sm mb-4">
+                        <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-200 mb-1"><span className="text-xs" aria-hidden="true">✨</span> Next Steps</p>
+                        <p className="text-xs text-emerald-800 dark:text-emerald-300 text-left">
                           {COMPLETION_NEXT_STEPS}
                         </p>
                       </div>
-                      <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 max-w-sm">
-                        <p className="text-sm font-semibold text-amber-900 mb-1"><span aria-hidden="true">💾</span> Save for later</p>
-                        <p className="text-xs text-amber-800">
+                      <div className="bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-300 dark:border-amber-700 rounded-xl p-4 max-w-sm">
+                        <p className="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1"><span aria-hidden="true">💾</span> Save for later</p>
+                        <p className="text-xs text-amber-800 dark:text-amber-300">
                           {COMPLETION_SAVE_TEXT}
                         </p>
                       </div>
@@ -2092,7 +2092,7 @@ const ValuesTierList = () => {
                           <button
                             type="button"
                             onClick={handleShare}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 font-medium transition-colors"
                           >
                             <Share2 size={18} aria-hidden="true" />
                             <span>Share Link</span>
@@ -2101,20 +2101,20 @@ const ValuesTierList = () => {
                           {/* Share explanation popover */}
                           {showShareExplanation && (
                             <div
-                              className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-60 animate-fade-in-up"
+                              className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 z-60 animate-fade-in-up"
                               role="status"
                               aria-live="polite"
                             >
-                              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-r border-b border-gray-200 transform rotate-45" />
+                              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-gray-800 border-r border-b border-gray-200 dark:border-gray-700 transform rotate-45" />
                               <button
                                 type="button"
                                 onClick={() => setShowShareExplanation(false)}
-                                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+                                className="absolute top-2 right-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                 aria-label="Close"
                               >
                                 <span aria-hidden="true">✕</span>
                               </button>
-                              <p className="text-sm text-gray-700 leading-relaxed pr-4">
+                              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pr-4">
                                 {SHARE_EXPLANATION_TEXT}
                               </p>
                             </div>
@@ -2123,7 +2123,7 @@ const ValuesTierList = () => {
                         <button
                           type="button"
                           onClick={() => window.print()}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
                         >
                           <Printer size={18} aria-hidden="true" />
                           <span>Print</span>

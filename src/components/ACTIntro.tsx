@@ -80,7 +80,7 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
       <div
@@ -90,60 +90,60 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
         aria-labelledby="dialog-title"
         aria-describedby="dialog-description"
         tabIndex={-1}
-        className="bg-white rounded-xl max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Info size={24} className="text-emerald-600 flex-shrink-0" aria-hidden="true" />
-            <h2 id="dialog-title" className="text-2xl font-bold text-gray-900">About This Exercise</h2>
+            <Info size={24} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" aria-hidden="true" />
+            <h2 id="dialog-title" className="text-2xl font-bold text-gray-900 dark:text-gray-100">About This Exercise</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             aria-label="Close"
           >
-            <X size={24} aria-hidden="true" />
+            <X size={24} className="dark:text-gray-300" aria-hidden="true" />
           </button>
         </div>
 
         <div className="px-6 py-6 space-y-6">
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">What is ACT?</h3>
-            <p id="dialog-description" className="text-gray-700 leading-relaxed">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">What is ACT?</h3>
+            <p id="dialog-description" className="text-gray-700 dark:text-gray-300 leading-relaxed">
               Acceptance and Commitment Therapy (ACT) is an evidence-based form of psychotherapy that helps people create a rich, meaningful life while accepting the pain that inevitably comes with it. Rather than fighting difficult thoughts and feelings, ACT teaches you to accept them and move forward guided by your values.
             </p>
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Why Identify Your Values?</h3>
-            <p className="text-gray-700 leading-relaxed mb-3">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Why Identify Your Values?</h3>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
               Values are what matter most to you in life—the qualities you want to embody and the directions you want to move in. Unlike goals (which can be completed), values are ongoing directions for living.
             </p>
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
               Clarifying your values helps you make decisions aligned with what truly matters to you, even when life gets difficult. When you're clear on your values, you can take committed action toward living the life you want.
             </p>
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">How to Use This Tool</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">How to Use This Tool</h3>
             <div className="space-y-3">
               <div>
-                <h4 className="font-medium text-gray-800 mb-1">1. Review Each Value</h4>
-                <p className="text-gray-700 text-sm">
+                <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1">1. Review Each Value</h4>
+                <p className="text-gray-700 dark:text-gray-300 text-sm">
                   Read each value and its description. Think about how important this is in your life right now.
                 </p>
               </div>
               <div>
-                <h4 className="font-medium text-gray-800 mb-1">2. Categorize by Importance</h4>
-                <p className="text-gray-700 text-sm">
+                <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1">2. Categorize by Importance</h4>
+                <p className="text-gray-700 dark:text-gray-300 text-sm">
                   Sort values into three tiers: <strong>Very Important</strong>, <strong>Somewhat Important</strong>, and <strong>Not Important</strong>. Be honest—there's no right or wrong answer.
                 </p>
               </div>
               <div>
-                <h4 className="font-medium text-gray-800 mb-1">3. Reflect and Act</h4>
-                <p className="text-gray-700 text-sm">
+                <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1">3. Reflect and Act</h4>
+                <p className="text-gray-700 dark:text-gray-300 text-sm">
                   Once you've identified your most important values, consider: How are you currently living these values? What small actions could you take to move more in these directions?
                 </p>
               </div>
@@ -151,8 +151,8 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Tips for Success</h3>
-            <ul className="list-disc list-inside space-y-2 text-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Tips for Success</h3>
+            <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
               <li>Focus on what matters to <em>you</em>, not what others expect or what you think you "should" value</li>
               <li>Do a quick first pass, then audit for "shoulds"</li>
               <li>Limit "Very Important" to truly essential values, so you can use your top values to give direction.</li>
@@ -160,29 +160,29 @@ export const ACTIntro: React.FC<ACTIntroProps> = ({ onClose }) => {
             </ul>
           </section>
 
-          <section className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">Remember</h3>
-            <p className="text-blue-800 text-sm">
+          <section className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-2">Remember</h3>
+            <p className="text-blue-800 dark:text-blue-300 text-sm">
               This exercise is about <strong>discovery</strong>, not judgment. There are no wrong answers. The goal is to gain clarity about what truly matters to you so you can live more intentionally.
             </p>
           </section>
 
-          <section className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
-            <h3 className="text-lg font-semibold text-emerald-900 mb-2">Privacy & Saving</h3>
-            <p className="text-emerald-800 text-sm mb-2">
+          <section className="bg-emerald-50 dark:bg-emerald-900/30 rounded-lg p-4 border border-emerald-200 dark:border-emerald-700">
+            <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-200 mb-2">Privacy & Saving</h3>
+            <p className="text-emerald-800 dark:text-emerald-300 text-sm mb-2">
               Your data stays private in your browser. Your work is saved automatically but may be lost if you clear browsing data.
             </p>
-            <p className="text-emerald-800 text-sm">
-              <strong>To save permanently:</strong> Use the <Share2 size={14} className="inline text-blue-600" aria-hidden="true" /> Share button to get a link you can access from anywhere, or <Printer size={14} className="inline text-gray-600" aria-hidden="true" /> Print for a paper copy.
+            <p className="text-emerald-800 dark:text-emerald-300 text-sm">
+              <strong>To save permanently:</strong> Use the <Share2 size={14} className="inline text-blue-600 dark:text-blue-400" aria-hidden="true" /> Share button to get a link you can access from anywhere, or <Printer size={14} className="inline text-gray-600 dark:text-gray-400" aria-hidden="true" /> Print for a paper copy.
             </p>
           </section>
         </div>
 
-        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4">
+        <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
           <button
             type="button"
             onClick={onClose}
-            className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+            className="w-full bg-emerald-600 dark:bg-emerald-700 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors"
           >
             Get Started
           </button>

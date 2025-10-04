@@ -30,7 +30,7 @@ export const UndoToast: React.FC<UndoToastProps> = ({ action, onUndo, onDismiss 
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        className="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 max-w-sm"
+        className="bg-gray-800 dark:bg-gray-700 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 max-w-sm"
       >
         <span className="text-sm flex-1">
           <span aria-hidden="true">✓</span> "{action.valueName}" is {tierLabel}
@@ -41,7 +41,7 @@ export const UndoToast: React.FC<UndoToastProps> = ({ action, onUndo, onDismiss 
             e.stopPropagation();
             onUndo();
           }}
-          className="text-emerald-300 font-medium text-sm hover:text-emerald-200 transition-colors"
+          className="text-emerald-300 dark:text-emerald-400 font-medium text-sm hover:text-emerald-200 dark:hover:text-emerald-300 transition-colors"
         >
           Undo
         </button>
@@ -51,7 +51,7 @@ export const UndoToast: React.FC<UndoToastProps> = ({ action, onUndo, onDismiss 
             e.stopPropagation();
             onDismiss();
           }}
-          className="text-gray-400 hover:text-gray-200 transition-colors"
+          className="text-gray-400 dark:text-gray-300 hover:text-gray-200 dark:hover:text-gray-100 transition-colors"
           aria-label="Dismiss"
         >
           <span aria-hidden="true">✕</span>

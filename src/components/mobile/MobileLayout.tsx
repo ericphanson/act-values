@@ -253,9 +253,9 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 to-green-50 overflow-x-hidden">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800 overflow-x-hidden">
       {/* Compact header */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between gap-2 relative z-50">
+      <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between gap-2 relative z-50">
         <div className="flex-1 min-w-0 flex items-center gap-2">
           <input
             type="text"
@@ -266,20 +266,20 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                 e.currentTarget.blur();
               }
             }}
-            className={`text-lg font-bold text-gray-800 bg-transparent border-b-2 ${
+            className={`text-lg font-bold text-gray-800 dark:text-gray-200 bg-transparent border-b-2 ${
               showRenameHint
-                ? 'border-blue-500'
-                : 'border-transparent hover:border-gray-300'
-            } focus:border-emerald-500 focus:outline-none px-1 flex-1 min-w-0`}
+                ? 'border-blue-500 dark:border-blue-400'
+                : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
+            } focus:border-emerald-500 dark:focus:border-emerald-400 focus:outline-none px-1 flex-1 min-w-0`}
             placeholder="List name..."
           />
           <button
             type="button"
             onClick={() => setShowListDropdown(!showListDropdown)}
-            className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
             title="Switch list"
           >
-            <ChevronDown size={20} className={`text-gray-600 transition-transform ${showListDropdown ? 'rotate-180' : ''}`} aria-hidden="true" />
+            <ChevronDown size={20} className={`text-gray-600 dark:text-gray-400 transition-transform ${showListDropdown ? 'rotate-180' : ''}`} aria-hidden="true" />
           </button>
         </div>
 
@@ -287,46 +287,46 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
           <button
             type="button"
             onClick={onShowAbout}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             title="About"
           >
-            <Info size={18} className="text-emerald-600" aria-hidden="true" />
+            <Info size={18} className="text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
           </button>
           <button
             type="button"
             onClick={() => setReviewMode(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             title="Review all"
           >
-            <Eye size={18} className="text-gray-600" aria-hidden="true" />
+            <Eye size={18} className="text-gray-600 dark:text-gray-400" aria-hidden="true" />
           </button>
           <div className="relative">
             <button
               type="button"
               onClick={handleShare}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               title="Share"
             >
-              <Share2 size={18} className="text-blue-600" aria-hidden="true" />
+              <Share2 size={18} className="text-blue-600 dark:text-blue-400" aria-hidden="true" />
             </button>
 
             {/* Share explanation popover */}
             {showShareExplanation && (
               <div
-                className="absolute top-full mt-2 right-0 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-60 animate-fade-in-up"
+                className="absolute top-full mt-2 right-0 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 z-60 animate-fade-in-up"
                 role="status"
                 aria-live="polite"
               >
-                <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45" />
+                <div className="absolute -top-2 right-4 w-4 h-4 bg-white dark:bg-gray-800 border-l border-t border-gray-200 dark:border-gray-700 transform rotate-45" />
                 <button
                   type="button"
                   onClick={onDismissShareExplanation}
-                  className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute top-2 right-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                   aria-label="Close"
                 >
                   <span aria-hidden="true">✕</span>
                 </button>
-                <p className="text-sm text-gray-700 leading-relaxed pr-4">
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pr-4">
                   {SHARE_EXPLANATION_TEXT}
                 </p>
               </div>
@@ -335,16 +335,16 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
           <button
             type="button"
             onClick={onPrint}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             title="Print"
           >
-            <Printer size={18} className="text-gray-600" aria-hidden="true" />
+            <Printer size={18} className="text-gray-600 dark:text-gray-400" aria-hidden="true" />
           </button>
         </div>
 
         {/* List dropdown */}
         {showListDropdown && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-300 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
             <div className="p-2">
               {savedLists.map((list) => (
                 <button
@@ -356,11 +356,11 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                     }
                     setShowListDropdown(false);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-between ${
-                    list.id === listId ? 'bg-emerald-50 font-medium' : ''
+                  className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between ${
+                    list.id === listId ? 'bg-emerald-50 dark:bg-emerald-900/30 font-medium' : ''
                   }`}
                 >
-                  <span className="truncate">{list.name}</span>
+                  <span className="truncate dark:text-gray-200">{list.name}</span>
                   {list.id === listId && savedLists.length > 1 && (
                     <button
                       type="button"
@@ -371,7 +371,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                           setShowListDropdown(false);
                         }
                       }}
-                      className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors flex-shrink-0"
+                      className="p-1 text-red-600 dark:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors flex-shrink-0"
                       title="Delete"
                     >
                       <Trash2 size={14} aria-hidden="true" />
@@ -385,7 +385,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                   onCreateList();
                   setShowListDropdown(false);
                 }}
-                className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-emerald-600 font-medium"
+                className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-emerald-600 dark:text-emerald-400 font-medium"
               >
                 + New List
               </button>
@@ -395,8 +395,8 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
 
         {/* Rename hint */}
         {showRenameHint && (
-          <div className="absolute top-full left-0 right-0 px-4 py-2 bg-blue-50 border-b border-blue-200 z-40 animate-fade-in-up">
-            <p className="text-sm text-blue-700 font-medium">
+          <div className="absolute top-full left-0 right-0 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 border-b border-blue-200 dark:border-blue-700 z-40 animate-fade-in-up">
+            <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
               <span aria-hidden="true">💡</span> Give your list a descriptive name before sharing!
             </p>
           </div>
@@ -404,8 +404,8 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
       </div>
 
       {/* Progress bar only - targets are now framing the value */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
-        <div className="h-2 bg-gray-200 relative overflow-hidden">
+      <div className="sticky top-0 z-20 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="h-2 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
           <div
             className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-blue-500 transition-all duration-300"
             style={{ width: `${totalValues > 0 ? (categorizedCount / totalValues) * 100 : 0}%` }}
@@ -468,12 +468,12 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         <div className="h-4" />
 
         {/* Footer */}
-        <div className="text-center py-4 px-4 text-xs text-gray-500 border-t border-gray-200 bg-white">
+        <div className="text-center py-4 px-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <a
             href="https://github.com/ericphanson/value-tier"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-700 hover:underline"
+            className="hover:text-gray-700 dark:hover:text-gray-200 hover:underline"
           >
             Open source
           </a>
@@ -482,7 +482,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
             href="https://ericphanson.com/contact"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-700 hover:underline"
+            className="hover:text-gray-700 dark:hover:text-gray-200 hover:underline"
           >
             Contact
           </a>
@@ -490,7 +490,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
           <button
             type="button"
             onClick={onSwitchToDesktop}
-            className="hover:text-gray-700 hover:underline"
+            className="hover:text-gray-700 dark:hover:text-gray-200 hover:underline"
           >
             Desktop mode
           </button>
@@ -520,7 +520,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
 
       {/* Share toast */}
       {shareToast && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl z-50 animate-fade-in">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-gray-800 dark:bg-gray-700 text-white px-4 py-3 rounded-lg shadow-xl z-50 animate-fade-in">
           ✓ Link copied to clipboard!
         </div>
       )}

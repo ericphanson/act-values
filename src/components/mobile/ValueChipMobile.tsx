@@ -73,7 +73,7 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
 
   // Calculate background color based on swipe direction
   const getBackgroundColor = () => {
-    if (animating) return 'bg-emerald-100 ring-4 ring-emerald-300';
+    if (animating) return 'bg-emerald-100 dark:bg-emerald-900/50 ring-4 ring-emerald-300 dark:ring-emerald-700';
 
     const { dx, dy, direction } = swipeProgress;
     const absDx = Math.abs(dx);
@@ -81,16 +81,16 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
 
     if (direction === 'right' && absDx > 40) {
       const opacity = Math.min(absDx / 150, 0.8);
-      return `bg-emerald-50 border-emerald-300`;
+      return `bg-emerald-50 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700`;
     } else if (direction === 'left' && absDx > 40) {
       const opacity = Math.min(absDx / 150, 0.8);
-      return `bg-gray-50 border-gray-400`;
+      return `bg-gray-50 dark:bg-gray-700 border-gray-400 dark:border-gray-600`;
     } else if (direction === 'up' && absDy > 40) {
       const opacity = Math.min(absDy / 150, 0.8);
-      return `bg-blue-50 border-blue-300`;
+      return `bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700`;
     }
 
-    return 'bg-white border-gray-300';
+    return 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600';
   };
 
   const style = {
@@ -114,7 +114,7 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
         animating ? 'animate-pulse' : ''
       } ${disableDrag ? 'cursor-default' : 'cursor-pointer'}`}
     >
-      <span className="font-medium text-gray-800 break-words">
+      <span className="font-medium text-gray-800 dark:text-gray-200 break-words">
         {value.value}
       </span>
 
@@ -125,7 +125,7 @@ export const ValueChipMobile: React.FC<ValueChipMobileProps> = ({
             e.stopPropagation();
             onRemove?.(value);
           }}
-          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-600 transition-colors"
+          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 dark:bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-600 dark:hover:bg-red-700 transition-colors"
         >
           ✕
         </button>

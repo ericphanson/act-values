@@ -28,11 +28,11 @@ const QuickTarget: React.FC<{
       ref={setNodeRef}
       onClick={onTap}
       className={`flex-1 flex flex-col items-center justify-center py-3 rounded-lg transition-all ${color} ${
-        isOver ? 'ring-4 ring-white scale-105' : ''
+        isOver ? 'ring-4 ring-white dark:ring-gray-700 scale-105' : ''
       }`}
     >
       <span className="text-2xl mb-1">{icon}</span>
-      <span className="text-xs font-medium text-gray-700 text-center px-1">
+      <span className="text-xs font-medium text-gray-700 dark:text-gray-300 text-center px-1">
         {label}
       </span>
     </div>
@@ -47,9 +47,9 @@ export const QuickTargetsBar: React.FC<QuickTargetsBarProps> = ({
   const progress = totalValues > 0 ? (categorizedCount / totalValues) * 100 : 0;
 
   return (
-    <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm overflow-hidden">
+    <div className="sticky top-0 z-20 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
       {/* Progress bar */}
-      <div className="h-1 bg-gray-200 relative overflow-hidden">
+      <div className="h-1 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
         <div
           className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-blue-500 transition-all duration-300"
           style={{ width: `${progress}%` }}
@@ -64,7 +64,7 @@ export const QuickTargetsBar: React.FC<QuickTargetsBarProps> = ({
             id="somewhat-important"
             label="Swipe Up ↑"
             icon="⭐"
-            color="bg-blue-50"
+            color="bg-blue-50 dark:bg-blue-900/30"
             onTap={() => onTargetTap?.('somewhat-important')}
           />
         </div>
@@ -77,7 +77,7 @@ export const QuickTargetsBar: React.FC<QuickTargetsBarProps> = ({
               id="not-important"
               label="← Swipe Left"
               icon="○"
-              color="bg-gray-50"
+              color="bg-gray-50 dark:bg-gray-700"
               onTap={() => onTargetTap?.('not-important')}
             />
           </div>
@@ -88,7 +88,7 @@ export const QuickTargetsBar: React.FC<QuickTargetsBarProps> = ({
               id="very-important"
               label="Swipe Right →"
               icon="💎"
-              color="bg-emerald-50"
+              color="bg-emerald-50 dark:bg-emerald-900/30"
               onTap={() => onTargetTap?.('very-important')}
             />
           </div>
@@ -98,7 +98,7 @@ export const QuickTargetsBar: React.FC<QuickTargetsBarProps> = ({
       {/* Progress text */}
       {totalValues > 0 && (
         <div className="px-4 pb-2 pt-2 text-center">
-          <span className="text-xs text-gray-600">
+          <span className="text-xs text-gray-600 dark:text-gray-400">
             {totalValues - categorizedCount} values remaining
           </span>
         </div>
