@@ -1,10 +1,10 @@
-import { Dataset } from '../types';
+import { Dataset } from "../types";
 
 export const preloadedDatasets: Record<string, Dataset> = {
-    'act-50': {
-    'name': "Small",
-    'description': "Quick start",
-    'version': 1,
+    "act-50": {
+    "name": "Small",
+    "description": "Core personal virtues",
+    "version": 1,
     data: [
       { "name": "Compassion", "description": "Actively caring about others’ suffering and taking steps to relieve it.", "category": "Compassion & Care" },
       { "name": "Empathy", "description": "Understanding and sharing another person’s feelings and perspectives.", "category": "Compassion & Care" },
@@ -67,10 +67,10 @@ export const preloadedDatasets: Record<string, Dataset> = {
       { "name": "Cultural preservation", "description": "Respecting and sustaining languages, arts, and traditions.", "category": "Tradition, Spirituality & Reverence" }
     ]
   },
-    'act-75': {
-    'name': "Medium",
-    'description': "Adds Trustworthiness, Education, Democracy, Ubuntu, Ikigai",
-    'version': 1,
+    "act-75": {
+    "name": "Medium",
+    "description": "Adds civic, cultural & planetary values",
+    "version": 1,
     data: [
       { "name": "Compassion", "description": "Actively caring about others’ suffering and taking steps to relieve it.", "category": "Compassion & Care" },
       { "name": "Empathy", "description": "Understanding and sharing another person’s feelings and perspectives.", "category": "Compassion & Care" },
@@ -159,10 +159,10 @@ export const preloadedDatasets: Record<string, Dataset> = {
     ]
   },
   // name here is historical (used to be even longer list). Do not change the keys, they are persisted in saved URLs and PDFs and must continue to work
-  'act-shorter': {
-    'name': "Large",
-    'description': "Adds Scientific integrity, Innovation, Digital privacy, Diversity",
-    'version': 1,
+  "act-shorter": {
+    "name": "Large",
+    "description": "Adds detailed subtypes & cultural variants",
+    "version": 1,
     data: [
       { "name": "Compassion", "description": "Actively caring about others’ suffering and taking steps to relieve it.", "category": "Compassion & Care" },
       { "name": "Empathy", "description": "Understanding and sharing another person’s feelings and perspectives.", "category": "Compassion & Care" },
