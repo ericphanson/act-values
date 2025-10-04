@@ -792,6 +792,8 @@ const ValuesTierList = () => {
     setCollapsedCategories(persisted.collapsedCategories);
     setListId(persisted.listId);
     setListName(persisted.listName);
+    setSelectedDataset(persisted.datasetName);
+    localStorage.setItem('value-tier-last-dataset', persisted.datasetName);
   }, [loadDataset]);
 
   // Create a new list with specified dataset
@@ -1654,9 +1656,10 @@ const ValuesTierList = () => {
                     <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto print-hide">
                       <div className="p-2">
                         {savedLists.map((list) => (
-                          <button
-                            type="button"
+                          <div
                             key={list.id}
+                            role="button"
+                            tabIndex={0}
                             onClick={() => {
                               if (list.id !== listId) {
                                 const dataset = preloadedDatasets[list.datasetName];
@@ -1675,7 +1678,28 @@ const ValuesTierList = () => {
                               }
                               setShowListDropdown(false);
                             }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-between ${
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                if (list.id !== listId) {
+                                  const dataset = preloadedDatasets[list.datasetName];
+                                  if (dataset) {
+                                    const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                                    const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
+                                    if (persisted) {
+                                      currentFragmentRef.current = list.fragment;
+                                      hydrateState(persisted as PersistedState);
+                                      setCurrentListId(list.id);
+                                      lastKnownModified.current = list.lastModified;
+                                    } else {
+                                      showToast('Failed to decode the selected list.', 5000);
+                                    }
+                                  }
+                                }
+                                setShowListDropdown(false);
+                              }
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-between cursor-pointer ${
                               list.id === listId ? 'bg-emerald-50 font-medium' : ''
                             }`}
                           >
@@ -1722,11 +1746,12 @@ const ValuesTierList = () => {
                                 }}
                                 className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
                                 title="Delete this list"
+                                aria-label={`Delete ${list.name}`}
                               >
                                 <Trash2 size={16} aria-hidden="true" />
                               </button>
                             )}
-                          </button>
+                          </div>
                         ))}
                         <button
                           type="button"
