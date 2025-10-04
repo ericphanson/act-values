@@ -31,6 +31,7 @@ import { encodeStateToUrl, getShareableUrl, decodeUrlToState } from './urlState'
 import { useMediaQuery } from './hooks/useMediaQuery';
 import { MobileLayout } from './components/mobile/MobileLayout';
 import { ACTIntro } from './components/ACTIntro';
+import { DatasetPicker } from './components/DatasetPicker';
 import { COMPLETION_NEXT_STEPS, COMPLETION_SAVE_TEXT, SHARE_EXPLANATION_TEXT } from './constants/completionText';
 
 // Check for reset/clear parameter BEFORE any localStorage access
@@ -319,8 +320,10 @@ const ValuesTierList = () => {
   const [hoveredValue, setHoveredValue] = useState<Value | null>(null);
   const [animatingValues, setAnimatingValues] = useState(new Set<string>());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  // Force dataset to always be act-shorter
-  const selectedDataset = 'act-shorter';
+  const [selectedDataset, setSelectedDataset] = useState<string>(() => {
+    // Default to last used dataset or 'act-shorter' for backwards compatibility
+    return localStorage.getItem('value-tier-last-dataset') || 'act-shorter';
+  });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showACTIntro, setShowACTIntro] = useState(() => {
     // Show intro on first visit
@@ -336,6 +339,7 @@ const ValuesTierList = () => {
   const [showRenameHint, setShowRenameHint] = useState(false);
   const [showMobileSuggestion, setShowMobileSuggestion] = useState(false);
   const [showShareExplanation, setShowShareExplanation] = useState(false);
+  const [showDatasetPicker, setShowDatasetPicker] = useState(false);
   const lastKnownModified = useRef<number>(0);
   const currentFragmentRef = useRef<string | null>(null);
   const initializedRef = useRef<boolean>(false);
@@ -790,8 +794,8 @@ const ValuesTierList = () => {
     setListName(persisted.listName);
   }, [loadDataset]);
 
-  // Create a new list - always use act-shorter
-  const createNewList = useCallback((datasetKey: string = 'act-shorter') => {
+  // Create a new list with specified dataset
+  const createNewList = useCallback((datasetKey: string) => {
     const newId = generateListId();
     const newName = generateFriendlyName();
 
@@ -799,6 +803,10 @@ const ValuesTierList = () => {
     setListName(newName);
     setCurrentListId(newId);
     lastKnownModified.current = Date.now();
+
+    // Update selectedDataset and persist to localStorage
+    setSelectedDataset(datasetKey);
+    localStorage.setItem('value-tier-last-dataset', datasetKey);
 
     loadDataset(datasetKey);
 
@@ -854,8 +862,8 @@ const ValuesTierList = () => {
       if (cacheCleared) {
         sessionStorage.removeItem('cache-just-cleared');
         showToast('✓ Cache cleared! App reset successfully.', 4000);
-        // Create a new list after clearing
-        createNewList();
+        // Show dataset picker after clearing
+        setShowDatasetPicker(true);
         return;
       }
 
@@ -863,26 +871,47 @@ const ValuesTierList = () => {
 
       // Try URL first (for shared links)
       if (hash && hash.length > 1) {
-        const dataset = preloadedDatasets['act-shorter']; // Always use act-shorter
-        const canonicalOrder = getCanonicalCategoryOrder(dataset);
-        const persistedFromHash = decodeUrlToState(hash, dataset.data.length, canonicalOrder);
+        // First decode to get the dataset name from URL
+        const tempDataset = preloadedDatasets['act-shorter']; // Use temporary dataset for initial decode
+        const tempCanonicalOrder = getCanonicalCategoryOrder(tempDataset);
+        const persistedFromHash = decodeUrlToState(hash, tempDataset.data.length, tempCanonicalOrder);
 
         if (persistedFromHash && persistedFromHash.listId) {
           currentFragmentRef.current = hash;
 
+          // Get the correct dataset from the decoded state
+          const datasetName = persistedFromHash.datasetName || 'act-shorter';
+          const dataset = preloadedDatasets[datasetName];
+
+          if (!dataset) {
+            showToast(`Unknown dataset: ${datasetName}. Please choose a dataset.`, 5000);
+            setShowDatasetPicker(true);
+            return;
+          }
+
+          // Re-decode with correct dataset
+          const canonicalOrder = getCanonicalCategoryOrder(dataset);
+          const correctPersisted = decodeUrlToState(hash, dataset.data.length, canonicalOrder);
+
+          if (!correctPersisted) {
+            showToast('Failed to load data from URL. Starting with a new list.', 5000);
+            setShowDatasetPicker(true);
+            return;
+          }
+
           // Save this list to storage if it's new
-          const result = loadList(persistedFromHash.listId);
+          const result = loadList(correctPersisted.listId);
           if (result.error) {
             showToast(result.error, 5000);
-            createNewList();
+            setShowDatasetPicker(true);
             return;
           }
 
           if (!result.list) {
             const newList: SavedList = {
-              id: persistedFromHash.listId,
-              name: persistedFromHash.listName || 'Shared List',
-              datasetName: 'act-shorter',
+              id: correctPersisted.listId,
+              name: correctPersisted.listName || 'Shared List',
+              datasetName: datasetName,
               fragment: hash,
               lastModified: Date.now(),
               createdAt: Date.now()
@@ -890,8 +919,12 @@ const ValuesTierList = () => {
             saveList(newList);
           }
 
-          hydrateState(persistedFromHash as PersistedState);
-          setCurrentListId(persistedFromHash.listId);
+          // Update selectedDataset to match the loaded list
+          setSelectedDataset(datasetName);
+          localStorage.setItem('value-tier-last-dataset', datasetName);
+
+          hydrateState(correctPersisted as PersistedState);
+          setCurrentListId(correctPersisted.listId);
           lastKnownModified.current = Date.now();
           refreshSavedLists();
 
@@ -902,7 +935,9 @@ const ValuesTierList = () => {
           return;
         } else {
           // Failed to decode URL state
-          showToast('Failed to load data from URL. Starting with a new list.', 5000);
+          showToast('Failed to load data from URL. Please choose a dataset.', 5000);
+          setShowDatasetPicker(true);
+          return;
         }
       }
 
@@ -912,7 +947,7 @@ const ValuesTierList = () => {
         const result = loadList(currentId);
         if (result.error) {
           showToast(result.error, 5000);
-          createNewList();
+          setShowDatasetPicker(true);
           return;
         }
 
@@ -923,19 +958,24 @@ const ValuesTierList = () => {
             const persisted = decodeUrlToState(result.list.fragment, dataset.data.length, canonicalOrder);
             if (persisted) {
               currentFragmentRef.current = result.list.fragment;
+
+              // Update selectedDataset to match the loaded list
+              setSelectedDataset(result.list.datasetName);
+              localStorage.setItem('value-tier-last-dataset', result.list.datasetName);
+
               hydrateState(persisted as PersistedState);
               lastKnownModified.current = result.list.lastModified;
               refreshSavedLists();
               return;
             } else {
-              showToast('Failed to decode list data. Starting with a new list.', 5000);
+              showToast('Failed to decode list data. Please choose a dataset.', 5000);
             }
           }
         }
       }
 
-      // No URL state and no current list - create new
-      createNewList();
+      // No URL state and no current list - show dataset picker
+      setShowDatasetPicker(true);
     };
 
     initializeApp();
@@ -1532,7 +1572,7 @@ const ValuesTierList = () => {
               }
             }}
             onCreateList={() => {
-              createNewList(selectedDataset);
+              setShowDatasetPicker(true);
             }}
             onSwitchToDesktop={() => switchToMode('desktop')}
             onShowAbout={() => setShowACTIntro(true)}
@@ -1680,8 +1720,8 @@ const ValuesTierList = () => {
                         <button
                           type="button"
                           onClick={() => {
-                            createNewList(selectedDataset);
                             setShowListDropdown(false);
+                            setShowDatasetPicker(true);
                           }}
                           className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-emerald-600 font-medium"
                         >
@@ -2167,7 +2207,28 @@ const ValuesTierList = () => {
     {showACTIntro && <ACTIntro onClose={() => {
       setShowACTIntro(false);
       localStorage.setItem('value-tier-seen-intro', 'true');
+      // If no list is loaded yet (first time user), show dataset picker
+      if (!listId) {
+        setShowDatasetPicker(true);
+      }
     }} />}
+
+    {/* Dataset Picker modal */}
+    {showDatasetPicker && (
+      <DatasetPicker
+        onSelect={(datasetKey) => {
+          setShowDatasetPicker(false);
+          createNewList(datasetKey);
+        }}
+        onCancel={() => {
+          setShowDatasetPicker(false);
+          // If no list exists and user cancels, default to act-shorter
+          if (!listId) {
+            createNewList('act-shorter');
+          }
+        }}
+      />
+    )}
     </>
   );
 };
