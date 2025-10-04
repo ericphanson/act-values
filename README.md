@@ -10,7 +10,7 @@ Your lists are saved in your browser ("local storage"), but we recommend saving 
 
 To create your list, the website supports both a "desktop mode" and a "mobile mode". In desktop mode, you can drag-and-drop values or use keyboard shortcuts (the numbers 1, 2, and 3). In mobile mode, you use swipe gestures, and there is a separate "review" screen to support viewing all your tiers. Either way, you can categorize and identify your values, then save the link or print a PDF.
 
-Go to https://ericphanson.github.io/act-values/ to use the app.
+Go to https://valuetier.org/ to use the app.
 
 If you have problems, you can [file an issue](https://github.com/ericphanson/act-values/issues/new), which needs a free GitHub account. You can also contact me [here](https://ericphanson.com/contact), though I am not always responsive.
 
@@ -31,6 +31,6 @@ React, TypeScript, Tailwind CSS. Code written by Claude Sonnet 4.5.
 
 ### Clear local storage
 
-You clear local storage by adding `?clear=1` to the URL. For example: `https://ericphanson.github.io/act-values/?clear=1`. This is usually only needed by developers, as the UI provides a mechanism to delete lists. If the UI isn't loading though, clearing local storage could help.
+You clear local storage by adding `?clear=1` to the URL. For example: `https://valuetier.org/?clear=1`. This is usually only needed by developers, as the UI provides a mechanism to delete lists. If the UI isn't loading though, clearing local storage could help.
 
 Note: This will delete all your saved lists, so make sure you have exported any important lists first!
