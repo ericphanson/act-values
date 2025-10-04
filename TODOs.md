@@ -9,7 +9,8 @@
 
 These need some design thought to make sure it works well and doesn't add too much complexity. And ultimately they might be out of scope.
 
-- [ ] custom datasets or more datasets
+- [x] more datasets
+- [ ] custom datasets
 - [ ] custom values? maybe we could have the existing dataset but you can add a couple individual values
 - [ ] "domains of life" organization: https://stevenchayes.com/wp-content/uploads/2023/01/The-Valued-Living-Questionnaire.pdf
     - [ ] questionnaires? probably not
