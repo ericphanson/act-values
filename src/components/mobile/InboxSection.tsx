@@ -69,7 +69,14 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                 <span className="text-base" aria-hidden="true">💎</span> Narrow your focus
               </p>
               <p className="text-xs text-amber-800 leading-relaxed">
-                You've selected {veryImportantCount} very important values. We suggest narrowing to 10 so you can use them to guide decisions with more focus, using the Review Mode.
+                You've selected {veryImportantCount} very important values. We suggest narrowing to 10 so you can use them to guide decisions with more focus, using{' '}
+                <button
+                  type="button"
+                  onClick={onReviewMode}
+                  className="underline font-semibold hover:text-amber-900 transition-colors"
+                >
+                  Review Mode
+                </button>.
               </p>
             </div>
           )}

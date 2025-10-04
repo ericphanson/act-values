@@ -2073,7 +2073,7 @@ const ValuesTierList = () => {
                             <span className="text-base" aria-hidden="true">💎</span> Narrow your focus
                           </p>
                           <p className="text-xs text-amber-800 text-left">
-                            You've selected {veryImportantValues.length} very important values. We suggest narrowing to 10 so you can use them to guide decisions with more focus. Review the "Very Important" tier on the right.
+                            You've selected {veryImportantValues.length} very important values. We suggest narrowing to 10 so you can use them to guide decisions with more focus. Review the "Very Important" tier on the left.
                           </p>
                         </div>
                       )}
