@@ -1645,6 +1645,11 @@ const ValuesTierList = () => {
                             setShowRenameHint(false);
                           }
                         }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.currentTarget.blur();
+                          }
+                        }}
                         className={`text-xl font-semibold text-gray-800 bg-transparent border-2 ${
                           showRenameHint
                             ? 'border-blue-500 ring-2 ring-blue-200'

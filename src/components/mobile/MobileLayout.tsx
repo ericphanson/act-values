@@ -261,6 +261,11 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
             type="text"
             value={listName}
             onChange={(e) => onRenameList(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.currentTarget.blur();
+              }
+            }}
             className={`text-lg font-bold text-gray-800 bg-transparent border-b-2 ${
               showRenameHint
                 ? 'border-blue-500'
