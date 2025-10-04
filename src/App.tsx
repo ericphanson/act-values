@@ -740,6 +740,10 @@ const ValuesTierList = () => {
       return;
     }
 
+    // Set selectedDataset FIRST to ensure all downstream effects use the correct dataset
+    setSelectedDataset(persisted.datasetName);
+    localStorage.setItem('value-tier-last-dataset', persisted.datasetName);
+
     // Create values from dataset
     const importedValues: Value[] = dataset.data.map((item, idx) => ({
       id: `value-${idx}`,
@@ -792,8 +796,6 @@ const ValuesTierList = () => {
     setCollapsedCategories(persisted.collapsedCategories);
     setListId(persisted.listId);
     setListName(persisted.listName);
-    setSelectedDataset(persisted.datasetName);
-    localStorage.setItem('value-tier-last-dataset', persisted.datasetName);
   }, [loadDataset]);
 
   // Create a new list with specified dataset
