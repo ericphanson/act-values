@@ -2055,12 +2055,31 @@ const ValuesTierList = () => {
 
                 // Show completion message if all values are categorized
                 if (totalInCategories === 0 && totalValues > 0) {
+                  // Check if any tier is over quota
+                  const isOverQuota = tiers.some(tier => {
+                    if (!tier.quota) return false;
+                    const tierValues = values.filter(v => v.location === tier.id);
+                    return tierValues.length > tier.quota;
+                  });
+
                   return (
                     <div className="flex flex-col items-center justify-center h-full text-center px-6">
                       <h3 className="text-xl font-bold text-gray-800 mb-2">All done! <span aria-hidden="true">🎉</span></h3>
                       <p className="text-sm text-gray-600 mb-4">
                         You've categorized all {totalValues} values
                       </p>
+
+                      {isOverQuota && (
+                        <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 max-w-sm mb-4">
+                          <p className="text-sm font-semibold text-amber-900 mb-1">
+                            <span className="text-base" aria-hidden="true">⚠️</span> Refine your picks
+                          </p>
+                          <p className="text-xs text-amber-800 text-left">
+                            You've exceeded the quota for some tiers. Review your selections in the tiers on the right to refine your picks.
+                          </p>
+                        </div>
+                      )}
+
                       <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 max-w-sm mb-4">
                         <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs" aria-hidden="true">✨</span> Next Steps</p>
                         <p className="text-xs text-emerald-800 text-left">

@@ -47,6 +47,12 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
 }) => {
   // Only show "All done" if we have values loaded and none are in inbox
   if (values.length === 0 && totalValues > 0) {
+    // Check if any tier is over quota
+    const isOverQuota = Object.entries(tierCounts).some(([tierId, count]) => {
+      const quota = tierQuotas[tierId as keyof typeof tierQuotas];
+      return quota !== null && count > quota;
+    });
+
     return (
       <div className="p-6 max-w-md mx-auto">
         <div className="text-center mb-4">
@@ -57,6 +63,18 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
           <p className="text-sm text-gray-600 mb-3">
             You've categorized all your values
           </p>
+
+          {isOverQuota && (
+            <div className="bg-amber-50 border-2 border-amber-400 rounded-lg p-3 text-left mb-3">
+              <p className="text-sm font-semibold text-amber-900 mb-1">
+                <span className="text-base" aria-hidden="true">⚠️</span> Refine your picks
+              </p>
+              <p className="text-xs text-amber-800 leading-relaxed">
+                You've exceeded the quota for some tiers. Use Review Mode below to refine your selections.
+              </p>
+            </div>
+          )}
+
           <div className="bg-emerald-50 border-2 border-emerald-200 rounded-lg p-3 text-left">
             <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs" aria-hidden="true">✨</span> Next Steps</p>
             <p className="text-xs text-emerald-800 leading-relaxed">
@@ -121,7 +139,11 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
         <button
           type="button"
           onClick={onReviewMode}
-          className="w-full bg-white text-gray-700 py-2.5 px-4 rounded-xl font-medium hover:bg-gray-50 transition-colors border-2 border-gray-300 flex items-center justify-center gap-2"
+          className={`w-full py-2.5 px-4 rounded-xl font-medium hover:bg-gray-50 transition-colors border-2 flex items-center justify-center gap-2 ${
+            isOverQuota
+              ? 'bg-amber-100 text-amber-900 border-amber-400 hover:bg-amber-200'
+              : 'bg-white text-gray-700 border-gray-300'
+          }`}
         >
           <Eye size={16} aria-hidden="true" />
           <span className="text-sm">Review & Reorder</span>
