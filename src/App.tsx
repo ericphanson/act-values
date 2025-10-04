@@ -862,8 +862,14 @@ const ValuesTierList = () => {
       if (cacheCleared) {
         sessionStorage.removeItem('cache-just-cleared');
         showToast('✓ Cache cleared! App reset successfully.', 4000);
-        // Show dataset picker after clearing
-        setShowDatasetPicker(true);
+        // Show dataset picker after clearing (user has seen intro before)
+        const hasSeenIntro = localStorage.getItem('value-tier-seen-intro');
+        if (hasSeenIntro) {
+          setShowDatasetPicker(true);
+        } else {
+          // First time after clear - will show ACTIntro first
+          setShowACTIntro(true);
+        }
         return;
       }
 
@@ -974,8 +980,13 @@ const ValuesTierList = () => {
         }
       }
 
-      // No URL state and no current list - show dataset picker
-      setShowDatasetPicker(true);
+      // No URL state and no current list
+      // Only show dataset picker if not showing ACT intro (first-time user flow)
+      const hasSeenIntro = localStorage.getItem('value-tier-seen-intro');
+      if (hasSeenIntro) {
+        setShowDatasetPicker(true);
+      }
+      // Otherwise, ACTIntro will show first, then dataset picker on close
     };
 
     initializeApp();
