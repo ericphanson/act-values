@@ -1546,7 +1546,7 @@ const ValuesTierList = () => {
       <div className="h-screen bg-gradient-to-br from-blue-50 to-green-50 p-3 md:p-6 overflow-hidden">
       <div className="max-w-7xl mx-auto h-full flex flex-col">
 
-        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 print-header flex-shrink-0">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 print-header flex-shrink-0 relative z-50">
           <div className="flex flex-col gap-3">
             {/* Consolidated title with dropdown */}
             <div className="flex items-start justify-between gap-3">
