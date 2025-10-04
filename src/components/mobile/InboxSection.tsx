@@ -213,24 +213,29 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                 </div>
               </div>
               {/* Counter at bottom center with quota - red if over */}
-              <div className={`text-xs font-bold absolute bottom-2 left-2 right-2 text-center ${
-                tierQuotas['very-important'] && tierCounts['very-important'] > tierQuotas['very-important']
-                  ? 'text-red-700'
-                  : 'text-gray-700'
-              }`}>
+              <div className="absolute bottom-2 left-2 right-2 text-center">
                 {tierQuotas['very-important'] ? (
-                  <>
-                    {tierCounts['very-important']}
-                    <span className={`${
-                      tierCounts['very-important'] > tierQuotas['very-important']
-                        ? 'text-red-600'
-                        : 'text-gray-500'
-                    }`}>
-                      /{tierQuotas['very-important']}
+                  <div className="flex flex-col items-center gap-0.5">
+                    <div className="flex items-center gap-1">
+                      {tierCounts['very-important'] > tierQuotas['very-important'] && (
+                        <span className="text-red-600 text-xs" aria-hidden="true">⚠</span>
+                      )}
+                      <span className={`text-xs font-bold ${
+                        tierCounts['very-important'] > tierQuotas['very-important']
+                          ? 'text-red-700'
+                          : 'text-gray-700'
+                      }`}>
+                        {tierCounts['very-important']}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-gray-500 font-medium">
+                      (max {tierQuotas['very-important']})
                     </span>
-                  </>
+                  </div>
                 ) : (
-                  `${tierCounts['very-important']} values`
+                  <span className="text-xs font-bold text-gray-700">
+                    {tierCounts['very-important']} values
+                  </span>
                 )}
               </div>
             </div>

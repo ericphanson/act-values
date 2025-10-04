@@ -1757,7 +1757,6 @@ const ValuesTierList = () => {
           {tiers.map((tier, index) => {
             const tierValues = getValuesByLocation(tier.id);
             const isOverQuota = tier.quota && tierValues.length > tier.quota;
-            const quotaPercentage = tier.quota ? Math.min((tierValues.length / tier.quota) * 100, 100) : 0;
 
             return (
               <SortableContext
@@ -1811,23 +1810,16 @@ const ValuesTierList = () => {
 
                         {/* Quota indicator */}
                         {tier.quota && (
-                          <div className="space-y-1 print-hide">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className={`font-medium ${isOverQuota ? 'text-red-600' : 'text-gray-600'}`}>
-                                {tierValues.length} / {tier.quota}
-                              </span>
-                              {isOverQuota && (
-                                <span className="text-red-600 font-medium">Over limit!</span>
-                              )}
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                              <div
-                                className={`h-full transition-all ${
-                                  isOverQuota ? 'bg-red-500' : 'bg-emerald-500'
-                                }`}
-                                style={{ width: `${quotaPercentage}%` }}
-                              />
-                            </div>
+                          <div className="flex items-center gap-2 text-xs print-hide">
+                            {isOverQuota && (
+                              <span className="text-red-600" aria-hidden="true">⚠</span>
+                            )}
+                            <span className={`font-semibold ${isOverQuota ? 'text-red-600' : 'text-gray-700'}`}>
+                              {tierValues.length}
+                            </span>
+                            <span className="text-gray-500 font-medium">
+                              (max {tier.quota})
+                            </span>
                           </div>
                         )}
 

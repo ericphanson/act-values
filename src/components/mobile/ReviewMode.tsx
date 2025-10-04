@@ -197,26 +197,25 @@ export const ReviewMode: React.FC<ReviewModeProps> = ({
                     </h3>
                   </div>
                   <div className="flex items-center gap-2">
-                    {tier.quota && isOverQuota && (
-                      <span className="text-xs font-bold text-red-600">Over!</span>
+                    {tier.quota ? (
+                      <>
+                        {isOverQuota && (
+                          <span className="text-red-600" aria-hidden="true">⚠</span>
+                        )}
+                        <span className={`text-sm font-semibold ${isOverQuota ? 'text-red-600' : 'text-gray-700'}`}>
+                          {values.length}
+                        </span>
+                        <span className="text-xs text-gray-500 font-medium">
+                          (max {tier.quota})
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm font-semibold text-gray-700">
+                        {values.length}
+                      </span>
                     )}
-                    <span className={`text-sm font-semibold ${isOverQuota ? 'text-red-600' : 'text-gray-700'}`}>
-                      {values.length}
-                      {tier.quota && ` / ${tier.quota}`}
-                    </span>
                   </div>
                 </div>
-
-                {tier.quota && (
-                  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden mt-2">
-                    <div
-                      className={`h-full transition-all ${
-                        isOverQuota ? 'bg-red-500' : 'bg-emerald-500'
-                      }`}
-                      style={{ width: `${Math.min((values.length / tier.quota) * 100, 100)}%` }}
-                    />
-                  </div>
-                )}
               </div>
 
               {/* Tier values */}

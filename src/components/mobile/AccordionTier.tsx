@@ -39,7 +39,6 @@ export const AccordionTier: React.FC<AccordionTierProps> = ({
     },
   });
 
-  const quotaPercentage = tier.quota ? Math.min((values.length / tier.quota) * 100, 100) : 0;
   const contentId = `accordion-content-${tier.id}`;
 
   return (
@@ -72,29 +71,25 @@ export const AccordionTier: React.FC<AccordionTierProps> = ({
             </div>
 
           <div className="flex items-center gap-2">
-            {tier.quota && isOverQuota && (
-              <span className="text-xs font-bold text-red-600 animate-pulse">
-                Over!
+            {tier.quota ? (
+              <>
+                {isOverQuota && (
+                  <span className="text-red-600" aria-hidden="true">⚠</span>
+                )}
+                <span className={`text-sm font-semibold ${isOverQuota ? 'text-red-600' : 'text-gray-700'}`}>
+                  {values.length}
+                </span>
+                <span className="text-xs text-gray-500 font-medium">
+                  (max {tier.quota})
+                </span>
+              </>
+            ) : (
+              <span className="text-sm font-semibold text-gray-700">
+                {values.length}
               </span>
             )}
-            <span className={`text-sm font-semibold ${isOverQuota ? 'text-red-600' : 'text-gray-700'}`}>
-              {values.length}
-              {tier.quota && ` / ${tier.quota}`}
-            </span>
           </div>
         </div>
-
-        {/* Progress bar for quota */}
-        {tier.quota && (
-          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-            <div
-              className={`h-full transition-all ${
-                isOverQuota ? 'bg-red-500' : 'bg-emerald-500'
-              }`}
-              style={{ width: `${quotaPercentage}%` }}
-            />
-          </div>
-        )}
 
           {!tier.quota && !isExpanded && values.length > 0 && (
             <div className="text-xs text-gray-500 mt-1">

@@ -2,7 +2,7 @@
 
 - [x] if a list cannot be loaded from local storage, instead of crashing the app, clear it and print a toast letting the user know
 - [ ] think harder about the text, instructions, naming, etc...
-- [ ] accessibility improvements
+- [x] accessibility improvements
 - [ ] redesign quota UI: instead of 0/10, we don't really want to say you must have 10, we want to say no more than 10. Currently with the progress bar and 5/10 etc, it really communicates "get to 10".
 
 ## Needs design
