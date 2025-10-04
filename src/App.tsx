@@ -2055,12 +2055,10 @@ const ValuesTierList = () => {
 
                 // Show completion message if all values are categorized
                 if (totalInCategories === 0 && totalValues > 0) {
-                  // Check if any tier is over quota
-                  const isOverQuota = tiers.some(tier => {
-                    if (!tier.quota) return false;
-                    const tierValues = values.filter(v => v.location === tier.id);
-                    return tierValues.length > tier.quota;
-                  });
+                  // Check if "very important" tier is over quota
+                  const veryImportantTier = tiers.find(t => t.id === 'very-important');
+                  const veryImportantValues = values.filter(v => v.location === 'very-important');
+                  const isOverQuota = veryImportantTier?.quota && veryImportantValues.length > veryImportantTier.quota;
 
                   return (
                     <div className="flex flex-col items-center justify-center h-full text-center px-6">
@@ -2072,10 +2070,10 @@ const ValuesTierList = () => {
                       {isOverQuota && (
                         <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 max-w-sm mb-4">
                           <p className="text-sm font-semibold text-amber-900 mb-1">
-                            <span className="text-base" aria-hidden="true">⚠️</span> Refine your picks
+                            <span className="text-base" aria-hidden="true">💎</span> Narrow your focus
                           </p>
                           <p className="text-xs text-amber-800 text-left">
-                            You've exceeded the quota for some tiers. Review your selections in the tiers on the right to refine your picks.
+                            You've selected {veryImportantValues.length} very important values. We suggest narrowing to 10 so you can use them to guide decisions with more focus. Review the "Very Important" tier on the right.
                           </p>
                         </div>
                       )}

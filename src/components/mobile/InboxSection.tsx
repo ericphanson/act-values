@@ -47,11 +47,10 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
 }) => {
   // Only show "All done" if we have values loaded and none are in inbox
   if (values.length === 0 && totalValues > 0) {
-    // Check if any tier is over quota
-    const isOverQuota = Object.entries(tierCounts).some(([tierId, count]) => {
-      const quota = tierQuotas[tierId as keyof typeof tierQuotas];
-      return quota !== null && count > quota;
-    });
+    // Check if "very important" tier is over quota
+    const veryImportantCount = tierCounts['very-important'];
+    const veryImportantQuota = tierQuotas['very-important'];
+    const isOverQuota = veryImportantQuota !== null && veryImportantCount > veryImportantQuota;
 
     return (
       <div className="p-6 max-w-md mx-auto">
@@ -67,10 +66,10 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
           {isOverQuota && (
             <div className="bg-amber-50 border-2 border-amber-400 rounded-lg p-3 text-left mb-3">
               <p className="text-sm font-semibold text-amber-900 mb-1">
-                <span className="text-base" aria-hidden="true">⚠️</span> Refine your picks
+                <span className="text-base" aria-hidden="true">💎</span> Narrow your focus
               </p>
               <p className="text-xs text-amber-800 leading-relaxed">
-                You've exceeded the quota for some tiers. Use Review Mode below to refine your selections.
+                You've selected {veryImportantCount} very important values. We suggest narrowing to 10 so you can use them to guide decisions with more focus, using the Review Mode.
               </p>
             </div>
           )}
