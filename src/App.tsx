@@ -899,7 +899,7 @@ const ValuesTierList = () => {
           const canonicalOrder = getCanonicalCategoryOrder(dataset);
           const correctPersisted = decodeUrlToState(hash, dataset.data.length, canonicalOrder);
 
-          if (!correctPersisted) {
+          if (!correctPersisted || !correctPersisted.listId) {
             showToast('Failed to load data from URL. Starting with a new list.', 5000);
             setShowDatasetPicker(true);
             return;

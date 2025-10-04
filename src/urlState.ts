@@ -163,7 +163,7 @@ export function decodeUrlToState(
     const params = new URLSearchParams(paramsString);
     const listId = params.get('id') || '';
     const listName = decodeURIComponent(params.get('n') || '');
-    const datasetName = params.get('d') || 'act-comprehensive';
+    const datasetName = params.get('d') || 'act-shorter';
     const datasetVersion = parseInt(params.get('v') || '1', 10);
 
     // Decode category ordering from permutation (if present)
