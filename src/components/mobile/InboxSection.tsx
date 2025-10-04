@@ -4,7 +4,7 @@ import { ValueChipMobile } from './ValueChipMobile';
 import { SwipeDirection } from '../../hooks/useSwipeGesture';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Eye, Share2, Printer } from 'lucide-react';
-import { COMPLETION_NEXT_STEPS, COMPLETION_SAVE_TEXT } from '../../constants/completionText';
+import { COMPLETION_NEXT_STEPS, COMPLETION_SAVE_TEXT, SHARE_EXPLANATION_TEXT } from '../../constants/completionText';
 
 interface InboxSectionProps {
   values: Value[];
@@ -89,7 +89,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
             {/* Share explanation popover */}
             {showShareExplanation && (
               <div
-                className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-40 animate-fade-in-up"
+                className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-60 animate-fade-in-up"
                 role="status"
                 aria-live="polite"
               >
@@ -103,7 +103,7 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
                   <span aria-hidden="true">✕</span>
                 </button>
                 <p className="text-sm text-gray-700 leading-relaxed pr-4">
-                  Your data is safely encoded in this link. Keep it to access your values anywhere, or share it with others.
+                  {SHARE_EXPLANATION_TEXT}
                 </p>
               </div>
             )}

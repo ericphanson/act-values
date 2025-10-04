@@ -11,6 +11,7 @@ import { UndoToast } from './UndoToast';
 import { SwipeHint } from './SwipeHint';
 import { Eye, Share2, Printer, ChevronDown, Trash2, Info } from 'lucide-react';
 import { SavedList } from '../../types';
+import { SHARE_EXPLANATION_TEXT } from '../../constants/completionText';
 
 interface MobileLayoutProps {
   values: Value[];
@@ -38,6 +39,7 @@ interface MobileLayoutProps {
   showingACTIntro: boolean;
   showShareExplanation: boolean;
   onDismissShareExplanation: () => void;
+  showRenameHint: boolean;
 }
 
 export const MobileLayout: React.FC<MobileLayoutProps> = ({
@@ -60,6 +62,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   showingACTIntro,
   showShareExplanation,
   onDismissShareExplanation,
+  showRenameHint,
 }) => {
   const [expandedTier, setExpandedTier] = useState<TierId | null>('very-important');
   const [actionSheetValue, setActionSheetValue] = useState<Value | null>(null);
@@ -239,20 +242,30 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
 
   const handleShare = () => {
     onShare();
-    setShareToast(true);
-    setTimeout(() => setShareToast(false), 3000);
+
+    // Only show toast if user has already seen the explanation and not using default name
+    const hasDefaultName = listName.startsWith('My values - ');
+    const hasSeenExplanation = localStorage.getItem('act-values-share-explained');
+    if (hasSeenExplanation && !hasDefaultName) {
+      setShareToast(true);
+      setTimeout(() => setShareToast(false), 3000);
+    }
   };
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 to-green-50 overflow-x-hidden">
       {/* Compact header */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between gap-2 relative">
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between gap-2 relative z-50">
         <div className="flex-1 min-w-0 flex items-center gap-2">
           <input
             type="text"
             value={listName}
             onChange={(e) => onRenameList(e.target.value)}
-            className="text-lg font-bold text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-emerald-500 focus:outline-none px-1 flex-1 min-w-0"
+            className={`text-lg font-bold text-gray-800 bg-transparent border-b-2 ${
+              showRenameHint
+                ? 'border-blue-500'
+                : 'border-transparent hover:border-gray-300'
+            } focus:border-emerald-500 focus:outline-none px-1 flex-1 min-w-0`}
             placeholder="List name..."
           />
           <button
@@ -295,7 +308,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
             {/* Share explanation popover */}
             {showShareExplanation && (
               <div
-                className="absolute top-full mt-2 right-0 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-40 animate-fade-in-up"
+                className="absolute top-full mt-2 right-0 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-60 animate-fade-in-up"
                 role="status"
                 aria-live="polite"
               >
@@ -309,7 +322,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                   <span aria-hidden="true">✕</span>
                 </button>
                 <p className="text-sm text-gray-700 leading-relaxed pr-4">
-                  Your data is safely encoded in this link. Keep it to access your values anywhere, or share it with others.
+                  {SHARE_EXPLANATION_TEXT}
                 </p>
               </div>
             )}
@@ -372,6 +385,15 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                 + New List
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Rename hint */}
+        {showRenameHint && (
+          <div className="absolute top-full left-0 right-0 px-4 py-2 bg-blue-50 border-b border-blue-200 z-40 animate-fade-in-up">
+            <p className="text-sm text-blue-700 font-medium">
+              <span aria-hidden="true">💡</span> Give your list a descriptive name before sharing!
+            </p>
           </div>
         )}
       </div>
