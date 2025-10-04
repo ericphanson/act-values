@@ -1,7 +1,7 @@
 import { SavedList } from './types';
 
-const SAVED_LISTS_KEY = 'act-values-saved-lists';
-const CURRENT_LIST_ID_KEY = 'act-values-current-list-id';
+const SAVED_LISTS_KEY = 'value-tier-saved-lists';
+const CURRENT_LIST_ID_KEY = 'value-tier-current-list-id';
 
 /**
  * Load all saved lists from localStorage

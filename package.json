@@ -1,5 +1,5 @@
 {
-  "name": "act-values",
+  "name": "value-tier",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,16 +10,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ericphanson/act-values.git"
+    "url": "git+https://github.com/ericphanson/value-tier.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/ericphanson/act-values/issues"
+    "url": "https://github.com/ericphanson/value-tier/issues"
   },
-  "homepage": "https://github.com/ericphanson/act-values#readme",
+  "homepage": "https://github.com/ericphanson/value-tier#readme",
   "devDependencies": {
     "@types/node": "^24.6.1",
     "@types/react": "^19.1.16",

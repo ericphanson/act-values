@@ -324,7 +324,7 @@ const ValuesTierList = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showACTIntro, setShowACTIntro] = useState(() => {
     // Show intro on first visit
-    const hasSeenIntro = localStorage.getItem('act-values-seen-intro');
+    const hasSeenIntro = localStorage.getItem('value-tier-seen-intro');
     return !hasSeenIntro;
   });
   const [listId, setListId] = useState<string>('');
@@ -345,7 +345,7 @@ const ValuesTierList = () => {
   // Mobile layout detection
   const isMobileScreen = useMediaQuery('(max-width: 767px)');
   const [forcedMode, setForcedMode] = useState<'mobile' | 'desktop' | null>(() => {
-    const saved = localStorage.getItem('act-values-forced-mode');
+    const saved = localStorage.getItem('value-tier-forced-mode');
     return saved === 'mobile' || saved === 'desktop' ? saved : null;
   });
 
@@ -375,15 +375,15 @@ const ValuesTierList = () => {
   // Persist forced mode to localStorage
   useEffect(() => {
     if (forcedMode) {
-      localStorage.setItem('act-values-forced-mode', forcedMode);
+      localStorage.setItem('value-tier-forced-mode', forcedMode);
     } else {
-      localStorage.removeItem('act-values-forced-mode');
+      localStorage.removeItem('value-tier-forced-mode');
     }
   }, [forcedMode]);
 
   // Show mobile mode suggestion for touch devices in desktop mode
   useEffect(() => {
-    const dismissed = localStorage.getItem('act-values-dismissed-mobile-suggestion');
+    const dismissed = localStorage.getItem('value-tier-dismissed-mobile-suggestion');
     if (hasTouchCapability && !isMobileLayout && !dismissed) {
       // Small delay so it doesn't appear immediately on load
       const timer = setTimeout(() => {
@@ -974,7 +974,7 @@ const ValuesTierList = () => {
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       // Only handle changes to our saved lists
-      if (e.key !== 'act-values-saved-lists' || !e.newValue) return;
+      if (e.key !== 'value-tier-saved-lists' || !e.newValue) return;
 
       // Reload the current list from storage
       const result = loadList(listId);
@@ -1041,10 +1041,10 @@ const ValuesTierList = () => {
       }
 
       // Show explanation popover on first share
-      const hasSeenExplanation = localStorage.getItem('act-values-share-explained');
+      const hasSeenExplanation = localStorage.getItem('value-tier-share-explained');
       if (!hasSeenExplanation) {
         setShowShareExplanation(true);
-        localStorage.setItem('act-values-share-explained', 'true');
+        localStorage.setItem('value-tier-share-explained', 'true');
         // Auto-hide after 8 seconds
         setTimeout(() => setShowShareExplanation(false), 8000);
       }
@@ -2059,7 +2059,7 @@ const ValuesTierList = () => {
         {/* Footer */}
         <div className="text-center py-3 text-xs text-gray-500 print-hide">
           <a
-            href="https://github.com/ericphanson/act-values"
+            href="https://github.com/ericphanson/value-tier"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-gray-700 hover:underline"
@@ -2111,7 +2111,7 @@ const ValuesTierList = () => {
                 type="button"
                 onClick={() => {
                   setShowMobileSuggestion(false);
-                  localStorage.setItem('act-values-dismissed-mobile-suggestion', 'true');
+                  localStorage.setItem('value-tier-dismissed-mobile-suggestion', 'true');
                 }}
                 className="text-emerald-100 hover:text-white transition-colors"
                 aria-label="Dismiss"
@@ -2125,7 +2125,7 @@ const ValuesTierList = () => {
                 onClick={() => {
                   switchToMode('mobile');
                   setShowMobileSuggestion(false);
-                  localStorage.setItem('act-values-dismissed-mobile-suggestion', 'true');
+                  localStorage.setItem('value-tier-dismissed-mobile-suggestion', 'true');
                 }}
                 className="bg-white text-emerald-600 px-4 py-2 rounded font-semibold hover:bg-emerald-50 transition-colors"
               >
@@ -2135,7 +2135,7 @@ const ValuesTierList = () => {
                 type="button"
                 onClick={() => {
                   setShowMobileSuggestion(false);
-                  localStorage.setItem('act-values-dismissed-mobile-suggestion', 'true');
+                  localStorage.setItem('value-tier-dismissed-mobile-suggestion', 'true');
                 }}
                 className="text-emerald-100 px-4 py-2 rounded hover:text-white transition-colors"
               >
@@ -2166,7 +2166,7 @@ const ValuesTierList = () => {
     {/* ACT Intro overlay - outside DndContext so it works in both mobile and desktop layouts */}
     {showACTIntro && <ACTIntro onClose={() => {
       setShowACTIntro(false);
-      localStorage.setItem('act-values-seen-intro', 'true');
+      localStorage.setItem('value-tier-seen-intro', 'true');
     }} />}
     </>
   );

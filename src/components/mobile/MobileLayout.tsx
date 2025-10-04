@@ -245,7 +245,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
 
     // Only show toast if user has already seen the explanation and not using default name
     const hasDefaultName = listName.startsWith('My values - ');
-    const hasSeenExplanation = localStorage.getItem('act-values-share-explained');
+    const hasSeenExplanation = localStorage.getItem('value-tier-share-explained');
     if (hasSeenExplanation && !hasDefaultName) {
       setShareToast(true);
       setTimeout(() => setShareToast(false), 3000);
@@ -465,7 +465,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         {/* Footer */}
         <div className="text-center py-4 px-4 text-xs text-gray-500 border-t border-gray-200 bg-white">
           <a
-            href="https://github.com/ericphanson/act-values"
+            href="https://github.com/ericphanson/value-tier"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-gray-700 hover:underline"
