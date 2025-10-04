@@ -158,7 +158,7 @@ export const preloadedDatasets: Record<string, Dataset> = {
   },
   // name here is historical (used to be even longer list). Do not change the keys, they are persisted in saved URLs and PDFs and must continue to work
   'act-shorter': {
-    'name': "Big",
+    'name': "Large",
     'version': 1,
     data: [
       { "name": "Compassion", "description": "Actively caring about others’ suffering and taking steps to relieve it.", "category": "Compassion & Care" },
