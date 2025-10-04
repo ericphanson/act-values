@@ -144,7 +144,7 @@ export const DatasetPicker: React.FC<DatasetPickerProps> = ({ onSelect, onCancel
                   <div className="font-semibold text-gray-900">{dataset.name}</div>
                   <div className="text-sm text-gray-600 mt-0.5">
                     {dataset.data.length} values
-                    {key === 'act-50' && ' - Quick start'}
+                    {dataset.description && ` - ${dataset.description}`}
                   </div>
                 </div>
               </label>

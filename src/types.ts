@@ -9,6 +9,7 @@ export interface Value {
 
 export interface Dataset {
   name: string;
+  description?: string;
   version: number;
   data: Array<{
     name: string;
