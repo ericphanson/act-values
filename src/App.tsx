@@ -1698,17 +1698,26 @@ const ValuesTierList = () => {
                                   saveList(listToSave);
                                 }
 
-                                const dataset = preloadedDatasets[list.datasetName];
-                                if (dataset) {
-                                  const canonicalOrder = getCanonicalCategoryOrder(dataset);
-                                  const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
-                                  if (persisted) {
-                                    currentFragmentRef.current = list.fragment;
-                                    hydrateState(persisted as PersistedState);
-                                    setCurrentListId(list.id);
-                                    lastKnownModified.current = list.lastModified;
-                                  } else {
-                                    showToast('Failed to decode the selected list.', 5000);
+                                // Load fresh from localStorage (not stale React state)
+                                const result = loadList(list.id);
+                                if (result.error) {
+                                  showToast(result.error, 5000);
+                                  return;
+                                }
+
+                                if (result.list) {
+                                  const dataset = preloadedDatasets[result.list.datasetName];
+                                  if (dataset) {
+                                    const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                                    const persisted = decodeUrlToState(result.list.fragment, dataset.data.length, canonicalOrder);
+                                    if (persisted) {
+                                      currentFragmentRef.current = result.list.fragment;
+                                      hydrateState(persisted as PersistedState);
+                                      setCurrentListId(list.id);
+                                      lastKnownModified.current = result.list.lastModified;
+                                    } else {
+                                      showToast('Failed to decode the selected list.', 5000);
+                                    }
                                   }
                                 }
                               }
@@ -1735,17 +1744,26 @@ const ValuesTierList = () => {
                                     saveList(listToSave);
                                   }
 
-                                  const dataset = preloadedDatasets[list.datasetName];
-                                  if (dataset) {
-                                    const canonicalOrder = getCanonicalCategoryOrder(dataset);
-                                    const persisted = decodeUrlToState(list.fragment, dataset.data.length, canonicalOrder);
-                                    if (persisted) {
-                                      currentFragmentRef.current = list.fragment;
-                                      hydrateState(persisted as PersistedState);
-                                      setCurrentListId(list.id);
-                                      lastKnownModified.current = list.lastModified;
-                                    } else {
-                                      showToast('Failed to decode the selected list.', 5000);
+                                  // Load fresh from localStorage (not stale React state)
+                                  const result = loadList(list.id);
+                                  if (result.error) {
+                                    showToast(result.error, 5000);
+                                    return;
+                                  }
+
+                                  if (result.list) {
+                                    const dataset = preloadedDatasets[result.list.datasetName];
+                                    if (dataset) {
+                                      const canonicalOrder = getCanonicalCategoryOrder(dataset);
+                                      const persisted = decodeUrlToState(result.list.fragment, dataset.data.length, canonicalOrder);
+                                      if (persisted) {
+                                        currentFragmentRef.current = result.list.fragment;
+                                        hydrateState(persisted as PersistedState);
+                                        setCurrentListId(list.id);
+                                        lastKnownModified.current = result.list.lastModified;
+                                      } else {
+                                        showToast('Failed to decode the selected list.', 5000);
+                                      }
                                     }
                                   }
                                 }
