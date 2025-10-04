@@ -1531,6 +1531,23 @@ const ValuesTierList = () => {
             onDismissShareExplanation={() => setShowShareExplanation(false)}
             showRenameHint={showRenameHint}
             onSwitchList={(switchToListId) => {
+              // Save current list immediately before switching to avoid losing changes
+              if (switchToListId !== listId && values.length > 0 && listId) {
+                const state = serializeState();
+                const currentDataset = preloadedDatasets[selectedDataset];
+                const currentCanonicalOrder = getCanonicalCategoryOrder(currentDataset);
+                const currentHash = encodeStateToUrl(state, currentDataset.data.length, currentCanonicalOrder);
+                const listToSave: SavedList = {
+                  id: listId,
+                  name: listName,
+                  datasetName: selectedDataset,
+                  fragment: currentHash,
+                  lastModified: Date.now(),
+                  createdAt: loadList(listId).list?.createdAt || Date.now()
+                };
+                saveList(listToSave);
+              }
+
               const result = loadList(switchToListId);
               if (result.error) {
                 showToast(result.error, 5000);
@@ -1664,6 +1681,23 @@ const ValuesTierList = () => {
                             tabIndex={0}
                             onClick={() => {
                               if (list.id !== listId) {
+                                // Save current list immediately before switching to avoid losing changes
+                                if (values.length > 0 && listId) {
+                                  const state = serializeState();
+                                  const currentDataset = preloadedDatasets[selectedDataset];
+                                  const currentCanonicalOrder = getCanonicalCategoryOrder(currentDataset);
+                                  const currentHash = encodeStateToUrl(state, currentDataset.data.length, currentCanonicalOrder);
+                                  const listToSave: SavedList = {
+                                    id: listId,
+                                    name: listName,
+                                    datasetName: selectedDataset,
+                                    fragment: currentHash,
+                                    lastModified: Date.now(),
+                                    createdAt: loadList(listId).list?.createdAt || Date.now()
+                                  };
+                                  saveList(listToSave);
+                                }
+
                                 const dataset = preloadedDatasets[list.datasetName];
                                 if (dataset) {
                                   const canonicalOrder = getCanonicalCategoryOrder(dataset);
@@ -1684,6 +1718,23 @@ const ValuesTierList = () => {
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
                                 if (list.id !== listId) {
+                                  // Save current list immediately before switching to avoid losing changes
+                                  if (values.length > 0 && listId) {
+                                    const state = serializeState();
+                                    const currentDataset = preloadedDatasets[selectedDataset];
+                                    const currentCanonicalOrder = getCanonicalCategoryOrder(currentDataset);
+                                    const currentHash = encodeStateToUrl(state, currentDataset.data.length, currentCanonicalOrder);
+                                    const listToSave: SavedList = {
+                                      id: listId,
+                                      name: listName,
+                                      datasetName: selectedDataset,
+                                      fragment: currentHash,
+                                      lastModified: Date.now(),
+                                      createdAt: loadList(listId).list?.createdAt || Date.now()
+                                    };
+                                    saveList(listToSave);
+                                  }
+
                                   const dataset = preloadedDatasets[list.datasetName];
                                   if (dataset) {
                                     const canonicalOrder = getCanonicalCategoryOrder(dataset);
