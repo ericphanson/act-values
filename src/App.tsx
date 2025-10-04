@@ -2062,21 +2062,18 @@ const ValuesTierList = () => {
 
                   return (
                     <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">All done! <span aria-hidden="true">🎉</span></h3>
-                      <p className="text-sm text-gray-600 mb-4">
-                        You've categorized all {totalValues} values
-                      </p>
-
-                      {isOverQuota && (
-                        <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 max-w-sm mb-4">
-                          <p className="text-sm font-semibold text-amber-900 mb-1">
-                            <span className="text-base" aria-hidden="true">💎</span> Narrow your focus
-                          </p>
-                          <p className="text-xs text-amber-800 text-left">
-                            You've selected {veryImportantValues.length} very important values. We suggest narrowing to 10 so you can use them to guide decisions with more focus. Review the "Very Important" tier on the left.
-                          </p>
-                        </div>
+                      {!isOverQuota && (
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">All done! <span aria-hidden="true">🎉</span></h3>
                       )}
+                      <p className="text-sm text-gray-600 mb-4">
+                        {isOverQuota ? (
+                          <>
+                            You've categorized all {totalValues} values with {veryImportantValues.length} "very important" values. We suggest trimming to just 10.
+                          </>
+                        ) : (
+                          <>You've categorized all {totalValues} values</>
+                        )}
+                      </p>
 
                       <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 max-w-sm mb-4">
                         <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs" aria-hidden="true">✨</span> Next Steps</p>

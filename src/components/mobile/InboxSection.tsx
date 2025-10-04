@@ -55,31 +55,30 @@ export const InboxSection: React.FC<InboxSectionProps> = ({
     return (
       <div className="p-6 max-w-md mx-auto">
         <div className="text-center mb-4">
-          <div className="text-5xl mb-3" aria-hidden="true">🎉</div>
-          <h3 className="text-xl font-bold text-gray-800 mb-1">
-            All done!
-          </h3>
+          {!isOverQuota && (
+            <>
+              <div className="text-5xl mb-3" aria-hidden="true">🎉</div>
+              <h3 className="text-xl font-bold text-gray-800 mb-1">
+                All done!
+              </h3>
+            </>
+          )}
           <p className="text-sm text-gray-600 mb-3">
-            You've categorized all your values
-          </p>
-
-          {isOverQuota && (
-            <div className="bg-amber-50 border-2 border-amber-400 rounded-lg p-3 text-left mb-3">
-              <p className="text-sm font-semibold text-amber-900 mb-1">
-                <span className="text-base" aria-hidden="true">💎</span> Narrow your focus
-              </p>
-              <p className="text-xs text-amber-800 leading-relaxed">
-                You've selected {veryImportantCount} very important values. We suggest narrowing to 10 so you can use them to guide decisions with more focus, using{' '}
+            {isOverQuota ? (
+              <>
+                You've categorized all your values with {veryImportantCount} "very important" values. We suggest trimming to just 10, using{' '}
                 <button
                   type="button"
                   onClick={onReviewMode}
-                  className="underline font-semibold hover:text-amber-900 transition-colors"
+                  className="underline font-semibold hover:text-gray-800 transition-colors"
                 >
                   Review Mode
                 </button>.
-              </p>
-            </div>
-          )}
+              </>
+            ) : (
+              "You've categorized all your values"
+            )}
+          </p>
 
           <div className="bg-emerald-50 border-2 border-emerald-200 rounded-lg p-3 text-left">
             <p className="text-sm font-semibold text-emerald-900 mb-1"><span className="text-xs" aria-hidden="true">✨</span> Next Steps</p>
