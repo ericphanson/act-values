@@ -10,7 +10,7 @@ interface DatasetPickerProps {
 export const DatasetPicker: React.FC<DatasetPickerProps> = ({ onSelect, onCancel }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
-  const [selectedDataset, setSelectedDataset] = React.useState<string>('act-shorter');
+  const [selectedDataset, setSelectedDataset] = React.useState<string>('act-50');
 
   useEffect(() => {
     // Store previously focused element
@@ -144,8 +144,7 @@ export const DatasetPicker: React.FC<DatasetPickerProps> = ({ onSelect, onCancel
                   <div className="font-semibold text-gray-900">{dataset.name}</div>
                   <div className="text-sm text-gray-600 mt-0.5">
                     {dataset.data.length} values
-                    {key === 'act-shorter' && ' - Quick start'}
-                    {key === 'act-comprehensive' && ' - Complete set'}
+                    {key === 'act-50' && ' - Quick start'}
                   </div>
                 </div>
               </label>

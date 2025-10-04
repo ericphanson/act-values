@@ -321,8 +321,8 @@ const ValuesTierList = () => {
   const [animatingValues, setAnimatingValues] = useState(new Set<string>());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedDataset, setSelectedDataset] = useState<string>(() => {
-    // Default to last used dataset or 'act-shorter' for backwards compatibility
-    return localStorage.getItem('value-tier-last-dataset') || 'act-shorter';
+    // Default to last used dataset or 'act-50' for new users
+    return localStorage.getItem('value-tier-last-dataset') || 'act-50';
   });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showACTIntro, setShowACTIntro] = useState(() => {
@@ -2233,9 +2233,9 @@ const ValuesTierList = () => {
         }}
         onCancel={() => {
           setShowDatasetPicker(false);
-          // If no list exists and user cancels, default to act-shorter
+          // If no list exists and user cancels, default to act-50
           if (!listId) {
-            createNewList('act-shorter');
+            createNewList('act-50');
           }
         }}
       />
