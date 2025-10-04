@@ -12,4 +12,4 @@ export const COMPLETION_SAVE_TEXT = (
   </>
 );
 
-export const SHARE_EXPLANATION_TEXT = "A snapshot of your values is safely encoded in the link which is copied to your clipboard. Save it to access your values, or share it with others.";
+export const SHARE_EXPLANATION_TEXT = "This link (copied to clipboard) contains a snapshot of your values. Keep it to access anywhere, or share it.";
