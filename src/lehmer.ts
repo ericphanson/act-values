@@ -13,6 +13,8 @@
  * Works in browsers and Node (no deps). Target ES2020+ for BigInt support.
  */
 
+import { toBase64Url, fromBase64Url } from './utils/base64';
+
 export interface TierState {
   very: number[];
   somewhat: number[];
@@ -299,30 +301,6 @@ function bytesToBigIntBE(bytes: Uint8Array): bigint {
     x = (x << 8n) | BigInt(b);
   }
   return x;
-}
-
-/* --------------------------- Base64URL helpers -------------------------- */
-
-function toBase64Url(bytes: Uint8Array): string {
-  // Browser-safe path
-  if (typeof btoa === 'function') {
-    let bin = '';
-    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-  }
-  // Node path
-  return Buffer.from(bytes).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-}
-
-function fromBase64Url(s: string): Uint8Array {
-  const base64 = s.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(s.length / 4) * 4, '=');
-  if (typeof atob === 'function') {
-    const bin = atob(base64);
-    const out = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-    return out;
-  }
-  return new Uint8Array(Buffer.from(base64, 'base64'));
 }
 
 /* ============================== Example use ============================= */

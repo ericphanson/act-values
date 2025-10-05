@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const COMPLETION_NEXT_STEPS = (
   <>
     Consider: What small actions could you take this week to move toward your "Very Important" values? ACT is about <strong>committed action</strong>—living in alignment with what matters most.

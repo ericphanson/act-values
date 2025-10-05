@@ -6,6 +6,7 @@ import {
   encodePermutationToBytes,
   decodeFragmentToPermutation
 } from './lehmer';
+import { toBase64Url, fromBase64Url } from './utils/base64';
 import LZString from 'lz-string';
 
 /**
@@ -93,27 +94,6 @@ export function encodeStateToUrl(
   const compressed = LZString.compressToEncodedURIComponent(rawHash);
 
   return `#${compressed}`;
-}
-
-// Base64URL helper (copied from lehmer.ts to avoid circular dependency)
-function toBase64Url(bytes: Uint8Array): string {
-  if (typeof btoa === 'function') {
-    let bin = '';
-    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-  }
-  return Buffer.from(bytes).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-}
-
-function fromBase64Url(s: string): Uint8Array {
-  const base64 = s.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(s.length / 4) * 4, '=');
-  if (typeof atob === 'function') {
-    const bin = atob(base64);
-    const out = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-    return out;
-  }
-  return new Uint8Array(Buffer.from(base64, 'base64'));
 }
 
 /**
