@@ -1137,6 +1137,12 @@ const ValuesTierList = () => {
   // Keyboard shortcut handler
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input field
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
       if (hoveredValue && (tierKeys[e.key] || e.key === '4')) {
         let targetLocation: string;
 

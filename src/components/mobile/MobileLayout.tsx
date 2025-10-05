@@ -194,6 +194,12 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
     if (isTouchDevice || reviewMode) return; // Only for non-touch devices and not in review mode
 
     const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input field
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
       // Get the first inbox value
       const tierIds: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
       const inboxValues = values.filter(v => !tierIds.includes(v.location as TierId));
