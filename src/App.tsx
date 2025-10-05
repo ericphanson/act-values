@@ -11,7 +11,9 @@ import {
   closestCenter,
   pointerWithin,
   rectIntersection,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
   useDroppable,
@@ -59,8 +61,6 @@ interface SortableValueProps {
   containerId: string;
   activeId: string | null;
   isTouchDevice?: boolean;
-  selectedTierForTouch?: TierId | null;
-  onTouchSelect?: (value: Value) => void;
 }
 
 const getValueClass = (value: Value, animatingValues: Set<string>, isInTier: boolean) => {
@@ -84,11 +84,7 @@ const SortableValue: React.FC<SortableValueProps> = ({
   containerId,
   activeId,
   isTouchDevice = false,
-  selectedTierForTouch = null,
-  onTouchSelect,
 }) => {
-  const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const longPressTriggeredRef = React.useRef(false);
   const valueRef = React.useRef<HTMLDivElement>(null);
   const [tooltipPosition, setTooltipPosition] = React.useState<{ top: number; left: number } | null>(null);
 
@@ -112,39 +108,10 @@ const SortableValue: React.FC<SortableValueProps> = ({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    touchAction: 'none', // Prevent scrolling during drag on touch devices
   };
 
   const baseClass = getValueClass(value, animatingValues, isInTier);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (isTouchDevice && selectedTierForTouch) {
-      longPressTriggeredRef.current = false;
-      longPressTimerRef.current = setTimeout(() => {
-        longPressTriggeredRef.current = true;
-        setHoveredValue(value);
-      }, 500); // 500ms for long press
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    // If long press was triggered, close tooltip on release
-    if (longPressTriggeredRef.current) {
-      setTimeout(() => setHoveredValue(null), 2000); // Auto-hide after 2s
-      longPressTriggeredRef.current = false;
-    }
-  };
-
-  const handleTouchCancel = () => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    longPressTriggeredRef.current = false;
-  };
 
   const updateTooltipPosition = React.useCallback(() => {
     if (valueRef.current && hoveredValue?.id === value.id) {
@@ -179,11 +146,8 @@ const SortableValue: React.FC<SortableValueProps> = ({
   }, [updateTooltipPosition]);
 
   const handleClick = (e: React.MouseEvent) => {
-    if (isTouchDevice && selectedTierForTouch && onTouchSelect && !longPressTriggeredRef.current) {
-      e.stopPropagation();
-      onTouchSelect(value);
-    } else if (isTouchDevice && !selectedTierForTouch) {
-      // If no tier is selected, toggle hover on tap to show description
+    if (isTouchDevice) {
+      // Toggle hover on tap to show description
       e.stopPropagation();
       if (hoveredValue?.id === value.id) {
         setHoveredValue(null);
@@ -206,10 +170,7 @@ const SortableValue: React.FC<SortableValueProps> = ({
         onMouseEnter={() => setHoveredValue(value)}
         onMouseLeave={() => setHoveredValue(null)}
         onClick={handleClick}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchCancel}
-        className={`${baseClass} ${isTouchDevice && selectedTierForTouch ? 'cursor-pointer' : ''} print-value-item`}
+        className={`${baseClass} print-value-item`}
         data-value-id={value.id}
       >
         <span className={`${isInTier ? 'font-medium text-gray-800 dark:text-gray-200 block' : 'text-gray-800 dark:text-gray-200 font-medium'} print-value-name`}>
@@ -333,7 +294,6 @@ const ValuesTierList = () => {
   const [listId, setListId] = useState<string>('');
   const [listName, setListName] = useState<string>('');
   const [savedLists, setSavedLists] = useState<SavedList[]>([]);
-  const [selectedTierForTouch, setSelectedTierForTouch] = useState<TierId | null>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [showListDropdown, setShowListDropdown] = useState(false);
   const [showRenameHint, setShowRenameHint] = useState(false);
@@ -402,11 +362,21 @@ const ValuesTierList = () => {
 
   // Configure sensors for drag and drop
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    // Mouse for desktop
+    useSensor(MouseSensor, {
       activationConstraint: {
         distance: 8, // 8px movement required before drag starts
       },
-    })
+    }),
+    // Touch for mobile/tablet - responsive drag and drop
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 60,       // 60ms hold before drag starts
+        tolerance: 5,    // 5px tolerance during delay (prevents accidental drags)
+      },
+    }),
+    // Keyboard for accessibility
+    useSensor(KeyboardSensor)
   );
 
   const prioritizeValues = useCallback((collisions: ReturnType<typeof pointerWithin>) => {
@@ -1340,70 +1310,6 @@ const ValuesTierList = () => {
     setHoveredValue(null);
   };
 
-  const handleTouchSelect = useCallback((value: Value) => {
-    if (!selectedTierForTouch) return;
-
-    const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
-    const isInTier = tierOrder.includes(value.location as TierId);
-
-    // If tapping an item already in a tier, remove it (send back to category)
-    if (isInTier) {
-      setValues(prevValues => {
-        const filtered = prevValues.filter(v => v.id !== value.id);
-        const updatedValue = { ...value, location: value.category };
-
-        // Find insert position in category (after all tiers)
-        const tiersCount = filtered.filter(v => tierOrder.includes(v.location as TierId)).length;
-        const categoryIndex = categories.indexOf(value.category);
-
-        let insertIndex = tiersCount;
-        // Skip all categories before this one
-        for (let i = 0; i < categoryIndex; i++) {
-          const catCount = filtered.filter(v => v.location === categories[i]).length;
-          insertIndex += catCount;
-        }
-        // Add count of items in target category (to get to the end)
-        const targetCatCount = filtered.filter(v => v.location === value.category).length;
-        insertIndex += targetCatCount;
-
-        filtered.splice(insertIndex, 0, updatedValue);
-        return filtered;
-      });
-    } else {
-      // Tapping an item in a category - move to the selected tier at the back
-      setValues(prevValues => {
-        const filtered = prevValues.filter(v => v.id !== value.id);
-        const updatedValue = { ...value, location: selectedTierForTouch };
-
-        // Find insert position at the back of the target tier
-        const targetTierIndex = tierOrder.indexOf(selectedTierForTouch);
-
-        let insertIndex = 0;
-        // Skip all tiers before this one
-        for (let i = 0; i < targetTierIndex; i++) {
-          const tierCount = filtered.filter(v => v.location === tierOrder[i]).length;
-          insertIndex += tierCount;
-        }
-        // Add count of items in target tier (to get to the end)
-        const targetTierCount = filtered.filter(v => v.location === selectedTierForTouch).length;
-        insertIndex += targetTierCount;
-
-        filtered.splice(insertIndex, 0, updatedValue);
-        return filtered;
-      });
-    }
-
-    // Show animation
-    setAnimatingValues(prev => new Set(prev).add(value.id));
-    setTimeout(() => {
-      setAnimatingValues(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(value.id);
-        return newSet;
-      });
-    }, 500);
-  }, [selectedTierForTouch, categories]);
-
   const toggleCategory = (category: string) => {
     setCollapsedCategories(prev => ({
       ...prev,
@@ -1947,16 +1853,7 @@ const ValuesTierList = () => {
                 <div className="flex flex-col border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden print-tier bg-white dark:bg-gray-800 h-full">
                   {/* Sticky header - droppable area */}
                   <div
-                    className={`bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 ${
-                      isTouchDevice && selectedTierForTouch === tier.id
-                        ? 'ring-4 ring-blue-500 dark:ring-blue-600 border-blue-500 dark:border-blue-600'
-                        : ''
-                    } ${isTouchDevice ? 'cursor-pointer' : ''}`}
-                    onClick={() => {
-                      if (isTouchDevice) {
-                        setSelectedTierForTouch(selectedTierForTouch === tier.id ? null : tier.id);
-                      }
-                    }}
+                    className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
                   >
                     <ValueContainer
                       containerId={`${tier.id}-header`}
@@ -1970,21 +1867,11 @@ const ValuesTierList = () => {
                           <h2 className="text-base font-semibold text-gray-800 dark:text-gray-200 print-tier-heading flex-1">
                             {tier.label}
                           </h2>
-                          {isTouchDevice ? (
-                            <span className={`text-xs font-mono px-2 py-1 rounded border print-hide ${
-                              selectedTierForTouch === tier.id
-                                ? 'bg-blue-600 dark:bg-blue-700 text-white border-blue-600 dark:border-blue-700'
-                                : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300'
-                            }`}>
-                              {selectedTierForTouch === tier.id ? '✓' : 'Tap'}
-                            </span>
-                          ) : (
-                            <span className={`text-xs font-mono bg-white dark:bg-gray-700 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 print-hide transition-opacity ${
-                              hoveredValue ? 'text-gray-600 dark:text-gray-300 opacity-100' : 'text-gray-400 dark:text-gray-500 opacity-40'
-                            }`}>
-                              {index + 1}
-                            </span>
-                          )}
+                          <span className={`text-xs font-mono bg-white dark:bg-gray-700 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 print-hide transition-opacity ${
+                            hoveredValue ? 'text-gray-600 dark:text-gray-300 opacity-100' : 'text-gray-400 dark:text-gray-500 opacity-40'
+                          }`}>
+                            {index + 1}
+                          </span>
                         </div>
 
                         {/* Quota indicator */}
@@ -2038,8 +1925,6 @@ const ValuesTierList = () => {
                           containerId={tier.id}
                           activeId={activeId}
                           isTouchDevice={isTouchDevice}
-                          selectedTierForTouch={selectedTierForTouch}
-                          onTouchSelect={handleTouchSelect}
                         />
                       ))}
                     </ValueContainer>
@@ -2068,7 +1953,7 @@ const ValuesTierList = () => {
                   const tierOrder: TierId[] = ['very-important', 'somewhat-important', 'not-important'];
                   const totalInCategories = values.filter(v => !tierOrder.includes(v.location as TierId)).length;
                   return isTouchDevice
-                    ? `${totalInCategories} values • Tap to add to selected tier`
+                    ? `${totalInCategories} values • Drag to tiers`
                     : `${totalInCategories} values • Drag to rank them`;
                 })()}
               </p>
@@ -2216,8 +2101,6 @@ const ValuesTierList = () => {
                                       containerId={category}
                                       activeId={activeId}
                                       isTouchDevice={isTouchDevice}
-                                      selectedTierForTouch={selectedTierForTouch}
-                                      onTouchSelect={handleTouchSelect}
                                     />
                                   ))}
                                 </ValueContainer>
