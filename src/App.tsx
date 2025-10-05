@@ -1850,7 +1850,7 @@ const ValuesTierList = () => {
                 items={tierValues.map(value => value.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="flex flex-col border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden print-tier bg-white dark:bg-gray-800 h-full">
+                <div className="flex flex-col border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden print-tier bg-white dark:bg-gray-800 h-full @container">
                   {/* Sticky header - droppable area */}
                   <div
                     className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
@@ -1903,11 +1903,8 @@ const ValuesTierList = () => {
                     <ValueContainer
                       containerId={tier.id}
                       isTier
-                      className="p-4 grid grid-cols-1 md:grid-cols-2 gap-2 grid-flow-col print-value-list"
+                      className="p-4 grid grid-cols-1 @[18.75rem]:grid-cols-2 gap-2 print-value-list"
                       highlightRingClass={tierHighlightClass[tier.id]}
-                      style={{
-                        gridTemplateRows: tierValues.length > 0 ? `repeat(${Math.ceil(tierValues.length / 2)}, auto)` : undefined,
-                      }}
                     >
                       {tierValues.length === 0 && (
                         <div className="text-sm text-gray-500 italic select-none print-hide text-center py-8">
