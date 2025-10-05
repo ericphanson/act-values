@@ -1,15 +1,13 @@
 # TODOs
 
-- [x] if a list cannot be loaded from local storage, instead of crashing the app, clear it and print a toast letting the user know
+- [ ] if you use a keyboard shortcut (or mobile click thing) to move an item from a higher tier to a lower one, it should go to the TOP of the lower tier. If you move it from a lower tier to a higher one, it should go to the BOTTOM of the higher tier. So it is a "minimal move". If it is within the same tier, it should go to the top of it.
+- [ ] tablet UI isn't very good; mobile layout too big for swiping. Maybe use desktop UI but with better dragging abilities
 - [ ] think harder about the text, instructions, naming, etc...
-- [x] accessibility improvements
-- [x] redesign quota UI: instead of 0/10, we don't really want to say you must have 10, we want to say no more than 10. Currently with the progress bar and 5/10 etc, it really communicates "get to 10".
 
 ## Needs design
 
 These need some design thought to make sure it works well and doesn't add too much complexity. And ultimately they might be out of scope.
 
-- [x] more datasets
 - [ ] custom datasets
 - [ ] custom values? maybe we could have the existing dataset but you can add a couple individual values
 - [ ] "domains of life" organization: https://stevenchayes.com/wp-content/uploads/2023/01/The-Valued-Living-Questionnaire.pdf
