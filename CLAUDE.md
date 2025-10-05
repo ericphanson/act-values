@@ -56,24 +56,44 @@ npm run preview      # Preview production build
 
 ### Dual Layout System
 
-**Important distinction:** The codebase has two UI modes, but three device/interaction types:
+**Layout choice is based ONLY on screen size (not touch detection):**
+- **Desktop UI:** Screen width > 767px
+- **Mobile UI:** Screen width ≤ 767px
 
-1. **Desktop (large screens)** - `src/App.tsx`
-   - Three-column layout: Category sidebar (right), drag-and-drop tiers (left)
-   - Uses `@dnd-kit` for drag-and-drop
+**Touch capability is detected separately and affects interaction methods within each layout.**
+
+This creates **four possible combinations:**
+
+1. **Desktop UI with touch** (tablets, large touch screens)
+   - Three-column drag-and-drop layout
+   - Touch drag via `@dnd-kit/core` TouchSensor (60ms delay)
    - Keyboard shortcuts: 1=Very Important, 2=Somewhat, 3=Not Important
-   - Values flow: Categories → Tiers (via drag-and-drop)
+   - Location: `src/App.tsx`
 
-2. **Mobile UI (small screens)** - `src/components/mobile/`
-   - Inbox-first design with tier targets around the current value
-   - Accordion tiers below inbox
-   - Separate ReviewMode for viewing/reordering all tiers
-   - QuickTargetsBar for progress tracking
-   - **Two interaction modes:**
-     - **Touch devices:** Swipe gestures (left/right/up for tier assignment)
-     - **Small-screen desktops:** Keyboard shortcuts (1/2/3 keys) + tap/click
+2. **Desktop UI without touch** (desktop computers with mouse)
+   - Same three-column layout
+   - Mouse drag via MouseSensor (8px distance activation)
+   - Keyboard shortcuts work the same
+   - Location: `src/App.tsx`
+
+3. **Mobile UI with touch** (phones, small tablets)
+   - Inbox-first design with swipe gestures
+   - Swipe left/right/up for tier assignment
+   - ReviewMode for viewing/reordering tiers
    - Uses custom swipe detection (`src/hooks/useSwipeGesture.ts`)
-   - `isTouchDevice` prop determines which instructions to show (e.g., "Swipe Right →" vs "Press 1")
+   - Location: `src/components/mobile/`
+
+4. **Mobile UI without touch** (small desktop windows)
+   - Same inbox-first design
+   - Keyboard shortcuts (1/2/3 keys) + click/tap
+   - Shows keyboard-specific instructions
+   - Location: `src/components/mobile/`
+
+**Key implementation details:**
+- `isMobileLayout` (boolean): Determined by screen size only via `useMediaQuery('(max-width: 767px)')`
+- `isTouchDevice` (boolean): Detected via `'ontouchstart' in window || navigator.maxTouchPoints > 0`
+- Desktop uses `@dnd-kit` with both MouseSensor and TouchSensor configured
+- Mobile uses `isTouchDevice` prop to show appropriate instructions ("Swipe" vs "Press 1")
 
 ### Dataset System
 
