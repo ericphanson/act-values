@@ -1162,7 +1162,7 @@ const ValuesTierList = () => {
           return;
         }
 
-        // Trigger animation and move (to end if in tier, or when moving between tier/category)
+        // Trigger animation and move with minimal move logic
         const valueId = hoveredValue.id;
 
         setValues(prev => {
@@ -1172,20 +1172,30 @@ const ValuesTierList = () => {
           // Update the value's location
           const updatedValue = { ...hoveredValue, location: targetLocation };
 
-          // Find where to insert (back/end of target location)
-          const targetTierIndex = tierOrder.indexOf(targetLocation);
+          // Determine if this is a "minimal move" (up, down, or same tier)
+          const fromTierIndex = tierOrder.indexOf(hoveredValue.location);
+          const toTierIndex = tierOrder.indexOf(targetLocation);
 
-          if (targetTierIndex !== -1) {
-            // It's a tier - insert at the end of this tier
+          // Minimal move logic:
+          // - Moving UP (lower index = higher tier): insert at BOTTOM/END
+          // - Moving DOWN or SAME tier: insert at TOP/START
+          const insertAtStart = fromTierIndex <= toTierIndex && fromTierIndex !== -1;
+
+          if (toTierIndex !== -1) {
+            // It's a tier
             let insertIndex = 0;
             // Skip all tiers before this one
-            for (let i = 0; i < targetTierIndex; i++) {
+            for (let i = 0; i < toTierIndex; i++) {
               const tierCount = filtered.filter(v => v.location === tierOrder[i]).length;
               insertIndex += tierCount;
             }
-            // Add count of items in target tier (to get to the end)
-            const targetTierCount = filtered.filter(v => v.location === targetLocation).length;
-            insertIndex += targetTierCount;
+
+            // If inserting at start of tier, use current index
+            // If inserting at end, add the count of items in target tier
+            if (!insertAtStart) {
+              const targetTierCount = filtered.filter(v => v.location === targetLocation).length;
+              insertIndex += targetTierCount;
+            }
 
             filtered.splice(insertIndex, 0, updatedValue);
           } else {
@@ -1417,16 +1427,27 @@ const ValuesTierList = () => {
 
       const updatedValue = { ...value, location: toLocation };
 
-      // Find insert position at the end of the target tier
-      const targetTierIndex = tierOrder.indexOf(toLocation);
+      // Determine if this is a "minimal move" (up, down, or same tier)
+      const fromTierIndex = tierOrder.indexOf(fromLocation as TierId);
+      const toTierIndex = tierOrder.indexOf(toLocation);
 
-      if (targetTierIndex !== -1) {
-        // It's a tier - insert at the end
+      // Minimal move logic:
+      // - Moving UP (lower index = higher tier): insert at BOTTOM/END
+      // - Moving DOWN or SAME tier: insert at TOP/START
+      const insertAtStart = fromTierIndex <= toTierIndex && fromTierIndex !== -1;
+
+      if (toTierIndex !== -1) {
+        // It's a tier
         let insertIndex = 0;
-        for (let i = 0; i < targetTierIndex; i++) {
+        for (let i = 0; i < toTierIndex; i++) {
           insertIndex += filtered.filter(v => v.location === tierOrder[i]).length;
         }
-        insertIndex += filtered.filter(v => v.location === toLocation).length;
+
+        // If inserting at start of tier, use current index
+        // If inserting at end, add the count of items in target tier
+        if (!insertAtStart) {
+          insertIndex += filtered.filter(v => v.location === toLocation).length;
+        }
 
         filtered.splice(insertIndex, 0, updatedValue);
       } else {
