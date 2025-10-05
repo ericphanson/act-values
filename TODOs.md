@@ -1,8 +1,9 @@
 # TODOs
 
-- [ ] if you use a keyboard shortcut (or mobile click thing) to move an item from a higher tier to a lower one, it should go to the TOP of the lower tier. If you move it from a lower tier to a higher one, it should go to the BOTTOM of the higher tier. So it is a "minimal move". If it is within the same tier, it should go to the top of it.
+- [x] if you use a keyboard shortcut (or mobile click thing) to move an item from a higher tier to a lower one, it should go to the TOP of the lower tier. If you move it from a lower tier to a higher one, it should go to the BOTTOM of the higher tier. So it is a "minimal move". If it is within the same tier, it should go to the top of it.
 - [ ] tablet UI isn't very good; mobile layout too big for swiping. Maybe use desktop UI but with better dragging abilities
 - [ ] think harder about the text, instructions, naming, etc...
+- [ ] feature to expand a list from smaller to bigger or bigger to smaller. When going smaller to bigger, the extra items are uncategorized. When going bigger to smaller, we just drop the values (categorized or not). Not sure the UI for it. Wouldn't work well with custom datasets... only datasets that are subsets of each other like we have now. Maybe first we need to make "stacked datasets" a first-class construct, then implement moving within them. Additionally, we could do so by secretly treating it like you are always manipulating the LARGEST one (potentially leaving a bunch of items uncategorized), so if you switch and switch back, your state isn't lost. So smaller datasets act like a view into the larger one. I like that but we need to implement it with backwards compat (ideally, kept forever). So existing smaller datasets get upgraded into views of larger datasets.
 
 ## Needs design
 
