@@ -18,7 +18,7 @@ If you have problems, you can [file an issue](https://github.com/ericphanson/val
 ## Design goals
 
 - Statically hostable (maintainable and sustainable long-term)
-- Keep tier state in URL (shareability / legibility)
+- Able to keep full tier state in shareable URLs (shareability / legibility)
 - "Back up" URL state to localStorage (don't lose work on accidental tab close)
 - Ergonomic interactions (make it actually usable: keyboard shortcuts, swipe gestures, drag-and-drop)
 - Print-friendly layout (archiving and offline sharing)
